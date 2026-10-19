@@ -1,0 +1,58 @@
+# --- Build output (Maven / Gradle) ---
+target/
+build/
+out/
+bin/
+.gradle/
+*.class
+*.war
+*.jar
+*.ear
+!**/.mvn/wrapper/maven-wrapper.jar
+
+# --- Logs & temp ---
+*.log
+logs/
+*.tmp
+*.swp
+*~
+
+# --- Secrets / local config (API keys, DB passwords) ---
+.env
+*.env
+!.env.example
+**/src/main/resources/application-local.properties
+**/src/main/resources/application-local.yml
+**/src/main/resources/db.local.properties
+
+# --- Uploaded files (claim supporting documents) ---
+uploads/
+
+# --- IntelliJ IDEA ---
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# --- Eclipse ---
+.classpath
+.project
+.settings/
+.metadata/
+.factorypath
+.apt_generated/
+
+# --- NetBeans ---
+nbproject/private/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# --- VS Code ---
+.vscode/
+!.vscode/extensions.json
+
+# --- OS ---
+.DS_Store
+Thumbs.db
+desktop.ini
