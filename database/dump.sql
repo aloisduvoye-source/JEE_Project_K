@@ -1,0 +1,4 @@
+-- dump.sql
+-- Données de la base "assurance" : jeu de données de test
+-- (utilisateurs, clients, contrats, garanties, sinistres, paiements...).
+-- À exécuter après schema.sql.

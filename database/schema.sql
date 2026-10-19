@@ -1,0 +1,5 @@
+-- schema.sql
+-- Structure de la base "assurance" : création de toutes les tables
+-- (clés primaires, clés étrangères, contraintes).
+-- À exécuter en premier sur une base vide.
+-- Toute modification d'une table doit être reportée ici.
