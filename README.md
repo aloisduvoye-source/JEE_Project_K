@@ -1,7 +1,9 @@
 # JEE_Project_K
 Le projet de JEE du groupe K : plateforme web de gestion d'assurance (clients, contrats, garanties, sinistres, paiements, assistant IA, statistiques).
 
-Sujet : [doc/projet2026_2027.pdf](doc/projet2026_2027.pdf)
+- Sujet : [doc/projet2026_2027.pdf](doc/projet2026_2027.pdf)
+- Avancement : [doc/fonctionnalites.md](doc/fonctionnalites.md)
+- Règles de travail (Git, conventions) : [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Organisation du dépôt
 
@@ -60,7 +62,6 @@ Le fichier `.env` n'est pas versionné : il contient les mots de passe et la cl�
 
 ### 4. Se connecter a la base de donnée
 ```bash
-mysql -u assurance_user -p assurance < database/schema.sql
-mysql -u assurance_user -p assurance < database/data.sql
+mysql -u assurance_user -p assurance
 ```
 
