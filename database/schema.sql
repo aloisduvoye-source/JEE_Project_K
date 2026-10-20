@@ -11,9 +11,9 @@ DROP TABLE IF EXISTS sinistre;
 DROP TABLE IF EXISTS contrat_garantie;
 DROP TABLE IF EXISTS type_assurance_garantie;
 DROP TABLE IF EXISTS garantie;
-DROP TABLE IF EXISTS utilisateur;
-DROP TABLE IF EXISTS client;
 DROP TABLE IF EXISTS contrat;
+DROP TABLE IF EXISTS client;
+DROP TABLE IF EXISTS utilisateur;
 DROP TABLE IF EXISTS type_assurance;
 
 CREATE TABLE IF NOT EXISTS utilisateur(
@@ -28,29 +28,31 @@ CREATE TABLE IF NOT EXISTS utilisateur(
 
 CREATE TABLE IF NOT EXISTS client(
     id                      SERIAL PRIMARY KEY,
-    id_utilisateur          UNIQUE INTEGER REFERENCES utilisateur(id) NOT NULL ON DELETE CASCADE,
+    id_utilisateur          BIGINT UNSIGNED NOT NULL UNIQUE,
     telephone               VARCHAR(255),
     adresse                 VARCHAR(255),
-    date_naissance          DATE NULL
+    date_naissance          DATE NULL,
+    FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id) ON DELETE CASCADE
 );
 
-CREATE TABLE IF EXISTS contrat(
-    id                      SERIAL PRIMARY KEY,
-    id_client               INTEGER REFERENCES client(id),
-    id_type_assurance       INTEGER REFERENCES type_assurance(id),
-    numero                  BIGINT,
-    date_debut              DATE,
-    date_fin                DATE,
-    prime                   DECIMAL(12,2)
-    statut                  ENUM('EN_ATTENTE', 'ACTIF', 'SUSPENDU', 'EXPIRE', 'RESILIE') NOT NULL DEFAULT 'EN_ATTENTE',
-);
-
-
-CREATE TABLE IF EXISTS type_assurance(
+CREATE TABLE IF NOT EXISTS type_assurance(
     id                      SERIAL PRIMARY KEY,
     nom                     VARCHAR(100),
     description             TEXT,
-    prix_base               DECIMAL(2,12)
+    prix_base               DECIMAL(12,2)
+);
+
+CREATE TABLE IF NOT EXISTS contrat(
+    id                      SERIAL PRIMARY KEY,
+    id_client               BIGINT UNSIGNED,
+    id_type_assurance       BIGINT UNSIGNED,
+    numero                  BIGINT,
+    date_debut              DATE,
+    date_fin                DATE,
+    prime                   DECIMAL(12,2),
+    statut                  ENUM('EN_ATTENTE', 'ACTIF', 'SUSPENDU', 'EXPIRE', 'RESILIE') NOT NULL DEFAULT 'EN_ATTENTE',
+    FOREIGN KEY (id_client) REFERENCES client(id),
+    FOREIGN KEY (id_type_assurance) REFERENCES type_assurance(id)
 );
 
 CREATE TABLE IF NOT EXISTS garantie(
