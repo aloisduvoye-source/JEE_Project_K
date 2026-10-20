@@ -4,6 +4,7 @@
 -- À exécuter en premier sur une base vide.
 -- Toute modification d'une table doit être reportée ici.
 
+DROP TABLE IF EXISTS sinistre;
 DROP TABLE IF EXISTS contrat_garantie;
 DROP TABLE IF EXISTS type_assurance_garantie;
 DROP TABLE IF EXISTS garantie;
@@ -72,4 +73,18 @@ CREATE TABLE IF NOT EXISTS contrat_garantie(
     PRIMARY KEY (id_contrat, id_garantie),
     FOREIGN KEY (id_contrat) REFERENCES contrat(id) ON DELETE CASCADE,
     FOREIGN KEY (id_garantie) REFERENCES garantie(id)
+);
+
+CREATE TABLE IF NOT EXISTS sinistre(
+    id                      SERIAL PRIMARY KEY,
+    id_contrat              BIGINT UNSIGNED NOT NULL,
+    numero                  BIGINT NOT NULL UNIQUE,
+    date_sinistre           DATE NOT NULL,
+    date_declaration        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    description             TEXT NOT NULL,
+    type_sinistre           ENUM('ACCIDENT', 'VOL', 'INCENDIE', 'DEGATS_DES_EAUX', 'MALADIE', 'AUTRE') NOT NULL,
+    montant_estime          DECIMAL(12,2),
+    statut                  ENUM('DECLARE', 'EN_ANALYSE', 'ACCEPTE', 'REFUSE', 'INDEMNISE') NOT NULL DEFAULT 'DECLARE',
+    montant_indemnisation   DECIMAL(12,2),
+    FOREIGN KEY (id_contrat) REFERENCES contrat(id)
 );
