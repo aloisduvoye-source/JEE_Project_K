@@ -42,7 +42,8 @@ CREATE TABLE IF NOT EXISTS type_assurance(
     id                      SERIAL PRIMARY KEY,
     nom                     VARCHAR(100) NOT NULL UNIQUE,
     description             TEXT,
-    prix_base               DECIMAL(12,2) NOT NULL
+    prix_base               DECIMAL(12,2) NOT NULL,
+    CONSTRAINT chk_type_assurance_prix CHECK (prix_base >= 0)
 );
 
 CREATE TABLE IF NOT EXISTS contrat(
@@ -57,6 +58,9 @@ CREATE TABLE IF NOT EXISTS contrat(
     date_resiliation        DATE NULL,
     motif_resiliation       VARCHAR(255) NULL,
     id_contrat_precedent    BIGINT UNSIGNED NULL,       -- contrat renouvelé par celui-ci
+    CONSTRAINT chk_contrat_dates CHECK (date_fin > date_debut),
+    CONSTRAINT chk_contrat_prime CHECK (prime > 0),
+    CONSTRAINT chk_contrat_resiliation CHECK (statut <> 'RESILIE' OR date_resiliation IS NOT NULL),
     FOREIGN KEY (id_client) REFERENCES client(id),
     FOREIGN KEY (id_type_assurance) REFERENCES type_assurance(id),
     FOREIGN KEY (id_contrat_precedent) REFERENCES contrat(id) ON DELETE SET NULL
@@ -67,7 +71,8 @@ CREATE TABLE IF NOT EXISTS garantie(
     nom                     VARCHAR(100) NOT NULL UNIQUE,
     description             TEXT,
     plafond                 DECIMAL(12,2) NULL,         -- montant maximal remboursé
-    franchise               DECIMAL(12,2) NULL          -- montant restant à la charge du client
+    franchise               DECIMAL(12,2) NULL,         -- montant restant à la charge du client
+    CONSTRAINT chk_garantie_montants CHECK (plafond >= 0 AND franchise >= 0)
 );
 
 -- Garanties disponibles pour chaque type d'assurance
@@ -102,6 +107,8 @@ CREATE TABLE IF NOT EXISTS sinistre(
     montant_indemnisation   DECIMAL(12,2),
     date_indemnisation      DATE NULL,
     id_agent                BIGINT UNSIGNED NULL,       -- agent qui traite le dossier
+    CONSTRAINT chk_sinistre_montants CHECK (montant_estime >= 0 AND montant_indemnisation >= 0),
+    CONSTRAINT chk_sinistre_indemnisation CHECK (statut <> 'INDEMNISE' OR (montant_indemnisation IS NOT NULL AND date_indemnisation IS NOT NULL)),
     FOREIGN KEY (id_contrat) REFERENCES contrat(id),
     FOREIGN KEY (id_agent) REFERENCES utilisateur(id) ON DELETE SET NULL
 );
@@ -136,6 +143,8 @@ CREATE TABLE IF NOT EXISTS paiement(
     date_paiement           DATE NULL,
     mode_paiement           ENUM('CARTE', 'VIREMENT', 'PRELEVEMENT', 'CHEQUE') NULL,
     statut                  ENUM('EN_ATTENTE', 'EFFECTUE', 'EN_RETARD', 'ANNULE') NOT NULL DEFAULT 'EN_ATTENTE',
+    CONSTRAINT chk_paiement_montant CHECK (montant > 0),
+    CONSTRAINT chk_paiement_effectue CHECK (statut <> 'EFFECTUE' OR (date_paiement IS NOT NULL AND mode_paiement IS NOT NULL)),
     FOREIGN KEY (id_contrat) REFERENCES contrat(id)
 );
 
