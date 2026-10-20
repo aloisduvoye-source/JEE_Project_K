@@ -20,8 +20,8 @@ CREATE TABLE IF NOT EXISTS utilisateur(
     id                      SERIAL PRIMARY KEY,
     nom                     VARCHAR(100) NOT NULL,
     prenom                  VARCHAR(100) NOT NULL,
-    email                   VARCHAR(180) NOT NULL,
-    identifiant             VARCHAR(100) NOT NULL,
+    email                   VARCHAR(180) NOT NULL UNIQUE,
+    identifiant             VARCHAR(100) NOT NULL UNIQUE,
     mot_de_passe_hash       VARCHAR(255) NOT NULL,
     role                    ENUM('CLIENT', 'AGENT', 'ADMIN') NOT NULL
 );
@@ -37,19 +37,19 @@ CREATE TABLE IF NOT EXISTS client(
 
 CREATE TABLE IF NOT EXISTS type_assurance(
     id                      SERIAL PRIMARY KEY,
-    nom                     VARCHAR(100),
+    nom                     VARCHAR(100) NOT NULL UNIQUE,
     description             TEXT,
-    prix_base               DECIMAL(12,2)
+    prix_base               DECIMAL(12,2) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS contrat(
     id                      SERIAL PRIMARY KEY,
-    id_client               BIGINT UNSIGNED,
-    id_type_assurance       BIGINT UNSIGNED,
-    numero                  BIGINT,
-    date_debut              DATE,
-    date_fin                DATE,
-    prime                   DECIMAL(12,2),
+    id_client               BIGINT UNSIGNED NOT NULL,
+    id_type_assurance       BIGINT UNSIGNED NOT NULL,
+    numero                  BIGINT NOT NULL UNIQUE,
+    date_debut              DATE NOT NULL,
+    date_fin                DATE NOT NULL,
+    prime                   DECIMAL(12,2) NOT NULL,
     statut                  ENUM('EN_ATTENTE', 'ACTIF', 'SUSPENDU', 'EXPIRE', 'RESILIE') NOT NULL DEFAULT 'EN_ATTENTE',
     FOREIGN KEY (id_client) REFERENCES client(id),
     FOREIGN KEY (id_type_assurance) REFERENCES type_assurance(id)
