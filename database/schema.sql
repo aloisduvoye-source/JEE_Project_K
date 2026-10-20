@@ -4,6 +4,7 @@
 -- À exécuter en premier sur une base vide.
 -- Toute modification d'une table doit être reportée ici.
 
+DROP TABLE IF EXISTS garantie;
 DROP TABLE IF EXISTS utilisateur;
 DROP TABLE IF EXISTS client;
 DROP TABLE IF EXISTS contrat;
@@ -46,6 +47,8 @@ CREATE TABLE IF EXISTS type_assurance(
     prix_base               DECIMAL(2,12)
 );
 
-
-
-
+CREATE TABLE IF NOT EXISTS garantie(
+    id                      SERIAL PRIMARY KEY,
+    nom                     VARCHAR(100) NOT NULL UNIQUE,
+    description             TEXT
+);
