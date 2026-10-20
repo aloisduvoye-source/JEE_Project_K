@@ -17,6 +17,7 @@
         <class>fr.cytech.assurance.model.Garantie</class>
         <class>fr.cytech.assurance.model.Sinistre</class>
         <class>fr.cytech.assurance.model.PieceJustificative</class>
+        <class>fr.cytech.assurance.model.CommentaireSinistre</class>
 
         <properties>
             <!-- Driver JDBC pour MySQL (utilisé par défaut ou surchargé par le .env) -->
