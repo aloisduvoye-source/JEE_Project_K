@@ -4,6 +4,7 @@
 -- À exécuter en premier sur une base vide.
 -- Toute modification d'une table doit être reportée ici.
 
+DROP TABLE IF EXISTS message_assistant;
 DROP TABLE IF EXISTS paiement;
 DROP TABLE IF EXISTS commentaire_sinistre;
 DROP TABLE IF EXISTS piece_justificative;
@@ -136,4 +137,14 @@ CREATE TABLE IF NOT EXISTS paiement(
     mode_paiement           ENUM('CARTE', 'VIREMENT', 'PRELEVEMENT', 'CHEQUE') NULL,
     statut                  ENUM('EN_ATTENTE', 'EFFECTUE', 'EN_RETARD', 'ANNULE') NOT NULL DEFAULT 'EN_ATTENTE',
     FOREIGN KEY (id_contrat) REFERENCES contrat(id)
+);
+
+-- Historique des conversations entre un client et l'assistant IA
+CREATE TABLE IF NOT EXISTS message_assistant(
+    id                      SERIAL PRIMARY KEY,
+    id_utilisateur          BIGINT UNSIGNED NOT NULL,
+    auteur                  ENUM('CLIENT', 'ASSISTANT') NOT NULL,
+    contenu                 TEXT NOT NULL,
+    date_message            TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_utilisateur) REFERENCES utilisateur(id) ON DELETE CASCADE
 );
