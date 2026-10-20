@@ -21,7 +21,7 @@ CREATE TABLE IF NOT EXISTS utilisateur(
 
 CREATE TABLE IF NOT EXISTS client(
     id                      SERIAL PRIMARY KEY,
-    id_utilisateur          UNIQUE INTEGER REFERENCES utilisateur(id) NOT NULL,
+    id_utilisateur          UNIQUE INTEGER REFERENCES utilisateur(id) NOT NULL ON DELETE CASCADE,
     telephone               VARCHAR(255),
     adresse                 VARCHAR(255),
     date_naissance          DATE NULL

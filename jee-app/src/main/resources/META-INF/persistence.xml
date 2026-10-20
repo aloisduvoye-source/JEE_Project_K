@@ -9,6 +9,12 @@
         <!-- Déclaration d'Hibernate comme fournisseur JPA -->
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
+        <!-- Entités gérées par Hibernate (ajouter ici chaque nouvelle classe @Entity) -->
+        <class>fr.cytech.assurance.model.Utilisateur</class>
+        <class>fr.cytech.assurance.model.Client</class>
+        <class>fr.cytech.assurance.model.TypeAssurance</class>
+        <class>fr.cytech.assurance.model.Contrat</class>
+
         <properties>
             <!-- Driver JDBC pour MySQL (utilisé par défaut ou surchargé par le .env) -->
             <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
@@ -24,7 +30,7 @@
               - 'update' met à jour les tables sans supprimer les données (recommandé en dev)
               - 'create' recrée les tables à chaque lancement
             -->
-            <property name="hibernate.hbm2ddl.auto" value="update"/>
+            <property name="hibernate.hbm2ddl.auto" value="create"/>
 
             <!-- Afficher les requêtes SQL dans la console pour déboguer -->
             <property name="hibernate.show_sql" value="true"/>
