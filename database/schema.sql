@@ -64,7 +64,9 @@ CREATE TABLE IF NOT EXISTS contrat(
 CREATE TABLE IF NOT EXISTS garantie(
     id                      SERIAL PRIMARY KEY,
     nom                     VARCHAR(100) NOT NULL UNIQUE,
-    description             TEXT
+    description             TEXT,
+    plafond                 DECIMAL(12,2) NULL,         -- montant maximal remboursé
+    franchise               DECIMAL(12,2) NULL          -- montant restant à la charge du client
 );
 
 -- Garanties disponibles pour chaque type d'assurance
