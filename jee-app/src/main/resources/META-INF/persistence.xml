@@ -14,6 +14,7 @@
         <class>fr.cytech.assurance.model.Client</class>
         <class>fr.cytech.assurance.model.TypeAssurance</class>
         <class>fr.cytech.assurance.model.Contrat</class>
+        <class>fr.cytech.assurance.model.Garantie</class>
 
         <properties>
             <!-- Driver JDBC pour MySQL (utilisé par défaut ou surchargé par le .env) -->
