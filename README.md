@@ -65,3 +65,50 @@ Le fichier `.env` n'est pas versionné : il contient les mots de passe et la cl�
 mysql -u assurance_user -p assurance
 ```
 
+
+## Lancer l'application (Tomcat)
+
+### Prérequis
+- Java 17 ou plus : `java -version`
+- Maven : `mvn -version`
+- Tomcat **10.1** (Servlet 6.0 / Jakarta EE 10)
+
+### 1. Installer Tomcat (une seule fois)
+```bash
+cd ~
+curl -O https://repo1.maven.org/maven2/org/apache/tomcat/tomcat/10.1.61/tomcat-10.1.61.tar.gz
+tar -xzf tomcat-10.1.61.tar.gz && rm tomcat-10.1.61.tar.gz
+```
+Tomcat est alors installé dans `~/apache-tomcat-10.1.61`.
+
+Facultatif : ajouter deux raccourcis à la fin de `~/.zshrc` (ou `~/.bashrc`), puis `source ~/.zshrc` :
+```bash
+export CATALINA_HOME="$HOME/apache-tomcat-10.1.61"
+alias tomcat-start='"$CATALINA_HOME/bin/startup.sh"'
+alias tomcat-stop='"$CATALINA_HOME/bin/shutdown.sh"'
+```
+
+### 2. Construire et déployer l'application
+Depuis la racine du dépôt :
+```bash
+mvn -f jee-app/pom.xml package                               # produit jee-app/target/assurance.war
+cp jee-app/target/assurance.war ~/apache-tomcat-10.1.61/webapps/
+```
+
+### 3. Démarrer Tomcat
+```bash
+~/apache-tomcat-10.1.61/bin/startup.sh                       # ou : tomcat-start
+```
+L'application est accessible sur **http://localhost:8080/assurance/**
+
+Après une modification du code : relancer les commandes de l'étape 2. Tomcat redéploie automatiquement le nouveau `.war`, pas besoin de le redémarrer.
+
+### 4. Arrêter Tomcat
+```bash
+~/apache-tomcat-10.1.61/bin/shutdown.sh                      # ou : tomcat-stop
+```
+
+### En cas de problème
+- Les erreurs sont dans `~/apache-tomcat-10.1.61/logs/catalina.<date>.log`.
+- `Adresse déjà utilisée` dans les logs : un autre programme occupe le port 8080. Le trouver avec `ss -ltnp | grep 8080`.
+- Page 404 : vérifier l'URL (`/assurance/` à la fin) et que `assurance.war` est bien dans `webapps/`.
