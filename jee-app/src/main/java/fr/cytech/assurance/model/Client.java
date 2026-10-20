@@ -8,6 +8,8 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDate;
 
@@ -20,8 +22,10 @@ public class Client {
     private Long id;
 
     // Compte de connexion du client (nom, email, mot de passe...)
-    @OneToOne
+    // Supprimer l'utilisateur supprime aussi le client (ON DELETE CASCADE)
+    @OneToOne(optional = false)
     @JoinColumn(name = "id_utilisateur", nullable = false, unique = true)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Utilisateur utilisateur;
 
     @Column(name = "telephone", length = 255)
