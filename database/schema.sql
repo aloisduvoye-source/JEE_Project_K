@@ -4,6 +4,7 @@
 -- À exécuter en premier sur une base vide.
 -- Toute modification d'une table doit être reportée ici.
 
+DROP TABLE IF EXISTS type_assurance_garantie;
 DROP TABLE IF EXISTS garantie;
 DROP TABLE IF EXISTS utilisateur;
 DROP TABLE IF EXISTS client;
@@ -51,4 +52,13 @@ CREATE TABLE IF NOT EXISTS garantie(
     id                      SERIAL PRIMARY KEY,
     nom                     VARCHAR(100) NOT NULL UNIQUE,
     description             TEXT
+);
+
+-- Garanties disponibles pour chaque type d'assurance
+CREATE TABLE IF NOT EXISTS type_assurance_garantie(
+    id_type_assurance       BIGINT UNSIGNED NOT NULL,
+    id_garantie             BIGINT UNSIGNED NOT NULL,
+    PRIMARY KEY (id_type_assurance, id_garantie),
+    FOREIGN KEY (id_type_assurance) REFERENCES type_assurance(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_garantie) REFERENCES garantie(id) ON DELETE CASCADE
 );
