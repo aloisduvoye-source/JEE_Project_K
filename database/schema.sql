@@ -4,6 +4,7 @@
 -- À exécuter en premier sur une base vide.
 -- Toute modification d'une table doit être reportée ici.
 
+DROP TABLE IF EXISTS commentaire_sinistre;
 DROP TABLE IF EXISTS piece_justificative;
 DROP TABLE IF EXISTS sinistre;
 DROP TABLE IF EXISTS contrat_garantie;
@@ -98,4 +99,15 @@ CREATE TABLE IF NOT EXISTS piece_justificative(
     type_mime               VARCHAR(100),
     date_ajout              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_sinistre) REFERENCES sinistre(id) ON DELETE CASCADE
+);
+
+-- Commentaires ajoutés par les agents lors de l'analyse d'un sinistre
+CREATE TABLE IF NOT EXISTS commentaire_sinistre(
+    id                      SERIAL PRIMARY KEY,
+    id_sinistre             BIGINT UNSIGNED NOT NULL,
+    id_auteur               BIGINT UNSIGNED NOT NULL,
+    contenu                 TEXT NOT NULL,
+    date_commentaire        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_sinistre) REFERENCES sinistre(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_auteur) REFERENCES utilisateur(id)
 );
