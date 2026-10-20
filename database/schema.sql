@@ -53,8 +53,12 @@ CREATE TABLE IF NOT EXISTS contrat(
     date_fin                DATE NOT NULL,
     prime                   DECIMAL(12,2) NOT NULL,
     statut                  ENUM('EN_ATTENTE', 'ACTIF', 'SUSPENDU', 'EXPIRE', 'RESILIE') NOT NULL DEFAULT 'EN_ATTENTE',
+    date_resiliation        DATE NULL,
+    motif_resiliation       VARCHAR(255) NULL,
+    id_contrat_precedent    BIGINT UNSIGNED NULL,       -- contrat renouvelé par celui-ci
     FOREIGN KEY (id_client) REFERENCES client(id),
-    FOREIGN KEY (id_type_assurance) REFERENCES type_assurance(id)
+    FOREIGN KEY (id_type_assurance) REFERENCES type_assurance(id),
+    FOREIGN KEY (id_contrat_precedent) REFERENCES contrat(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS garantie(
