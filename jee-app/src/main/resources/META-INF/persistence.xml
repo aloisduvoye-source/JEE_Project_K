@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<persistence xmlns="https://jakarta.ee/xml/ns/persistence"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="https://jakarta.ee/xml/ns/persistence https://jakarta.ee/xml/ns/persistence/persistence_3_0.xsd"
+             version="3.0">
+
+    <!-- Nom de l'unité de persistance (à utiliser dans votre code Java avec JpaUtil) -->
+    <persistence-unit name="AssurancePU" transaction-type="RESOURCE_LOCAL">
+        <!-- Déclaration d'Hibernate comme fournisseur JPA -->
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+
+        <properties>
+            <!-- Driver JDBC pour MySQL (utilisé par défaut ou surchargé par le .env) -->
+            <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/assurance_db?useSSL=false&amp;serverTimezone=UTC"/>
+            <property name="jakarta.persistence.jdbc.user" value="root"/>
+            <property name="jakarta.persistence.jdbc.password" value=""/>
+
+            <!-- Dialecte Hibernate pour MySQL -->
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
+
+            <!-- 
+              Génération automatique du schéma de base de données :
+              - 'update' met à jour les tables sans supprimer les données (recommandé en dev)
+              - 'create' recrée les tables à chaque lancement
+            -->
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+
+            <!-- Afficher les requêtes SQL dans la console pour déboguer -->
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.format_sql" value="true"/>
+        </properties>
+    </persistence-unit>
+
+</persistence>
