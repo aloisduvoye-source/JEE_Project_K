@@ -40,6 +40,8 @@
   </dependencies>
 
   <build>
+    <!-- Produit target/assurance.war, déployé sur http://localhost:8080/assurance/ -->
+    <finalName>assurance</finalName>
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
