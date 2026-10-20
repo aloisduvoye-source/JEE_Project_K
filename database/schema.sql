@@ -7,9 +7,10 @@
 DROP TABLE IF EXISTS utilisateur;
 DROP TABLE IF EXISTS client;
 DROP TABLE IF EXISTS contrat;
+DROP TABLE IF EXISTS type_assurance;
 
 CREATE TABLE IF NOT EXISTS utilisateur(
-    id                 SERIAL PRIMARY KEY,
+    id                      SERIAL PRIMARY KEY,
     nom                     VARCHAR(100) NOT NULL,
     prenom                  VARCHAR(100) NOT NULL,
     email                   VARCHAR(180) NOT NULL,
@@ -29,13 +30,21 @@ CREATE TABLE IF NOT EXISTS client(
 CREATE TABLE IF EXISTS contrat(
     id                      SERIAL PRIMARY KEY,
     id_client               INTEGER REFERENCES client(id),
+    id_type_assurance       INTEGER REFERENCES type_assurance(id),
     numero                  BIGINT,
     date_debut              DATE,
     date_fin                DATE,
     prime                   DECIMAL(12,2)
-    statut                  statut ENUM('EN_ATTENTE', 'ACTIF', 'SUSPENDU', 'EXPIRE', 'RESILIE') NOT NULL DEFAULT 'EN_ATTENTE',
-)
+    statut                  ENUM('EN_ATTENTE', 'ACTIF', 'SUSPENDU', 'EXPIRE', 'RESILIE') NOT NULL DEFAULT 'EN_ATTENTE',
+);
 
+
+CREATE TABLE IF EXISTS type_assurance(
+    id                      SERIAL PRIMARY KEY,
+    nom                     VARCHAR(100),
+    description             TEXT,
+    prix_base               DECIMAL(2,12)
+);
 
 
 
