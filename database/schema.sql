@@ -4,6 +4,7 @@
 -- À exécuter en premier sur une base vide.
 -- Toute modification d'une table doit être reportée ici.
 
+DROP TABLE IF EXISTS piece_justificative;
 DROP TABLE IF EXISTS sinistre;
 DROP TABLE IF EXISTS contrat_garantie;
 DROP TABLE IF EXISTS type_assurance_garantie;
@@ -87,4 +88,14 @@ CREATE TABLE IF NOT EXISTS sinistre(
     statut                  ENUM('DECLARE', 'EN_ANALYSE', 'ACCEPTE', 'REFUSE', 'INDEMNISE') NOT NULL DEFAULT 'DECLARE',
     montant_indemnisation   DECIMAL(12,2),
     FOREIGN KEY (id_contrat) REFERENCES contrat(id)
+);
+
+CREATE TABLE IF NOT EXISTS piece_justificative(
+    id                      SERIAL PRIMARY KEY,
+    id_sinistre             BIGINT UNSIGNED NOT NULL,
+    nom_fichier             VARCHAR(255) NOT NULL,
+    chemin                  VARCHAR(500) NOT NULL,
+    type_mime               VARCHAR(100),
+    date_ajout              TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (id_sinistre) REFERENCES sinistre(id) ON DELETE CASCADE
 );
