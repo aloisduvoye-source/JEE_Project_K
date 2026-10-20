@@ -4,6 +4,7 @@
 -- À exécuter en premier sur une base vide.
 -- Toute modification d'une table doit être reportée ici.
 
+DROP TABLE IF EXISTS contrat_garantie;
 DROP TABLE IF EXISTS type_assurance_garantie;
 DROP TABLE IF EXISTS garantie;
 DROP TABLE IF EXISTS utilisateur;
@@ -61,4 +62,14 @@ CREATE TABLE IF NOT EXISTS type_assurance_garantie(
     PRIMARY KEY (id_type_assurance, id_garantie),
     FOREIGN KEY (id_type_assurance) REFERENCES type_assurance(id) ON DELETE CASCADE,
     FOREIGN KEY (id_garantie) REFERENCES garantie(id) ON DELETE CASCADE
+);
+
+-- Garanties souscrites dans chaque contrat
+-- (une garantie encore utilisée par un contrat ne peut pas être supprimée)
+CREATE TABLE IF NOT EXISTS contrat_garantie(
+    id_contrat              BIGINT UNSIGNED NOT NULL,
+    id_garantie             BIGINT UNSIGNED NOT NULL,
+    PRIMARY KEY (id_contrat, id_garantie),
+    FOREIGN KEY (id_contrat) REFERENCES contrat(id) ON DELETE CASCADE,
+    FOREIGN KEY (id_garantie) REFERENCES garantie(id)
 );
