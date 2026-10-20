@@ -97,7 +97,10 @@ CREATE TABLE IF NOT EXISTS sinistre(
     montant_estime          DECIMAL(12,2),
     statut                  ENUM('DECLARE', 'EN_ANALYSE', 'ACCEPTE', 'REFUSE', 'INDEMNISE') NOT NULL DEFAULT 'DECLARE',
     montant_indemnisation   DECIMAL(12,2),
-    FOREIGN KEY (id_contrat) REFERENCES contrat(id)
+    date_indemnisation      DATE NULL,
+    id_agent                BIGINT UNSIGNED NULL,       -- agent qui traite le dossier
+    FOREIGN KEY (id_contrat) REFERENCES contrat(id),
+    FOREIGN KEY (id_agent) REFERENCES utilisateur(id) ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS piece_justificative(
