@@ -4,6 +4,7 @@
 -- À exécuter en premier sur une base vide.
 -- Toute modification d'une table doit être reportée ici.
 
+DROP TABLE IF EXISTS paiement;
 DROP TABLE IF EXISTS commentaire_sinistre;
 DROP TABLE IF EXISTS piece_justificative;
 DROP TABLE IF EXISTS sinistre;
@@ -110,4 +111,16 @@ CREATE TABLE IF NOT EXISTS commentaire_sinistre(
     date_commentaire        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (id_sinistre) REFERENCES sinistre(id) ON DELETE CASCADE,
     FOREIGN KEY (id_auteur) REFERENCES utilisateur(id)
+);
+
+-- date_echeance : date à laquelle le paiement est dû ; date_paiement : renseignée une fois payé
+CREATE TABLE IF NOT EXISTS paiement(
+    id                      SERIAL PRIMARY KEY,
+    id_contrat              BIGINT UNSIGNED NOT NULL,
+    montant                 DECIMAL(12,2) NOT NULL,
+    date_echeance           DATE NOT NULL,
+    date_paiement           DATE NULL,
+    mode_paiement           ENUM('CARTE', 'VIREMENT', 'PRELEVEMENT', 'CHEQUE') NULL,
+    statut                  ENUM('EN_ATTENTE', 'EFFECTUE', 'EN_RETARD', 'ANNULE') NOT NULL DEFAULT 'EN_ATTENTE',
+    FOREIGN KEY (id_contrat) REFERENCES contrat(id)
 );
