@@ -1,4 +1,4 @@
-package main.java.fr.cytech.assurance.util;
+package fr.cytech.assurance.util;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import jakarta.persistence.EntityManager;
