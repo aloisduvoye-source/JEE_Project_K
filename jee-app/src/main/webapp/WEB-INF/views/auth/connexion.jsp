@@ -7,7 +7,8 @@
 </head>
 <body>
     <h1>Connexion</h1>
-    <form method="post" action="${pageContext.request.contextPath}">
+    <p>${erreur}</p>
+    <form method="post" action="${pageContext.request.contextPath}/connexion">
         <input type="text" name="identifiant">
         <input type="password" name="motDePasse">
         <button type="submit">Se Connecter</button>
