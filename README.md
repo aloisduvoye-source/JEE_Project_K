@@ -1,9 +1,7 @@
 # JEE_Project_K
 Le projet de JEE du groupe K : plateforme web de gestion d'assurance (clients, contrats, garanties, sinistres, paiements, assistant IA, statistiques).
 
-- Sujet : [doc/projet2026_2027.pdf](doc/projet2026_2027.pdf)
-- Avancement : [doc/fonctionnalites.md](doc/fonctionnalites.md)
-- Règles de travail (Git, conventions) : [CONTRIBUTING.md](CONTRIBUTING.md)
+Sujet : [doc/projet2026_2027.pdf](doc/projet2026_2027.pdf)
 
 ## Organisation du dépôt
 
