@@ -65,6 +65,40 @@ Le fichier `.env` n'est pas versionné : il contient les mots de passe et la cl�
 mysql -u assurance_user -p assurance
 ```
 
+### 5. Charger (ou recharger) le schéma et les données de test
+Les scripts sont dans `database/` :
+- `schema.sql` : création des tables
+- `dump.sql` : données de test
+
+À faire au premier lancement, et à chaque fois que `schema.sql` ou `dump.sql` change après un `git pull`.
+
+```bash
+# 1. Repartir d'une base vide (supprime toutes les tables et données locales)
+mysql -u assurance_user -p -e "DROP DATABASE IF EXISTS assurance; CREATE DATABASE assurance CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
+
+# 2. Créer les tables
+mysql -u assurance_user -p assurance < database/schema.sql
+
+# 3. Insérer les données de test
+mysql -u assurance_user -p assurance < database/dump.sql
+```
+L'ordre compte : `schema.sql` d'abord, `dump.sql` ensuite.
+
+### 6. Générer les données de test (`dump.sql`)
+Deux façons de produire `dump.sql` :
+
+**a. À la main** : écrire directement les `INSERT` dans `database/dump.sql`, en respectant l'ordre des clés étrangères (d'abord les utilisateurs et les types d'assurance, puis les contrats, puis les sinistres et les paiements).
+
+**b. Export depuis sa base locale** : remplir sa base (via l'application ou MySQL Workbench / DBeaver), puis exporter uniquement les données :
+```bash
+mysqldump -u assurance_user -p --no-create-info --skip-triggers --complete-insert --no-tablespaces \
+  assurance > database/dump.sql
+```
+- `--no-create-info` : n'exporte que les données ; la structure reste dans `schema.sql`
+- `--complete-insert` : écrit le nom des colonnes dans chaque `INSERT`, plus lisible et plus robuste si une colonne est ajoutée
+- `--no-tablespaces` : évite une erreur de droits avec MySQL 8
+
+> Si vous modifiez une table, mettez à jour `schema.sql` **et** vérifiez que `dump.sql` se charge toujours dessus (étape 5) avant de pousser.
 
 ## Lancer l'application (Tomcat)
 
