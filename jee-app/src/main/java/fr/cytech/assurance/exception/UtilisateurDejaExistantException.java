@@ -1,4 +1,4 @@
-package fr.cytech.assurance.dao;
+package fr.cytech.assurance.exception;
 
 // Levée quand on tente de créer un utilisateur dont l'identifiant ou l'email est déjà pris
 public class UtilisateurDejaExistantException extends RuntimeException {

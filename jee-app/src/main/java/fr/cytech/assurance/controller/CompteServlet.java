@@ -1,7 +1,8 @@
 package fr.cytech.assurance.controller;
 
-import fr.cytech.assurance.dao.UtilisateurDao;
 import fr.cytech.assurance.model.Utilisateur;
+import fr.cytech.assurance.service.UtilisateurService;
+import fr.cytech.assurance.util.SessionUtilisateur;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -16,15 +17,15 @@ public class CompteServlet extends HttpServlet {
 
     private static final String VUE = "/WEB-INF/views/compte/compte.jsp";
 
-    private final UtilisateurDao utilisateurDao = new UtilisateurDao();
+    private final UtilisateurService utilisateurService = new UtilisateurService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // Rechargé depuis la base : la copie en session date de la connexion
-        Utilisateur connecte = (Utilisateur) request.getSession().getAttribute("utilisateur");
-        Utilisateur utilisateur = utilisateurDao.trouverParId(connecte.getId());
-        request.getSession().setAttribute("utilisateur", utilisateur);
+        Utilisateur connecte = SessionUtilisateur.connecte(request);
+        Utilisateur utilisateur = utilisateurService.trouverParId(connecte.getId());
+        SessionUtilisateur.mettreAJour(request, utilisateur);
 
         request.setAttribute("compte", utilisateur);
         request.getRequestDispatcher(VUE).forward(request, response);
