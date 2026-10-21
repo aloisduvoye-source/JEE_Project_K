@@ -60,6 +60,7 @@ public class ConnexionServlet extends HttpServlet {
         }
         request.getSession(true).setAttribute("utilisateur", utilisateur);
 
-        response.sendRedirect(request.getContextPath() + "/");
+        // Chacun arrive directement dans l'espace de son rôle
+        response.sendRedirect(request.getContextPath() + utilisateur.getRole().getAccueil());
     }
 }
