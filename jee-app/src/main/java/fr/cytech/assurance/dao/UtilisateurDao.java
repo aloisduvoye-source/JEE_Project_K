@@ -18,4 +18,39 @@ public class UtilisateurDao extends GenericDao<Utilisateur> {
                 .findFirst()
                 .orElse(null));
     }
+
+    // Renvoie null si aucun utilisateur n'a cet email
+    public Utilisateur trouverParEmail(String email) {
+        return enLecture(em -> em.createQuery(
+                        "SELECT u FROM Utilisateur u WHERE u.email = :email", Utilisateur.class)
+                .setParameter("email", email)
+                .getResultStream()
+                .findFirst()
+                .orElse(null));
+    }
+
+    public boolean identifiantExiste(String identifiant) {
+        return trouverParIdentifiant(identifiant) != null;
+    }
+
+    public boolean emailExiste(String email) {
+        return trouverParEmail(email) != null;
+    }
+
+
+    public boolean emailExistePourUnAutre(String email, Long idUtilisateur) {
+        Utilisateur utilisateur = trouverParEmail(email);
+        return utilisateur != null && !utilisateur.getId().equals(idUtilisateur);
+    }
+
+    // Remplace le mot de passe : nouveauHash doit déjà être haché (BCrypt.hashpw), jamais en clair
+    // Renvoie false si aucun utilisateur n'a cet id
+    public boolean changerMotDePasse(Long id, String nouveauHash) {
+        return enTransaction(em -> {
+            Utilisateur utilisateur = em.find(Utilisateur.class, id);
+            if (utilisateur == null) {return false;}
+            utilisateur.setMotDePasseHash(nouveauHash);   // enregistré en base à la validation de la transaction
+            return true;
+        });
+    }
 }
