@@ -14,14 +14,15 @@ import java.io.IOException;
 import java.util.Set;
 
 /**
- * Protège les espaces de chaque rôle :
+ * Protège les pages réservées aux utilisateurs connectés :
+ *   /compte/*  : tous les rôles (profil, mot de passe)
  *   /client/*  : CLIENT
  *   /agent/*   : AGENT et ADMIN (l'administrateur consulte aussi contrats et sinistres)
  *   /admin/*   : ADMIN
  * Non connecté : redirection vers la connexion. Mauvais rôle : erreur 403.
  * Une nouvelle page est donc protégée automatiquement si son URL commence par l'un de ces préfixes.
  */
-@WebFilter(urlPatterns = {"/client/*", "/agent/*", "/admin/*"})
+@WebFilter(urlPatterns = {"/compte/*", "/client/*", "/agent/*", "/admin/*"})
 public class RoleFiltre extends HttpFilter {
 
     @Override
@@ -43,6 +44,7 @@ public class RoleFiltre extends HttpFilter {
 
     // Seul endroit où sont définis les rôles autorisés pour chaque espace
     static Set<Role> rolesAutorises(String chemin) {
+        if (chemin.startsWith("/compte")) {return Set.of(Role.values());}
         if (chemin.startsWith("/client")) {return Set.of(Role.CLIENT);}
         if (chemin.startsWith("/agent")) {return Set.of(Role.AGENT, Role.ADMIN);}
         return Set.of(Role.ADMIN);

@@ -117,7 +117,7 @@ docker compose up -d --build
 ```
 
 ## Contrôle d'accès
-Chaque rôle a son espace. Les URL qui commencent par ces préfixes sont protégées automatiquement par `RoleFiltre` :
+Chaque rôle a son espace. Les URL qui commencent par ces préfixes sont protégées automatiquement par le filtre `RoleFiltre` :
 
 | Préfixe d'URL | Rôles autorisés | Page d'accueil |
 |---|---|---|
