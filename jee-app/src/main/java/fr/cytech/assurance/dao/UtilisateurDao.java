@@ -46,11 +46,6 @@ public class UtilisateurDao extends GenericDao<Utilisateur> {
     // Remplace le mot de passe : nouveauHash doit déjà être haché (BCrypt.hashpw), jamais en clair
     // Renvoie false si aucun utilisateur n'a cet id
     public boolean changerMotDePasse(Long id, String nouveauHash) {
-        return enTransaction(em -> {
-            Utilisateur utilisateur = em.find(Utilisateur.class, id);
-            if (utilisateur == null) {return false;}
-            utilisateur.setMotDePasseHash(nouveauHash);   // enregistré en base à la validation de la transaction
-            return true;
-        });
+        return mettreAJour(id, u -> u.setMotDePasseHash(nouveauHash));
     }
 }
