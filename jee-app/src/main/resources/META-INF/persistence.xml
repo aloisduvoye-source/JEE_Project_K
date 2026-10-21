@@ -22,14 +22,9 @@
         <class>fr.cytech.assurance.model.MessageAssistant</class>
 
         <properties>
-            <!-- Driver JDBC pour MySQL (utilisé par défaut ou surchargé par le .env) -->
+            <!-- Driver JDBC pour MySQL. L'URL, l'utilisateur et le mot de passe viennent des variables
+                 DB_URL, DB_USER et DB_PASSWORD (fichier .env ou docker-compose.yml), lues par JpaUtil -->
             <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
-            <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/assurance_db?useSSL=false&amp;serverTimezone=UTC"/>
-            <property name="jakarta.persistence.jdbc.user" value="root"/>
-            <property name="jakarta.persistence.jdbc.password" value=""/>
-
-            <!-- Dialecte Hibernate pour MySQL -->
-            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
 
             <!--
               Les tables sont créées par database/schema.sql (et remplies par dump.sql).
