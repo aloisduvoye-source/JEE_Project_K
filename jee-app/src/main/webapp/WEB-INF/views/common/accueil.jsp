@@ -14,6 +14,9 @@
       Bonjour <c:out value="${sessionScope.utilisateur.nom} ${sessionScope.utilisateur.prenom}"/>,
       vous êtes connecté en tant que <c:out value="${sessionScope.utilisateur.role}"/>
     </p>
+    <form method="get" action="${pageContext.request.contextPath}${sessionScope.utilisateur.role.accueil}">
+      <button type="submit">Mon espace</button>
+    </form>
     <form method="get" action="${pageContext.request.contextPath}/compte">
       <button type="submit">Mon compte</button>
     </form>

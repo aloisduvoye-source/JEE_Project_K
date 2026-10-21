@@ -77,7 +77,7 @@ Le fichier `.env` n'est pas versionné : il contient les mots de passe et la cl�
 ## Lancer l'application
 Depuis la racine du dépôt :
 ```bash
-mvn -f jee-app/pom.xml package       # construit jee-app/target/assurance.war
+mvn -f jee-app/pom.xml clean package # construit jee-app/target/assurance.war
 docker compose up -d --build         # construit l'image Tomcat, lance MySQL puis Tomcat
 ```
 Au premier lancement, MySQL crée automatiquement les tables (`database/schema.sql`) et insère les données de test (`database/dump.sql`).
@@ -92,6 +92,8 @@ Comptes de test :
 | Agent | `agent` | `agent123` |
 | Client | `client` | `client123` |
 
+> Toujours utiliser `clean package` : sans `clean`, une classe supprimée ou renommée peut rester dans le `.war` et provoquer des erreurs incompréhensibles.
+
 ## Tuto Docker rapide
 
 | Commande | Effet |
@@ -104,7 +106,7 @@ Comptes de test :
 
 **Après une modification du code Java ou des JSP :**
 ```bash
-mvn -f jee-app/pom.xml package
+mvn -f jee-app/pom.xml clean package
 docker compose up -d --build tomcat
 ```
 
@@ -113,6 +115,21 @@ docker compose up -d --build tomcat
 docker compose down -v
 docker compose up -d --build
 ```
+
+## Contrôle d'accès
+Chaque rôle a son espace. Les URL qui commencent par ces préfixes sont protégées automatiquement par le filtre `RoleFiltre` :
+
+| Préfixe d'URL | Rôles autorisés | Page d'accueil |
+|---|---|---|
+| `/client/...` | CLIENT | `/client/accueil` |
+| `/agent/...` | AGENT, ADMIN | `/agent/accueil` |
+| `/admin/...` | ADMIN | `/admin/accueil` |
+| `/compte/...` | tout utilisateur connecté | `/compte` |
+
+- Non connecté : redirection vers `/connexion`. Mauvais rôle : page « Accès refusé » (erreur 403).
+- Après la connexion, chacun est redirigé vers la page d'accueil de son rôle.
+
+**Règle pour toute nouvelle page** : son URL doit commencer par le préfixe du rôle concerné, par exemple `@WebServlet("/client/contrats")`. Elle est alors protégée sans aucun code de sécurité dans la servlet. Une page sans préfixe est accessible à tout le monde.
 
 ## Base de données
 
@@ -143,5 +160,5 @@ docker exec mysql_db sh -c 'mysqldump -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" --no-c
 ## En cas de problème
 - `permission denied while trying to connect to the docker API` : la session n'a pas encore le groupe `docker`. Se déconnecter puis se reconnecter.
 - `port is already allocated` : un autre programme utilise le port 8080 ou 3307 (par exemple un Tomcat installé localement). Le trouver avec `ss -ltnp | grep 8080`.
-- `assurance.war: not found` pendant le `build` : lancer d'abord `mvn -f jee-app/pom.xml package`.
+- `assurance.war: not found` pendant le `build` : lancer d'abord `mvn -f jee-app/pom.xml clean package`.
 - `Access denied for user` ou `Schema-validation` dans `docker compose logs tomcat` : la base ne correspond pas au `.env` ou à `schema.sql`. La recréer avec `docker compose down -v` puis `docker compose up -d --build`.

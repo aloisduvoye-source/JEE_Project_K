@@ -8,4 +8,10 @@
 
     <!-- Les servlets sont déclarées avec l'annotation @WebServlet dans le package controller -->
 
+    <!-- Page affichée quand un utilisateur ouvre une page réservée à un autre rôle (RoleFiltre) -->
+    <error-page>
+        <error-code>403</error-code>
+        <location>/WEB-INF/views/common/acces-refuse.jsp</location>
+    </error-page>
+
 </web-app>
