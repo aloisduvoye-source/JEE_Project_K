@@ -2,7 +2,7 @@ package fr.cytech.assurance.controller;
 
 import fr.cytech.assurance.dao.ClientDao;
 import fr.cytech.assurance.dao.UtilisateurDao;
-import fr.cytech.assurance.dao.UtilisateurDejaExistantException;
+import fr.cytech.assurance.exception.UtilisateurDejaExistantException;
 import fr.cytech.assurance.model.Client;
 import fr.cytech.assurance.model.Utilisateur;
 import fr.cytech.assurance.model.enums.Role;

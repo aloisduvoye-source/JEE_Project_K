@@ -1,5 +1,6 @@
 package fr.cytech.assurance.dao;
 
+import fr.cytech.assurance.exception.UtilisateurDejaExistantException;
 import fr.cytech.assurance.model.Client;
 import fr.cytech.assurance.model.Utilisateur;
 import jakarta.persistence.EntityManager;
