@@ -48,4 +48,13 @@ public class UtilisateurDao extends GenericDao<Utilisateur> {
     public boolean changerMotDePasse(Long id, String nouveauHash) {
         return mettreAJour(id, u -> u.setMotDePasseHash(nouveauHash));
     }
+
+    // Modifie uniquement nom, prénom et email (le rôle, le mot de passe et l'état du compte ne sont pas touchés)
+    public boolean modifierProfil(Long id, String nom, String prenom, String email) {
+        return mettreAJour(id, u -> {
+            u.setNom(nom);
+            u.setPrenom(prenom);
+            u.setEmail(email);
+        });
+    }
 }
