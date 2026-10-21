@@ -24,130 +24,67 @@ jee-app/                 Version 1 : Servlets + JSP + Hibernate/JDBC (Tomcat)
     assets/              css/, js/, img/
 ```
 
-## Base de données (MySQL)
-Chacun utilise sa propre base MySQL en local.
+## Prérequis
+- **Java 17** ou plus (`java -version`) et **Maven** (`mvn -version`) : pour construire l'application
+- **Docker** avec **Docker Compose** : MySQL et Tomcat tournent dans des conteneurs, rien d'autre à installer
 
-### 1. Installer MySQL (Ubuntu / Debian)
+## Installer Docker (une seule fois)
+
+### Ubuntu / Linux Mint
 ```bash
 sudo apt update
-sudo apt install mysql-server
-sudo systemctl enable --now mysql
-```
+sudo apt install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
 
-### 2. Créer la base et l'utilisateur
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] \
+https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$UBUNTU_CODENAME") stable" \
+| sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+sudo apt update
+sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+# Utiliser Docker sans sudo
+sudo usermod -aG docker $USER
+```
+Se **déconnecter de sa session puis se reconnecter** (ou redémarrer) pour que le groupe `docker` soit pris en compte.
+
+> Sous Linux Mint, il faut bien `UBUNTU_CODENAME` (et non `VERSION_CODENAME`, qui donne le nom de version de Mint).
+
+### Windows / macOS
+Installer [Docker Desktop](https://www.docker.com/products/docker-desktop/), qui contient déjà Docker Compose.
+
+### Vérifier
 ```bash
-sudo mysql
-```
-```sql
-CREATE DATABASE assurance CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'assurance_user'@'localhost' IDENTIFIED BY 'un_mot_de_passe';
-GRANT ALL PRIVILEGES ON assurance.* TO 'assurance_user'@'localhost';
-FLUSH PRIVILEGES;
-EXIT;
+docker --version
+docker compose version
+docker run --rm hello-world      # doit afficher « Hello from Docker! »
 ```
 
-### 3. Configurer l'accès
+## Configurer l'accès (une seule fois)
 ```bash
 cp .env.example .env
 ```
 Puis renseigner dans `.env` :
 ```
-DB_URL=jdbc:mysql://localhost:3306/assurance
 DB_USER=assurance_user
 DB_PASSWORD=un_mot_de_passe
 ```
+Ces valeurs servent à créer l'utilisateur MySQL du conteneur et à connecter l'application. `DB_USER` ne doit **pas** être `root`.
 Le fichier `.env` n'est pas versionné : il contient les mots de passe et la clé de l'API d'IA (`AI_API_KEY`).
 
-### 4. Se connecter a la base de donnée
-```bash
-mysql -u assurance_user -p assurance
-```
-
-### 5. Charger (ou recharger) le schéma et les données de test
-Les scripts sont dans `database/` :
-- `schema.sql` : création des tables
-- `dump.sql` : données de test
-
-À faire au premier lancement, et à chaque fois que `schema.sql` ou `dump.sql` change après un `git pull`.
-
-```bash
-# 1. Repartir d'une base vide (supprime toutes les tables et données locales)
-mysql -u assurance_user -p -e "DROP DATABASE IF EXISTS assurance; CREATE DATABASE assurance CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;"
-
-# 2. Créer les tables
-mysql -u assurance_user -p assurance < database/schema.sql
-
-# 3. Insérer les données de test
-mysql -u assurance_user -p assurance < database/dump.sql
-```
-L'ordre compte : `schema.sql` d'abord, `dump.sql` ensuite.
-
-### 6. Générer les données de test (`dump.sql`)
-Deux façons de produire `dump.sql` :
-
-**a. À la main** : écrire directement les `INSERT` dans `database/dump.sql`, en respectant l'ordre des clés étrangères (d'abord les utilisateurs et les types d'assurance, puis les contrats, puis les sinistres et les paiements).
-
-**b. Export depuis sa base locale** : remplir sa base (via l'application ou MySQL Workbench / DBeaver), puis exporter uniquement les données :
-```bash
-mysqldump -u assurance_user -p --no-create-info --skip-triggers --complete-insert --no-tablespaces \
-  assurance > database/dump.sql
-```
-- `--no-create-info` : n'exporte que les données ; la structure reste dans `schema.sql`
-- `--complete-insert` : écrit le nom des colonnes dans chaque `INSERT`, plus lisible et plus robuste si une colonne est ajoutée
-- `--no-tablespaces` : évite une erreur de droits avec MySQL 8
-
-> Si vous modifiez une table, mettez à jour `schema.sql` **et** vérifiez que `dump.sql` se charge toujours dessus (étape 5) avant de pousser.
-
-## Lancer l'application (Tomcat)
-
-### Prérequis
-- Java 17 ou plus : `java -version`
-- Maven : `mvn -version`
-- Tomcat **10.1** (Servlet 6.0 / Jakarta EE 10)
-
-### 1. Installer Tomcat (une seule fois)
-```bash
-cd ~
-curl -O https://repo1.maven.org/maven2/org/apache/tomcat/tomcat/10.1.61/tomcat-10.1.61.tar.gz
-tar -xzf tomcat-10.1.61.tar.gz && rm tomcat-10.1.61.tar.gz
-```
-Tomcat est alors installé dans `~/apache-tomcat-10.1.61`.
-
-Facultatif : ajouter deux raccourcis à la fin de `~/.zshrc` (ou `~/.bashrc`), puis `source ~/.zshrc` :
-```bash
-export CATALINA_HOME="$HOME/apache-tomcat-10.1.61"
-alias tomcat-start='"$CATALINA_HOME/bin/startup.sh"'
-alias tomcat-stop='"$CATALINA_HOME/bin/shutdown.sh"'
-```
-
-### 1 bis. Donner à Tomcat l'accès à la base (une seule fois)
-Tomcat ne démarre pas depuis le dossier du projet : il ne trouve donc pas le `.env` tout seul. Créer le fichier `~/apache-tomcat-10.1.61/bin/setenv.sh` (Tomcat l'exécute à chaque démarrage), en adaptant le chemin du dépôt :
-```bash
-cat > ~/apache-tomcat-10.1.61/bin/setenv.sh <<'FIN'
-#!/bin/sh
-# Charge les variables du projet (DB_URL, DB_USER, DB_PASSWORD, AI_API_KEY)
-set -a
-. "$HOME/Documents/JEE/Project/JEE_Project_K/.env"
-set +a
-FIN
-chmod +x ~/apache-tomcat-10.1.61/bin/setenv.sh
-```
-Redémarrer Tomcat après toute modification du `.env`.
-
-### 2. Construire et déployer l'application
+## Lancer l'application
 Depuis la racine du dépôt :
 ```bash
-mvn -f jee-app/pom.xml package                               # produit jee-app/target/assurance.war
-cp jee-app/target/assurance.war ~/apache-tomcat-10.1.61/webapps/
+mvn -f jee-app/pom.xml package       # construit jee-app/target/assurance.war
+docker compose up -d --build         # construit l'image Tomcat, lance MySQL puis Tomcat
 ```
+Au premier lancement, MySQL crée automatiquement les tables (`database/schema.sql`) et insère les données de test (`database/dump.sql`).
 
-### 3. Démarrer Tomcat
-```bash
-~/apache-tomcat-10.1.61/bin/startup.sh                       # ou : tomcat-start
-```
-L'application est accessible sur **http://localhost:8080/assurance/**
+L'application est accessible sur **http://localhost:8080/**
 
-Comptes de test (créés par `dump.sql`, étape 5 de la partie base de données) :
+Comptes de test :
 
 | Rôle | Identifiant | Mot de passe |
 |---|---|---|
@@ -155,16 +92,56 @@ Comptes de test (créés par `dump.sql`, étape 5 de la partie base de données)
 | Agent | `agent` | `agent123` |
 | Client | `client` | `client123` |
 
-Après une modification du code : relancer les commandes de l'étape 2. Tomcat redéploie automatiquement le nouveau `.war`, pas besoin de le redémarrer.
+## Tuto Docker rapide
 
-### 4. Arrêter Tomcat
+| Commande | Effet |
+|---|---|
+| `docker compose up -d --build` | lance (ou relance) MySQL et Tomcat en arrière-plan |
+| `docker compose ps` | état des conteneurs |
+| `docker compose logs -f tomcat` | journaux de Tomcat en direct (`Ctrl+C` pour quitter) |
+| `docker compose down` | arrête les conteneurs, **les données sont conservées** |
+| `docker compose down -v` | arrête et **supprime la base** (repart de `schema.sql` + `dump.sql` au prochain lancement) |
+
+**Après une modification du code Java ou des JSP :**
 ```bash
-~/apache-tomcat-10.1.61/bin/shutdown.sh                      # ou : tomcat-stop
+mvn -f jee-app/pom.xml package
+docker compose up -d --build tomcat
 ```
 
-### En cas de problème
-- Les erreurs sont dans `~/apache-tomcat-10.1.61/logs/catalina.<date>.log`.
-- `Adresse déjà utilisée` dans les logs : un autre programme occupe le port 8080. Le trouver avec `ss -ltnp | grep 8080`.
-- Page 404 : vérifier l'URL (`/assurance/` à la fin) et que `assurance.war` est bien dans `webapps/`.
-- `Access denied for user` ou connexion à `assurance_db` dans les logs : Tomcat ne lit pas le `.env`. Vérifier `setenv.sh` (étape 1 bis), puis redémarrer Tomcat.
-- `Schema-validation` dans les logs : la base ne correspond pas aux entités Java. Recharger `schema.sql` et `dump.sql` (étape 5 de la partie base de données).
+**Après une modification de `schema.sql` ou `dump.sql`** (ou après un `git pull` qui les modifie) : les scripts ne sont exécutés qu'à la création de la base, il faut donc la recréer.
+```bash
+docker compose down -v
+docker compose up -d --build
+```
+
+## Base de données
+
+### Se connecter à la base
+Console MySQL dans le conteneur (le mot de passe est `DB_PASSWORD`) :
+```bash
+docker exec -it mysql_db mysql -u assurance_user -p assurance
+```
+Depuis une interface graphique (DBeaver, MySQL Workbench...) : hôte `127.0.0.1`, port **3307**, base `assurance`, identifiants du `.env`.
+
+> Le port 3307 évite le conflit avec un MySQL éventuellement installé sur la machine (3306). Utiliser `127.0.0.1` et non `localhost`.
+
+### Générer les données de test (`dump.sql`)
+Deux façons de produire `dump.sql` :
+
+**a. À la main** : écrire directement les `INSERT` dans `database/dump.sql`, en respectant l'ordre des clés étrangères (d'abord les utilisateurs et les types d'assurance, puis les contrats, puis les sinistres et les paiements).
+
+**b. Export depuis la base du conteneur** : remplir la base (via l'application ou un outil graphique), puis exporter uniquement les données :
+```bash
+docker exec mysql_db sh -c 'mysqldump -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" --no-create-info --skip-triggers --complete-insert --no-tablespaces assurance' > database/dump.sql
+```
+- `--no-create-info` : n'exporte que les données ; la structure reste dans `schema.sql`
+- `--complete-insert` : écrit le nom des colonnes dans chaque `INSERT`, plus lisible et plus robuste si une colonne est ajoutée
+- `--no-tablespaces` : évite une erreur de droits avec MySQL 8
+
+> Si vous modifiez une table, mettez à jour `schema.sql` **et** vérifiez que `dump.sql` se charge toujours dessus (`docker compose down -v` puis `up`) avant de pousser.
+
+## En cas de problème
+- `permission denied while trying to connect to the docker API` : la session n'a pas encore le groupe `docker`. Se déconnecter puis se reconnecter.
+- `port is already allocated` : un autre programme utilise le port 8080 ou 3307 (par exemple un Tomcat installé localement). Le trouver avec `ss -ltnp | grep 8080`.
+- `assurance.war: not found` pendant le `build` : lancer d'abord `mvn -f jee-app/pom.xml package`.
+- `Access denied for user` ou `Schema-validation` dans `docker compose logs tomcat` : la base ne correspond pas au `.env` ou à `schema.sql`. La recréer avec `docker compose down -v` puis `docker compose up -d --build`.
