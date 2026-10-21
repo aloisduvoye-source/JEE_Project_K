@@ -14,6 +14,9 @@
       Bonjour <c:out value="${sessionScope.utilisateur.nom} ${sessionScope.utilisateur.prenom}"/>,
       vous êtes connecté en tant que <c:out value="${sessionScope.utilisateur.role}"/>
     </p>
+    <form method="post" action="${pageContext.request.contextPath}/deconnexion">
+      <button type="submit">Se déconnecter</button>
+    </form>
   </c:if>
 
   <c:if test="${empty sessionScope.utilisateur}">
