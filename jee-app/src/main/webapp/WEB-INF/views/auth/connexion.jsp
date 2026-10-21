@@ -13,6 +13,7 @@
         <input type="password" name="motDePasse">
         <button type="submit">Se Connecter</button>
     </form>
+    <p>Pas encore de compte ? <a href="${pageContext.request.contextPath}/inscription">Créer un compte</a></p>
 
 </body>
 </html>
