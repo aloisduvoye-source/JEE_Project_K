@@ -5,6 +5,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityTransaction;
 
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 /**
@@ -54,6 +55,18 @@ public abstract class GenericDao<T> {
                 em.remove(entite);
             }
             return null;
+        });
+    }
+
+    // Modifie seulement ce que fait "modification" : l'entité est chargée dans la transaction,
+    // et Hibernate enregistre les changements au commit (contrairement à merge, rien d'autre n'est écrasé)
+    // Renvoie false si aucune entité n'a cet id
+    protected boolean mettreAJour(Long id, Consumer<T> modification) {
+        return enTransaction(em -> {
+            T entite = em.find(classe, id);
+            if (entite == null) {return false;}
+            modification.accept(entite);
+            return true;
         });
     }
 
