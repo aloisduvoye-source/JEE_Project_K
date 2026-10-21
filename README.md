@@ -13,14 +13,15 @@ jee-app/                 Version 1 : Servlets + JSP + Hibernate/JDBC (Tomcat)
     model/               Entités (Client, Contrat, Garantie, Sinistre, Paiement, ...)
     model/enums/         Statuts (StatutContrat, StatutSinistre, ...) et rôles
     dao/                 Accès aux données (Hibernate / JDBC)
-    service/             Logique métier
+    service/             Logique métier (règles, hachage des mots de passe...), appelée par les servlets
     controller/          Servlets
-    filter/              Filtres (authentification, contrôle des rôles)
+    filter/              Filtre d'accès par rôle (RoleFiltre)
+    exception/           Exceptions métier (ex. UtilisateurDejaExistantException)
     ai/                  Client de l'API d'IA (assistant)
-    util/                Outils partagés (validation des saisies, config Hibernate, ...)
-  src/main/resources/    hibernate.cfg.xml, fichiers de configuration
+    util/                Outils partagés (validation des saisies, connexion JPA, ...)
+  src/main/resources/    META-INF/persistence.xml (configuration Hibernate / JPA)
   src/main/webapp/
-    WEB-INF/views/       JSP par profil : auth/, client/, agent/, admin/, common/
+    WEB-INF/views/       JSP par profil : auth/, compte/, client/, agent/, admin/, common/
     assets/              css/, js/, img/
 ```
 
