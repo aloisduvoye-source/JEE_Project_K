@@ -11,7 +11,6 @@ import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.IOException;
@@ -142,13 +141,7 @@ public class InscriptionServlet extends HttpServlet {
             return;
         }
 
-        // Connexion directe après l'inscription, avec une nouvelle session
-        HttpSession ancienne = request.getSession(false);
-        if (ancienne != null) {
-            ancienne.invalidate();
-        }
-        request.getSession(true).setAttribute("utilisateur", utilisateur);
-
+        // Pas de connexion automatique : le client se connecte ensuite avec ses identifiants
         response.sendRedirect(request.getContextPath() + "/");
     }
 
