@@ -31,12 +31,12 @@
             <!-- Dialecte Hibernate pour MySQL -->
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
 
-            <!-- 
-              Génération automatique du schéma de base de données :
-              - 'update' met à jour les tables sans supprimer les données (recommandé en dev)
-              - 'create' recrée les tables à chaque lancement
+            <!--
+              Les tables sont créées par database/schema.sql (et remplies par dump.sql).
+              'validate' vérifie au démarrage que les entités correspondent aux tables, sans rien modifier.
+              Ne pas mettre 'create' : cela effacerait la base à chaque lancement.
             -->
-            <property name="hibernate.hbm2ddl.auto" value="create"/>
+            <property name="hibernate.hbm2ddl.auto" value="validate"/>
 
             <!-- Afficher les requêtes SQL dans la console pour déboguer -->
             <property name="hibernate.show_sql" value="true"/>
