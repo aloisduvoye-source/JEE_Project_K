@@ -57,9 +57,9 @@ JOIN garantie g ON (t.nom, g.nom) IN (
 -- ============================================================
 
 INSERT INTO utilisateur (nom, prenom, email, identifiant, mot_de_passe_hash, role) VALUES
-    ('Martin',   'Claire', 'admin@assurance.test',  'admin',  '$2a$10$YFm72JBvHF.Urp1.v8ahluVoPj4MoE1mCJ.npHdJ6HuRb257QDIrm', 'ADMIN'),
-    ('Durand',   'Thomas', 'agent@assurance.test',  'agent',  '$2a$10$DgbZOJRickHvG7BFnh2VYuLrTojN9RvaspLF05n8hUfJjGZTtNzcG', 'AGENT'),
-    ('Lefebvre', 'Sophie', 'client@assurance.test', 'client', '$2a$10$dY4/HgDLEQ79PZ.8LnQMjuQOi5FwQnjrGFR2bNAbibWn3el3pOK/C', 'CLIENT');
+    ('Doe',     'John', 'jdoe@assurance.test',      'admin',  '$2a$10$YFm72JBvHF.Urp1.v8ahluVoPj4MoE1mCJ.npHdJ6HuRb257QDIrm', 'ADMIN'),     -- mot de passe : admin123
+    ('Marx',    'Karl', 'kmarx@assurance.test',     'agent',  '$2a$10$DgbZOJRickHvG7BFnh2VYuLrTojN9RvaspLF05n8hUfJjGZTtNzcG', 'AGENT'),     -- mot de passe : agent123
+    ('Bill',    'Bob',  'bbill@assurance.test',     'client', '$2a$10$dY4/HgDLEQ79PZ.8LnQMjuQOi5FwQnjrGFR2bNAbibWn3el3pOK/C', 'CLIENT');    -- mot de passe : client123
 
 -- Le compte CLIENT a aussi sa fiche client
 INSERT INTO client (id_utilisateur, telephone, adresse, date_naissance)
