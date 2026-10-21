@@ -1,14 +1,14 @@
 package fr.cytech.assurance.controller;
 
-import fr.cytech.assurance.dao.UtilisateurDao;
+import fr.cytech.assurance.exception.AuthentificationException;
 import fr.cytech.assurance.model.Utilisateur;
+import fr.cytech.assurance.service.UtilisateurService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
-import org.mindrot.jbcrypt.BCrypt;
 
 import java.io.IOException;
 
@@ -17,7 +17,7 @@ public class ConnexionServlet extends HttpServlet {
 
     private static final String VUE = "/WEB-INF/views/auth/connexion.jsp";
 
-    private final UtilisateurDao utilisateurDao = new UtilisateurDao();
+    private final UtilisateurService utilisateurService = new UtilisateurService();
 
     // Affiche le formulaire
     @Override
@@ -33,22 +33,14 @@ public class ConnexionServlet extends HttpServlet {
         String identifiant = request.getParameter("identifiant");
         String motDePasse = request.getParameter("motDePasse");
 
-        String erreur = null;
-        Utilisateur utilisateur = null;
-        if (identifiant == null || identifiant.isBlank() || motDePasse == null || motDePasse.isEmpty()) {
-            erreur = "Veuillez remplir tous les champs.";
-        } else {
-            utilisateur = utilisateurDao.trouverParIdentifiant(identifiant.trim());
-            // Même message que l'identifiant ou le mot de passe soit faux : on ne révèle pas lequel
-            if (utilisateur == null || !BCrypt.checkpw(motDePasse, utilisateur.getMotDePasseHash())) {
-                erreur = "Identifiant ou mot de passe incorrect.";
-            } else if (!utilisateur.isActif()) {
-                erreur = "Ce compte est désactivé.";
+        Utilisateur utilisateur;
+        try {
+            if (identifiant == null || identifiant.isBlank() || motDePasse == null || motDePasse.isEmpty()) {
+                throw new AuthentificationException("Veuillez remplir tous les champs.");
             }
-        }
-
-        if (erreur != null) {
-            request.setAttribute("erreur", erreur);
+            utilisateur = utilisateurService.authentifier(identifiant.trim(), motDePasse);
+        } catch (AuthentificationException e) {
+            request.setAttribute("erreur", e.getMessage());
             request.getRequestDispatcher(VUE).forward(request, response);
             return;
         }
