@@ -46,39 +46,13 @@ public class MessageAssistant {
     public MessageAssistant() {
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Utilisateur getUtilisateur() {
-        return utilisateur;
-    }
-
-    public void setUtilisateur(Utilisateur utilisateur) {
-        this.utilisateur = utilisateur;
-    }
-
-    public AuteurMessage getAuteur() {
-        return auteur;
-    }
-
-    public void setAuteur(AuteurMessage auteur) {
-        this.auteur = auteur;
-    }
-
-    public String getContenu() {
-        return contenu;
-    }
-
-    public void setContenu(String contenu) {
-        this.contenu = contenu;
-    }
-
-    public LocalDateTime getDateMessage() {
-        return dateMessage;
-    }
+    public Long getId() {return id;}
+    public void setId(Long id) {this.id = id;}
+    public Utilisateur getUtilisateur() {return utilisateur;}
+    public void setUtilisateur(Utilisateur utilisateur) {this.utilisateur = utilisateur;}
+    public AuteurMessage getAuteur() {return auteur;}
+    public void setAuteur(AuteurMessage auteur) {this.auteur = auteur;}
+    public String getContenu() {return contenu;}
+    public void setContenu(String contenu) {this.contenu = contenu;}
+    public LocalDateTime getDateMessage() {return dateMessage;}
 }

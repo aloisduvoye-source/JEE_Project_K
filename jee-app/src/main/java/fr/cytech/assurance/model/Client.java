@@ -40,43 +40,14 @@ public class Client {
     public Client() {
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Utilisateur getUtilisateur() {
-        return utilisateur;
-    }
-
-    public void setUtilisateur(Utilisateur utilisateur) {
-        this.utilisateur = utilisateur;
-    }
-
-    public String getTelephone() {
-        return telephone;
-    }
-
-    public void setTelephone(String telephone) {
-        this.telephone = telephone;
-    }
-
-    public String getAdresse() {
-        return adresse;
-    }
-
-    public void setAdresse(String adresse) {
-        this.adresse = adresse;
-    }
-
-    public LocalDate getDateNaissance() {
-        return dateNaissance;
-    }
-
-    public void setDateNaissance(LocalDate dateNaissance) {
-        this.dateNaissance = dateNaissance;
-    }
+    public Long getId() {return id;}
+    public void setId(Long id) {this.id = id;}
+    public Utilisateur getUtilisateur() {return utilisateur;}
+    public void setUtilisateur(Utilisateur utilisateur) {this.utilisateur = utilisateur;}
+    public String getTelephone() {return telephone;}
+    public void setTelephone(String telephone) {this.telephone = telephone;}
+    public String getAdresse() {return adresse;}
+    public void setAdresse(String adresse) {this.adresse = adresse;}
+    public LocalDate getDateNaissance() {return dateNaissance;}
+    public void setDateNaissance(LocalDate dateNaissance) {this.dateNaissance = dateNaissance;}
 }

@@ -45,47 +45,15 @@ public class PieceJustificative {
     public PieceJustificative() {
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Sinistre getSinistre() {
-        return sinistre;
-    }
-
-    public void setSinistre(Sinistre sinistre) {
-        this.sinistre = sinistre;
-    }
-
-    public String getNomFichier() {
-        return nomFichier;
-    }
-
-    public void setNomFichier(String nomFichier) {
-        this.nomFichier = nomFichier;
-    }
-
-    public String getChemin() {
-        return chemin;
-    }
-
-    public void setChemin(String chemin) {
-        this.chemin = chemin;
-    }
-
-    public String getTypeMime() {
-        return typeMime;
-    }
-
-    public void setTypeMime(String typeMime) {
-        this.typeMime = typeMime;
-    }
-
-    public LocalDateTime getDateAjout() {
-        return dateAjout;
-    }
+    public Long getId() {return id;}
+    public void setId(Long id) {this.id = id;}
+    public Sinistre getSinistre() {return sinistre;}
+    public void setSinistre(Sinistre sinistre) {this.sinistre = sinistre;}
+    public String getNomFichier() {return nomFichier;}
+    public void setNomFichier(String nomFichier) {this.nomFichier = nomFichier;}
+    public String getChemin() {return chemin;}
+    public void setChemin(String chemin) {this.chemin = chemin;}
+    public String getTypeMime() {return typeMime;}
+    public void setTypeMime(String typeMime) {this.typeMime = typeMime;}
+    public LocalDateTime getDateAjout() {return dateAjout;}
 }

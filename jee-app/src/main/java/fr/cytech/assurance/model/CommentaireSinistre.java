@@ -42,39 +42,13 @@ public class CommentaireSinistre {
     public CommentaireSinistre() {
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Sinistre getSinistre() {
-        return sinistre;
-    }
-
-    public void setSinistre(Sinistre sinistre) {
-        this.sinistre = sinistre;
-    }
-
-    public Utilisateur getAuteur() {
-        return auteur;
-    }
-
-    public void setAuteur(Utilisateur auteur) {
-        this.auteur = auteur;
-    }
-
-    public String getContenu() {
-        return contenu;
-    }
-
-    public void setContenu(String contenu) {
-        this.contenu = contenu;
-    }
-
-    public LocalDateTime getDateCommentaire() {
-        return dateCommentaire;
-    }
+    public Long getId() {return id;}
+    public void setId(Long id) {this.id = id;}
+    public Sinistre getSinistre() {return sinistre;}
+    public void setSinistre(Sinistre sinistre) {this.sinistre = sinistre;}
+    public Utilisateur getAuteur() {return auteur;}
+    public void setAuteur(Utilisateur auteur) {this.auteur = auteur;}
+    public String getContenu() {return contenu;}
+    public void setContenu(String contenu) {this.contenu = contenu;}
+    public LocalDateTime getDateCommentaire() {return dateCommentaire;}
 }
