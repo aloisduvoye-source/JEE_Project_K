@@ -5,10 +5,23 @@ services:
     environment:
       MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
       MYSQL_DATABASE: assurance
+      # Utilisateur de l'application (celui du .env) : créé avec tous les droits sur la base "assurance"
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "3306:3306"
+      # 3307 côté machine pour ne pas entrer en conflit avec un MySQL déjà installé (3306)
+      - "3307:3306"
     volumes:
       - db_data:/var/lib/mysql
+      # Exécutés automatiquement, dans l'ordre, à la première création de la base
+      # (après une modification : docker compose down -v pour repartir d'une base neuve)
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql:ro
+      - ./database/dump.sql:/docker-entrypoint-initdb.d/2-dump.sql:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
 
   tomcat:
     build: .
@@ -16,12 +29,15 @@ services:
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      # Attend que MySQL soit prêt (et pas seulement démarré)
+      db:
+        condition: service_healthy
     environment:
-      - DB_HOST=db
-      - DB_NAME=assurance
+      # Dans le conteneur, la base est joignable par le nom du service "db", pas par localhost
+      - DB_URL=jdbc:mysql://db:3306/assurance
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
+      - AI_API_KEY=${AI_API_KEY}
 
 volumes:
   db_data:
