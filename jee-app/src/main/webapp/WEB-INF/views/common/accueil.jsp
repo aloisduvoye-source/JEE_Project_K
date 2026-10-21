@@ -9,6 +9,13 @@
 <body>
   <h1>Hello World</h1>
 
+  <c:if test="${not empty sessionScope.utilisateur}">
+    <p>
+      Bonjour <c:out value="${sessionScope.utilisateur.nom} ${sessionScope.utilisateur.prenom}"/>,
+      vous êtes connecté en tant que <c:out value="${sessionScope.utilisateur.role}"/>
+    </p>
+  </c:if>
+
   <c:if test="${empty sessionScope.utilisateur}">
     <form method="get" action="${pageContext.request.contextPath}/connexion">
       <button type="submit">Se connecter</button>
