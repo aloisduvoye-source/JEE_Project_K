@@ -49,59 +49,18 @@ public class Paiement {
     public Paiement() {
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Contrat getContrat() {
-        return contrat;
-    }
-
-    public void setContrat(Contrat contrat) {
-        this.contrat = contrat;
-    }
-
-    public BigDecimal getMontant() {
-        return montant;
-    }
-
-    public void setMontant(BigDecimal montant) {
-        this.montant = montant;
-    }
-
-    public LocalDate getDateEcheance() {
-        return dateEcheance;
-    }
-
-    public void setDateEcheance(LocalDate dateEcheance) {
-        this.dateEcheance = dateEcheance;
-    }
-
-    public LocalDate getDatePaiement() {
-        return datePaiement;
-    }
-
-    public void setDatePaiement(LocalDate datePaiement) {
-        this.datePaiement = datePaiement;
-    }
-
-    public ModePaiement getModePaiement() {
-        return modePaiement;
-    }
-
-    public void setModePaiement(ModePaiement modePaiement) {
-        this.modePaiement = modePaiement;
-    }
-
-    public StatutPaiement getStatut() {
-        return statut;
-    }
-
-    public void setStatut(StatutPaiement statut) {
-        this.statut = statut;
-    }
+    public Long getId() {return id;}
+    public void setId(Long id) {this.id = id;}
+    public Contrat getContrat() {return contrat;}
+    public void setContrat(Contrat contrat) {this.contrat = contrat;}
+    public BigDecimal getMontant() {return montant;}
+    public void setMontant(BigDecimal montant) {this.montant = montant;}
+    public LocalDate getDateEcheance() {return dateEcheance;}
+    public void setDateEcheance(LocalDate dateEcheance) {this.dateEcheance = dateEcheance;}
+    public LocalDate getDatePaiement() {return datePaiement;}
+    public void setDatePaiement(LocalDate datePaiement) {this.datePaiement = datePaiement;}
+    public ModePaiement getModePaiement() {return modePaiement;}
+    public void setModePaiement(ModePaiement modePaiement) {this.modePaiement = modePaiement;}
+    public StatutPaiement getStatut() {return statut;}
+    public void setStatut(StatutPaiement statut) {this.statut = statut;}
 }

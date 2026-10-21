@@ -43,43 +43,14 @@ public class TypeAssurance {
     public TypeAssurance() {
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNom() {
-        return nom;
-    }
-
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getPrixBase() {
-        return prixBase;
-    }
-
-    public void setPrixBase(BigDecimal prixBase) {
-        this.prixBase = prixBase;
-    }
-
-    public Set<Garantie> getGaranties() {
-        return garanties;
-    }
-
-    public void setGaranties(Set<Garantie> garanties) {
-        this.garanties = garanties;
-    }
+    public Long getId() {return id;}
+    public void setId(Long id) {this.id = id;}
+    public String getNom() {return nom;}
+    public void setNom(String nom) {this.nom = nom;}
+    public String getDescription() {return description;}
+    public void setDescription(String description) {this.description = description;}
+    public BigDecimal getPrixBase() {return prixBase;}
+    public void setPrixBase(BigDecimal prixBase) {this.prixBase = prixBase;}
+    public Set<Garantie> getGaranties() {return garanties;}
+    public void setGaranties(Set<Garantie> garanties) {this.garanties = garanties;}
 }

@@ -75,99 +75,28 @@ public class Contrat {
     public Contrat() {
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Client getClient() {
-        return client;
-    }
-
-    public void setClient(Client client) {
-        this.client = client;
-    }
-
-    public TypeAssurance getTypeAssurance() {
-        return typeAssurance;
-    }
-
-    public void setTypeAssurance(TypeAssurance typeAssurance) {
-        this.typeAssurance = typeAssurance;
-    }
-
-    public Long getNumero() {
-        return numero;
-    }
-
-    public void setNumero(Long numero) {
-        this.numero = numero;
-    }
-
-    public LocalDate getDateDebut() {
-        return dateDebut;
-    }
-
-    public void setDateDebut(LocalDate dateDebut) {
-        this.dateDebut = dateDebut;
-    }
-
-    public LocalDate getDateFin() {
-        return dateFin;
-    }
-
-    public void setDateFin(LocalDate dateFin) {
-        this.dateFin = dateFin;
-    }
-
-    public BigDecimal getPrime() {
-        return prime;
-    }
-
-    public void setPrime(BigDecimal prime) {
-        this.prime = prime;
-    }
-
-    public StatutContrat getStatut() {
-        return statut;
-    }
-
-    public void setStatut(StatutContrat statut) {
-        this.statut = statut;
-    }
-
-    public LocalDate getDateResiliation() {
-        return dateResiliation;
-    }
-
-    public void setDateResiliation(LocalDate dateResiliation) {
-        this.dateResiliation = dateResiliation;
-    }
-
-    public String getMotifResiliation() {
-        return motifResiliation;
-    }
-
-    public void setMotifResiliation(String motifResiliation) {
-        this.motifResiliation = motifResiliation;
-    }
-
-    public Contrat getContratPrecedent() {
-        return contratPrecedent;
-    }
-
-    public void setContratPrecedent(Contrat contratPrecedent) {
-        this.contratPrecedent = contratPrecedent;
-    }
-
-    public Set<Garantie> getGaranties() {
-        return garanties;
-    }
-
-    public void setGaranties(Set<Garantie> garanties) {
-        this.garanties = garanties;
-    }
+    public Long getId() {return id;}
+    public void setId(Long id) {this.id = id;}
+    public Client getClient() {return client;}
+    public void setClient(Client client) {this.client = client;}
+    public TypeAssurance getTypeAssurance() {return typeAssurance;}
+    public void setTypeAssurance(TypeAssurance typeAssurance) {this.typeAssurance = typeAssurance;}
+    public Long getNumero() {return numero;}
+    public void setNumero(Long numero) {this.numero = numero;}
+    public LocalDate getDateDebut() {return dateDebut;}
+    public void setDateDebut(LocalDate dateDebut) {this.dateDebut = dateDebut;}
+    public LocalDate getDateFin() {return dateFin;}
+    public void setDateFin(LocalDate dateFin) {this.dateFin = dateFin;}
+    public BigDecimal getPrime() {return prime;}
+    public void setPrime(BigDecimal prime) {this.prime = prime;}
+    public StatutContrat getStatut() {return statut;}
+    public void setStatut(StatutContrat statut) {this.statut = statut;}
+    public LocalDate getDateResiliation() {return dateResiliation;}
+    public void setDateResiliation(LocalDate dateResiliation) {this.dateResiliation = dateResiliation;}
+    public String getMotifResiliation() {return motifResiliation;}
+    public void setMotifResiliation(String motifResiliation) {this.motifResiliation = motifResiliation;}
+    public Contrat getContratPrecedent() {return contratPrecedent;}
+    public void setContratPrecedent(Contrat contratPrecedent) {this.contratPrecedent = contratPrecedent;}
+    public Set<Garantie> getGaranties() {return garanties;}
+    public void setGaranties(Set<Garantie> garanties) {this.garanties = garanties;}
 }

@@ -74,95 +74,27 @@ public class Sinistre {
     public Sinistre() {
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Contrat getContrat() {
-        return contrat;
-    }
-
-    public void setContrat(Contrat contrat) {
-        this.contrat = contrat;
-    }
-
-    public Long getNumero() {
-        return numero;
-    }
-
-    public void setNumero(Long numero) {
-        this.numero = numero;
-    }
-
-    public LocalDate getDateSinistre() {
-        return dateSinistre;
-    }
-
-    public void setDateSinistre(LocalDate dateSinistre) {
-        this.dateSinistre = dateSinistre;
-    }
-
-    public LocalDateTime getDateDeclaration() {
-        return dateDeclaration;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public TypeSinistre getTypeSinistre() {
-        return typeSinistre;
-    }
-
-    public void setTypeSinistre(TypeSinistre typeSinistre) {
-        this.typeSinistre = typeSinistre;
-    }
-
-    public BigDecimal getMontantEstime() {
-        return montantEstime;
-    }
-
-    public void setMontantEstime(BigDecimal montantEstime) {
-        this.montantEstime = montantEstime;
-    }
-
-    public StatutSinistre getStatut() {
-        return statut;
-    }
-
-    public void setStatut(StatutSinistre statut) {
-        this.statut = statut;
-    }
-
-    public BigDecimal getMontantIndemnisation() {
-        return montantIndemnisation;
-    }
-
-    public void setMontantIndemnisation(BigDecimal montantIndemnisation) {
-        this.montantIndemnisation = montantIndemnisation;
-    }
-
-    public LocalDate getDateIndemnisation() {
-        return dateIndemnisation;
-    }
-
-    public void setDateIndemnisation(LocalDate dateIndemnisation) {
-        this.dateIndemnisation = dateIndemnisation;
-    }
-
-    public Utilisateur getAgent() {
-        return agent;
-    }
-
-    public void setAgent(Utilisateur agent) {
-        this.agent = agent;
-    }
+    public Long getId() {return id;}
+    public void setId(Long id) {this.id = id;}
+    public Contrat getContrat() {return contrat;}
+    public void setContrat(Contrat contrat) {this.contrat = contrat;}
+    public Long getNumero() {return numero;}
+    public void setNumero(Long numero) {this.numero = numero;}
+    public LocalDate getDateSinistre() {return dateSinistre;}
+    public void setDateSinistre(LocalDate dateSinistre) {this.dateSinistre = dateSinistre;}
+    public LocalDateTime getDateDeclaration() {return dateDeclaration;}
+    public String getDescription() {return description;}
+    public void setDescription(String description) {this.description = description;}
+    public TypeSinistre getTypeSinistre() {return typeSinistre;}
+    public void setTypeSinistre(TypeSinistre typeSinistre) {this.typeSinistre = typeSinistre;}
+    public BigDecimal getMontantEstime() {return montantEstime;}
+    public void setMontantEstime(BigDecimal montantEstime) {this.montantEstime = montantEstime;}
+    public StatutSinistre getStatut() {return statut;}
+    public void setStatut(StatutSinistre statut) {this.statut = statut;}
+    public BigDecimal getMontantIndemnisation() {return montantIndemnisation;}
+    public void setMontantIndemnisation(BigDecimal montantIndemnisation) {this.montantIndemnisation = montantIndemnisation;}
+    public LocalDate getDateIndemnisation() {return dateIndemnisation;}
+    public void setDateIndemnisation(LocalDate dateIndemnisation) {this.dateIndemnisation = dateIndemnisation;}
+    public Utilisateur getAgent() {return agent;}
+    public void setAgent(Utilisateur agent) {this.agent = agent;}
 }

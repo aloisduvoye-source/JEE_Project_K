@@ -35,43 +35,14 @@ public class Garantie {
     public Garantie() {
     }
 
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public String getNom() {
-        return nom;
-    }
-
-    public void setNom(String nom) {
-        this.nom = nom;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public BigDecimal getPlafond() {
-        return plafond;
-    }
-
-    public void setPlafond(BigDecimal plafond) {
-        this.plafond = plafond;
-    }
-
-    public BigDecimal getFranchise() {
-        return franchise;
-    }
-
-    public void setFranchise(BigDecimal franchise) {
-        this.franchise = franchise;
-    }
+    public Long getId() {return id;}
+    public void setId(Long id) {this.id = id;}
+    public String getNom() {return nom;}
+    public void setNom(String nom) {this.nom = nom;}
+    public String getDescription() {return description;}
+    public void setDescription(String description) {this.description = description;}
+    public BigDecimal getPlafond() {return plafond;}
+    public void setPlafond(BigDecimal plafond) {this.plafond = plafond;}
+    public BigDecimal getFranchise() {return franchise;}
+    public void setFranchise(BigDecimal franchise) {this.franchise = franchise;}
 }
