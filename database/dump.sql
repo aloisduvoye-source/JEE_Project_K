@@ -49,3 +49,19 @@ JOIN garantie g ON (t.nom, g.nom) IN (
     ('Assurance professionnelle', 'Dégâts des eaux'),
     ('Assurance professionnelle', 'Accident')
 );
+
+-- ============================================================
+-- Comptes de test (un par rôle) : NE PAS utiliser en production
+--   identifiant / mot de passe :  admin / admin123,  agent / agent123,  client / client123
+-- Les mots de passe sont stockés hachés avec BCrypt
+-- ============================================================
+
+INSERT INTO utilisateur (nom, prenom, email, identifiant, mot_de_passe_hash, role) VALUES
+    ('Martin',   'Claire', 'admin@assurance.test',  'admin',  '$2a$10$YFm72JBvHF.Urp1.v8ahluVoPj4MoE1mCJ.npHdJ6HuRb257QDIrm', 'ADMIN'),
+    ('Durand',   'Thomas', 'agent@assurance.test',  'agent',  '$2a$10$DgbZOJRickHvG7BFnh2VYuLrTojN9RvaspLF05n8hUfJjGZTtNzcG', 'AGENT'),
+    ('Lefebvre', 'Sophie', 'client@assurance.test', 'client', '$2a$10$dY4/HgDLEQ79PZ.8LnQMjuQOi5FwQnjrGFR2bNAbibWn3el3pOK/C', 'CLIENT');
+
+-- Le compte CLIENT a aussi sa fiche client
+INSERT INTO client (id_utilisateur, telephone, adresse, date_naissance)
+SELECT id, '0601020304', '12 rue des Lilas, 95000 Cergy', '1990-05-14'
+FROM utilisateur WHERE identifiant = 'client';
