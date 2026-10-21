@@ -122,6 +122,20 @@ alias tomcat-start='"$CATALINA_HOME/bin/startup.sh"'
 alias tomcat-stop='"$CATALINA_HOME/bin/shutdown.sh"'
 ```
 
+### 1 bis. Donner à Tomcat l'accès à la base (une seule fois)
+Tomcat ne démarre pas depuis le dossier du projet : il ne trouve donc pas le `.env` tout seul. Créer le fichier `~/apache-tomcat-10.1.61/bin/setenv.sh` (Tomcat l'exécute à chaque démarrage), en adaptant le chemin du dépôt :
+```bash
+cat > ~/apache-tomcat-10.1.61/bin/setenv.sh <<'FIN'
+#!/bin/sh
+# Charge les variables du projet (DB_URL, DB_USER, DB_PASSWORD, AI_API_KEY)
+set -a
+. "$HOME/Documents/JEE/Project/JEE_Project_K/.env"
+set +a
+FIN
+chmod +x ~/apache-tomcat-10.1.61/bin/setenv.sh
+```
+Redémarrer Tomcat après toute modification du `.env`.
+
 ### 2. Construire et déployer l'application
 Depuis la racine du dépôt :
 ```bash
@@ -135,6 +149,14 @@ cp jee-app/target/assurance.war ~/apache-tomcat-10.1.61/webapps/
 ```
 L'application est accessible sur **http://localhost:8080/assurance/**
 
+Comptes de test (créés par `dump.sql`, étape 5 de la partie base de données) :
+
+| Rôle | Identifiant | Mot de passe |
+|---|---|---|
+| Administrateur | `admin` | `admin123` |
+| Agent | `agent` | `agent123` |
+| Client | `client` | `client123` |
+
 Après une modification du code : relancer les commandes de l'étape 2. Tomcat redéploie automatiquement le nouveau `.war`, pas besoin de le redémarrer.
 
 ### 4. Arrêter Tomcat
@@ -146,3 +168,5 @@ Après une modification du code : relancer les commandes de l'étape 2. Tomcat r
 - Les erreurs sont dans `~/apache-tomcat-10.1.61/logs/catalina.<date>.log`.
 - `Adresse déjà utilisée` dans les logs : un autre programme occupe le port 8080. Le trouver avec `ss -ltnp | grep 8080`.
 - Page 404 : vérifier l'URL (`/assurance/` à la fin) et que `assurance.war` est bien dans `webapps/`.
+- `Access denied for user` ou connexion à `assurance_db` dans les logs : Tomcat ne lit pas le `.env`. Vérifier `setenv.sh` (étape 1 bis), puis redémarrer Tomcat.
+- `Schema-validation` dans les logs : la base ne correspond pas aux entités Java. Recharger `schema.sql` et `dump.sql` (étape 5 de la partie base de données).
