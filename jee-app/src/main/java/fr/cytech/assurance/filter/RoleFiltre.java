@@ -2,13 +2,13 @@ package fr.cytech.assurance.filter;
 
 import fr.cytech.assurance.model.Utilisateur;
 import fr.cytech.assurance.model.enums.Role;
+import fr.cytech.assurance.util.SessionUtilisateur;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebFilter;
 import jakarta.servlet.http.HttpFilter;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 import java.util.Set;
@@ -28,8 +28,7 @@ public class RoleFiltre extends HttpFilter {
     @Override
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
-        HttpSession session = request.getSession(false);
-        Utilisateur utilisateur = session == null ? null : (Utilisateur) session.getAttribute("utilisateur");
+        Utilisateur utilisateur = SessionUtilisateur.connecte(request);
 
         if (utilisateur == null) {
             response.sendRedirect(request.getContextPath() + "/connexion");

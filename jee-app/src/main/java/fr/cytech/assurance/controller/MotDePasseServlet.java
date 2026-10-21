@@ -3,6 +3,7 @@ package fr.cytech.assurance.controller;
 import fr.cytech.assurance.exception.MotDePasseIncorrectException;
 import fr.cytech.assurance.model.Utilisateur;
 import fr.cytech.assurance.service.UtilisateurService;
+import fr.cytech.assurance.util.SessionUtilisateur;
 import fr.cytech.assurance.util.Validateur;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -31,7 +32,7 @@ public class MotDePasseServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        Utilisateur connecte = (Utilisateur) request.getSession().getAttribute("utilisateur");
+        Utilisateur connecte = SessionUtilisateur.connecte(request);
         String actuel = request.getParameter("actuel");
         String nouveau = request.getParameter("nouveau");
         String confirmation = request.getParameter("confirmation");

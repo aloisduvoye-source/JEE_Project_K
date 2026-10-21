@@ -3,12 +3,12 @@ package fr.cytech.assurance.controller;
 import fr.cytech.assurance.exception.AuthentificationException;
 import fr.cytech.assurance.model.Utilisateur;
 import fr.cytech.assurance.service.UtilisateurService;
+import fr.cytech.assurance.util.SessionUtilisateur;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.http.HttpSession;
 
 import java.io.IOException;
 
@@ -45,12 +45,7 @@ public class ConnexionServlet extends HttpServlet {
             return;
         }
 
-        // Nouvelle session à chaque connexion (protège contre la fixation de session)
-        HttpSession ancienne = request.getSession(false);
-        if (ancienne != null) {
-            ancienne.invalidate();
-        }
-        request.getSession(true).setAttribute("utilisateur", utilisateur);
+        SessionUtilisateur.connecter(request, utilisateur);
 
         // Chacun arrive directement dans l'espace de son rôle
         response.sendRedirect(request.getContextPath() + utilisateur.getRole().getAccueil());

@@ -3,6 +3,7 @@ package fr.cytech.assurance.controller;
 import fr.cytech.assurance.exception.UtilisateurDejaExistantException;
 import fr.cytech.assurance.model.Utilisateur;
 import fr.cytech.assurance.service.UtilisateurService;
+import fr.cytech.assurance.util.SessionUtilisateur;
 import fr.cytech.assurance.util.Validateur;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -24,7 +25,7 @@ public class ProfilServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        Utilisateur connecte = (Utilisateur) request.getSession().getAttribute("utilisateur");
+        Utilisateur connecte = SessionUtilisateur.connecte(request);
         Utilisateur utilisateur = utilisateurService.trouverParId(connecte.getId());
         request.setAttribute("nom", utilisateur.getNom());
         request.setAttribute("prenom", utilisateur.getPrenom());
@@ -37,7 +38,7 @@ public class ProfilServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         // L'id vient de la session, jamais du formulaire : on ne peut modifier que son propre compte
-        Utilisateur connecte = (Utilisateur) request.getSession().getAttribute("utilisateur");
+        Utilisateur connecte = SessionUtilisateur.connecte(request);
         String nom = Validateur.nettoyer(request.getParameter("nom"));
         String prenom = Validateur.nettoyer(request.getParameter("prenom"));
         String email = Validateur.nettoyer(request.getParameter("email"));
@@ -66,7 +67,7 @@ public class ProfilServlet extends HttpServlet {
         }
 
         // Met la session à jour pour que les pages affichent le nouveau nom
-        request.getSession().setAttribute("utilisateur", utilisateurService.trouverParId(connecte.getId()));
+        SessionUtilisateur.mettreAJour(request, utilisateurService.trouverParId(connecte.getId()));
 
         response.sendRedirect(request.getContextPath() + "/compte?succes=profil");
     }
