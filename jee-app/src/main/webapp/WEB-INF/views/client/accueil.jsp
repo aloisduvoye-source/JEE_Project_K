@@ -14,7 +14,8 @@
   <nav>
     <a href="#contrats">Mes contrats</a> |
     <a href="#garanties">Mes garanties</a> |
-    <a href="#paiements">Mes paiements</a>
+    <a href="#paiements">Mes paiements</a> |
+    <a href="#sinistres">Mes sinistres</a>
   </nav>
 
   <section id="contrats">
@@ -91,6 +92,28 @@
       <tbody>
         <tr>
           <td colspan="4">Aucun paiement effectué pour l'instant.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="sinistres">
+    <h2>Mes sinistres</h2>
+    <p>Déclarer un sinistre : bientôt disponible.</p>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Numéro</th>
+          <th>Contrat</th>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Montant estimé</th>
+          <th>Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="6">Vous n'avez déclaré aucun sinistre.</td>
         </tr>
       </tbody>
     </table>
