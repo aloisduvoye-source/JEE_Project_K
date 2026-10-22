@@ -19,5 +19,12 @@
       | <a href="${pageContext.request.contextPath}/connexion">Se connecter</a>
     </c:if>
   </nav>
+
+  <c:if test="${not empty sessionScope.utilisateur}">
+    <p>
+      Bonjour <c:out value="${sessionScope.utilisateur.prenom} ${sessionScope.utilisateur.nom}"/>
+      (<c:out value="${sessionScope.utilisateur.role}"/>)
+    </p>
+  </c:if>
 </header>
 <hr>
