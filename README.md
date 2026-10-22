@@ -16,6 +16,7 @@ jee-app/                 Version 1 : Servlets + JSP + Hibernate/JDBC (Tomcat)
     service/             Logique métier (règles, hachage des mots de passe...), appelée par les servlets
     controller/          Servlets
     filter/              Filtre d'accès par rôle (RoleFiltre)
+    listener/            Actions au démarrage et à l'arrêt de l'application (initialisation d'Hibernate)
     exception/           Exceptions métier (ex. UtilisateurDejaExistantException)
     ai/                  Client de l'API d'IA (assistant)
     util/                Outils partagés (validation des saisies, connexion JPA, ...)
