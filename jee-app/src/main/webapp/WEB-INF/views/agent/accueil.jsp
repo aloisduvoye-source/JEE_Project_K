@@ -16,7 +16,8 @@
     <a href="#contrats">Contrats</a> |
     <a href="#sinistres">Sinistres</a> |
     <a href="#paiements">Paiements</a> |
-    <a href="#garanties">Garanties</a>
+    <a href="#garanties">Garanties</a> |
+    <a href="#statistiques">Statistiques</a>
   </nav>
 
   <section id="clients">
@@ -121,6 +122,33 @@
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section id="statistiques">
+    <h2>Statistiques</h2>
+
+    <h3>Clients</h3>
+    <ul>
+      <li>Nombre total de clients : –</li>
+      <li>Nouveaux clients : –</li>
+      <li>Répartition par type d'assurance : –</li>
+    </ul>
+
+    <h3>Contrats</h3>
+    <ul>
+      <li>Contrats actifs : –</li>
+      <li>Contrats expirés : –</li>
+      <li>Contrats résiliés : –</li>
+      <li>Évolution du nombre de contrats : –</li>
+    </ul>
+
+    <h3>Finances</h3>
+    <ul>
+      <li>Chiffre d'affaires : –</li>
+      <li>Montant des primes : –</li>
+      <li>Montant des indemnisations : –</li>
+      <li>Évolution des revenus : –</li>
+    </ul>
   </section>
 </body>
 </html>
