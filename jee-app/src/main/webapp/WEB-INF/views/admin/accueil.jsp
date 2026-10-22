@@ -12,7 +12,8 @@
 
   <%-- Onglets : liens vers les sections de cette page (à remplacer par des pages /admin/... plus tard) --%>
   <nav>
-    <a href="#utilisateurs">Utilisateurs</a>
+    <a href="#utilisateurs">Utilisateurs</a> |
+    <a href="#types">Types d'assurance</a>
   </nav>
 
   <section id="utilisateurs">
@@ -32,6 +33,25 @@
       <tbody>
         <tr>
           <td colspan="7">Aucun utilisateur à afficher pour l'instant.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="types">
+    <h2>Types d'assurance</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Description</th>
+          <th>Prix de base</th>
+          <th>Garanties disponibles</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="4">Aucun type d'assurance à afficher pour l'instant.</td>
         </tr>
       </tbody>
     </table>
