@@ -13,7 +13,8 @@
   <%-- Onglets : liens vers les sections de cette page (à remplacer par des pages /admin/... plus tard) --%>
   <nav>
     <a href="#utilisateurs">Utilisateurs</a> |
-    <a href="#types">Types d'assurance</a>
+    <a href="#types">Types d'assurance</a> |
+    <a href="#contrats">Contrats</a>
   </nav>
 
   <section id="utilisateurs">
@@ -52,6 +53,28 @@
       <tbody>
         <tr>
           <td colspan="4">Aucun type d'assurance à afficher pour l'instant.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="contrats">
+    <h2>Contrats</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Numéro</th>
+          <th>Client</th>
+          <th>Type d'assurance</th>
+          <th>Début</th>
+          <th>Fin</th>
+          <th>Prime</th>
+          <th>Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="7">Aucun contrat à afficher pour l'instant.</td>
         </tr>
       </tbody>
     </table>
