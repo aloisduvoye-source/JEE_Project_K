@@ -14,7 +14,8 @@
   <nav>
     <a href="#utilisateurs">Utilisateurs</a> |
     <a href="#types">Types d'assurance</a> |
-    <a href="#contrats">Contrats</a>
+    <a href="#contrats">Contrats</a> |
+    <a href="#sinistres">Sinistres</a>
   </nav>
 
   <section id="utilisateurs">
@@ -75,6 +76,30 @@
       <tbody>
         <tr>
           <td colspan="7">Aucun contrat à afficher pour l'instant.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="sinistres">
+    <h2>Sinistres</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Numéro</th>
+          <th>Client</th>
+          <th>Contrat</th>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Montant estimé</th>
+          <th>Indemnisation</th>
+          <th>Agent</th>
+          <th>Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="9">Aucun sinistre à afficher pour l'instant.</td>
         </tr>
       </tbody>
     </table>
