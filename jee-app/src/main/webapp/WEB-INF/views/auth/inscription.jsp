@@ -7,7 +7,6 @@
   <title>Créer un compte</title>
 </head>
 <body>
-  <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
   <h1>Créer un compte</h1>
 
@@ -62,5 +61,7 @@
   </form>
 
   <p>Déjà un compte ? <a href="${pageContext.request.contextPath}/connexion">Se connecter</a></p>
+  <p>Retour a l'<a href="${pageContext.request.contextPath}/">accueil</a></p>
+
 </body>
 </html>

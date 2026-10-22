@@ -6,7 +6,6 @@
   <title>Assurance</title>
 </head>
 <body>
-  <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
     <h1>Connexion</h1>
     <p>${erreur}</p>
@@ -16,6 +15,7 @@
         <button type="submit">Se Connecter</button>
     </form>
     <p>Pas encore de compte ? <a href="${pageContext.request.contextPath}/inscription">Créer un compte</a></p>
+    <p>Retour a l'<a href="${pageContext.request.contextPath}/">accueil</a></p>
 
 </body>
 </html>
