@@ -9,28 +9,8 @@
 <body>
   <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
-  <h1>Hello World</h1>
+  <h1>Billy Assurance</h1>
+  <p>Bienvenue sur le site de notre assurance en ligne.</p>
 
-  <c:if test="${not empty sessionScope.utilisateur}">
-    <p>
-      Bonjour <c:out value="${sessionScope.utilisateur.nom} ${sessionScope.utilisateur.prenom}"/>,
-      vous êtes connecté en tant que <c:out value="${sessionScope.utilisateur.role}"/>
-    </p>
-    <form method="get" action="${pageContext.request.contextPath}${sessionScope.utilisateur.role.accueil}">
-      <button type="submit">Mon espace</button>
-    </form>
-    <form method="get" action="${pageContext.request.contextPath}/compte">
-      <button type="submit">Mon compte</button>
-    </form>
-    <form method="post" action="${pageContext.request.contextPath}/deconnexion">
-      <button type="submit">Se déconnecter</button>
-    </form>
-  </c:if>
-
-  <c:if test="${empty sessionScope.utilisateur}">
-    <form method="get" action="${pageContext.request.contextPath}/connexion">
-      <button type="submit">Se connecter</button>
-    </form>
-  </c:if>
 </body>
 </html>
