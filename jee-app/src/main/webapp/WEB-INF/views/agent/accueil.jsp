@@ -15,7 +15,8 @@
     <a href="#clients">Clients</a> |
     <a href="#contrats">Contrats</a> |
     <a href="#sinistres">Sinistres</a> |
-    <a href="#paiements">Paiements</a>
+    <a href="#paiements">Paiements</a> |
+    <a href="#garanties">Garanties</a>
   </nav>
 
   <section id="clients">
@@ -98,6 +99,25 @@
       <tbody>
         <tr>
           <td colspan="7">Aucun paiement à afficher pour l'instant.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="garanties">
+    <h2>Garanties</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Description</th>
+          <th>Plafond</th>
+          <th>Franchise</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="4">Aucune garantie à afficher pour l'instant.</td>
         </tr>
       </tbody>
     </table>
