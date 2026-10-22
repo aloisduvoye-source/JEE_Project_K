@@ -13,7 +13,8 @@
   <%-- Onglets : liens vers les sections de cette page (à remplacer par des pages /agent/... plus tard) --%>
   <nav>
     <a href="#clients">Clients</a> |
-    <a href="#contrats">Contrats</a>
+    <a href="#contrats">Contrats</a> |
+    <a href="#sinistres">Sinistres</a>
   </nav>
 
   <section id="clients">
@@ -53,6 +54,27 @@
       <tbody>
         <tr>
           <td colspan="7">Aucun contrat à afficher pour l'instant.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="sinistres">
+    <h2>Sinistres</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Numéro</th>
+          <th>Contrat</th>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Montant estimé</th>
+          <th>Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="6">Aucun sinistre à afficher pour l'instant.</td>
         </tr>
       </tbody>
     </table>
