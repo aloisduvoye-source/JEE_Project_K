@@ -8,6 +8,147 @@
 <body>
   <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
-  <h1>AGENT</h1>
+  <h1>Espace agent</h1>
+
+  <%-- Onglets : liens vers les sections de cette page (à remplacer par des pages /agent/... plus tard) --%>
+  <nav>
+    <a href="#clients">Clients</a> |
+    <a href="#contrats">Contrats</a> |
+    <a href="#sinistres">Sinistres</a> |
+    <a href="#paiements">Paiements</a> |
+    <a href="#garanties">Garanties</a> |
+    <a href="#statistiques">Statistiques</a>
+  </nav>
+
+  <section id="clients">
+    <h2>Clients</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Prénom</th>
+          <th>Email</th>
+          <th>Téléphone</th>
+          <th>Contrats</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="5">Aucun client à afficher pour l'instant.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="contrats">
+    <h2>Contrats</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Numéro</th>
+          <th>Client</th>
+          <th>Type d'assurance</th>
+          <th>Début</th>
+          <th>Fin</th>
+          <th>Prime</th>
+          <th>Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="7">Aucun contrat à afficher pour l'instant.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="sinistres">
+    <h2>Sinistres</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Numéro</th>
+          <th>Contrat</th>
+          <th>Date</th>
+          <th>Type</th>
+          <th>Montant estimé</th>
+          <th>Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="6">Aucun sinistre à afficher pour l'instant.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="paiements">
+    <h2>Paiements</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Contrat</th>
+          <th>Client</th>
+          <th>Échéance</th>
+          <th>Montant</th>
+          <th>Date de paiement</th>
+          <th>Mode</th>
+          <th>Statut</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="7">Aucun paiement à afficher pour l'instant.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="garanties">
+    <h2>Garanties</h2>
+    <table border="1">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Description</th>
+          <th>Plafond</th>
+          <th>Franchise</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="4">Aucune garantie à afficher pour l'instant.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section id="statistiques">
+    <h2>Statistiques</h2>
+
+    <h3>Clients</h3>
+    <ul>
+      <li>Nombre total de clients : –</li>
+      <li>Nouveaux clients : –</li>
+      <li>Répartition par type d'assurance : –</li>
+    </ul>
+
+    <h3>Contrats</h3>
+    <ul>
+      <li>Contrats actifs : –</li>
+      <li>Contrats expirés : –</li>
+      <li>Contrats résiliés : –</li>
+      <li>Évolution du nombre de contrats : –</li>
+    </ul>
+
+    <h3>Finances</h3>
+    <ul>
+      <li>Chiffre d'affaires : –</li>
+      <li>Montant des primes : –</li>
+      <li>Montant des indemnisations : –</li>
+      <li>Évolution des revenus : –</li>
+    </ul>
+  </section>
 </body>
 </html>
