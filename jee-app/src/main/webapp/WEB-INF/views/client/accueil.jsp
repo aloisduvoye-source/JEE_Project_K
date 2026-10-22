@@ -15,7 +15,8 @@
     <a href="#contrats">Mes contrats</a> |
     <a href="#garanties">Mes garanties</a> |
     <a href="#paiements">Mes paiements</a> |
-    <a href="#sinistres">Mes sinistres</a>
+    <a href="#sinistres">Mes sinistres</a> |
+    <a href="#assistant">Assistant</a>
   </nav>
 
   <section id="contrats">
@@ -117,6 +118,18 @@
         </tr>
       </tbody>
     </table>
+  </section>
+
+  <section id="assistant">
+    <h2>Assistant</h2>
+    <p>Posez vos questions sur vos contrats, vos garanties ou vos sinistres. Par exemple :</p>
+    <ul>
+      <li>Quels sont mes contrats actifs ?</li>
+      <li>Quelles garanties possède mon assurance automobile ?</li>
+      <li>Comment déclarer un sinistre ?</li>
+      <li>Où en est mon dernier sinistre ?</li>
+    </ul>
+    <p>L'assistant sera bientôt disponible.</p>
   </section>
 </body>
 </html>
