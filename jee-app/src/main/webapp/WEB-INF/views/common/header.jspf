@@ -11,6 +11,9 @@
       | <a href="${pageContext.request.contextPath}/compte">Mon compte</a>
       | <a href="${pageContext.request.contextPath}${sessionScope.utilisateur.role.accueil}">Mon espace</a>
     </c:if>
+    <c:if test="${empty sessionScope.utilisateur}">
+      | <a href="${pageContext.request.contextPath}/connexion">Se connectrer</a>
+    </c:if>
   </nav>
 </header>
 <hr>
