@@ -7,6 +7,7 @@
   <title>Créer un compte</title>
 </head>
 <body>
+
   <h1>Créer un compte</h1>
 
   <form method="post" action="${pageContext.request.contextPath}/inscription">
@@ -60,5 +61,7 @@
   </form>
 
   <p>Déjà un compte ? <a href="${pageContext.request.contextPath}/connexion">Se connecter</a></p>
+  <p>Retour a l'<a href="${pageContext.request.contextPath}/">accueil</a></p>
+
 </body>
 </html>

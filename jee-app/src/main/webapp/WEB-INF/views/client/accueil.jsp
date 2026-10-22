@@ -6,6 +6,8 @@
   <title>Espace client</title>
 </head>
 <body>
+  <%@ include file="/WEB-INF/views/common/header.jspf" %>
+
   <h1>CLIENT</h1>
 </body>
 </html>

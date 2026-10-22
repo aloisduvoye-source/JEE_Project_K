@@ -7,6 +7,8 @@
   <title>Assurance</title>
 </head>
 <body>
+  <%@ include file="/WEB-INF/views/common/header.jspf" %>
+
   <h1>Hello World</h1>
 
   <c:if test="${not empty sessionScope.utilisateur}">
