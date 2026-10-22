@@ -64,6 +64,11 @@ public class ContratService {
         if (prime == null || prime.signum() <= 0) {
             throw new ContratInvalideException("La prime doit être supérieure à zéro.");
         }
+        // Le prix de base du type est un minimum : l'agent peut l'augmenter (garanties, profil), pas le baisser
+        if (prime.compareTo(type.getPrixBase()) < 0) {
+            throw new ContratInvalideException("La prime ne peut pas être inférieure au prix de base de l'"
+                    + type.getNom().toLowerCase() + " (" + type.getPrixBase().toPlainString() + " €).");
+        }
 
         Contrat contrat = new Contrat();   // statut EN_ATTENTE par défaut
         contrat.setNumero(contratDao.prochainNumero());
