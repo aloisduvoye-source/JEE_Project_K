@@ -7,6 +7,8 @@
   <title>Mon compte</title>
 </head>
 <body>
+  <%@ include file="/WEB-INF/views/common/header.jspf" %>
+
   <h1>Mon compte</h1>
 
   <c:if test="${param.succes == 'profil'}">

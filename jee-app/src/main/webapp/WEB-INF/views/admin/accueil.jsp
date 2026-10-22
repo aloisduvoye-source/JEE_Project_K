@@ -6,6 +6,8 @@
   <title>Espace admin</title>
 </head>
 <body>
+  <%@ include file="/WEB-INF/views/common/header.jspf" %>
+
   <h1>ADMIN</h1>
 </body>
 </html>

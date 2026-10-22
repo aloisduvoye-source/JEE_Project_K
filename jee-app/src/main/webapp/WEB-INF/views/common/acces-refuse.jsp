@@ -6,6 +6,8 @@
   <title>Accès refusé</title>
 </head>
 <body>
+  <%@ include file="/WEB-INF/views/common/header.jspf" %>
+
   <h1>Accès refusé</h1>
   <p>Vous n'avez pas accès à cette page.</p>
   <p><a href="${pageContext.request.contextPath}/">Retour à l'accueil</a></p>

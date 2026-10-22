@@ -7,6 +7,8 @@
   <title>Créer un compte</title>
 </head>
 <body>
+  <%@ include file="/WEB-INF/views/common/header.jspf" %>
+
   <h1>Créer un compte</h1>
 
   <form method="post" action="${pageContext.request.contextPath}/inscription">

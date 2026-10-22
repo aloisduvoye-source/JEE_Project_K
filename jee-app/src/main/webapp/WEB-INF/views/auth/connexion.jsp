@@ -6,6 +6,8 @@
   <title>Assurance</title>
 </head>
 <body>
+  <%@ include file="/WEB-INF/views/common/header.jspf" %>
+
     <h1>Connexion</h1>
     <p>${erreur}</p>
     <form method="post" action="${pageContext.request.contextPath}/connexion">

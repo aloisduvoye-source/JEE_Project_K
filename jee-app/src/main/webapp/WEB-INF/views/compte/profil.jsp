@@ -7,6 +7,8 @@
   <title>Modifier mes informations</title>
 </head>
 <body>
+  <%@ include file="/WEB-INF/views/common/header.jspf" %>
+
   <h1>Modifier mes informations</h1>
 
   <form method="post" action="${pageContext.request.contextPath}/compte/profil">

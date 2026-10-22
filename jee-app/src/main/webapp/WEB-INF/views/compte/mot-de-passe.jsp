@@ -7,6 +7,8 @@
   <title>Changer mon mot de passe</title>
 </head>
 <body>
+  <%@ include file="/WEB-INF/views/common/header.jspf" %>
+
   <h1>Changer mon mot de passe</h1>
 
   <form method="post" action="${pageContext.request.contextPath}/compte/mot-de-passe">

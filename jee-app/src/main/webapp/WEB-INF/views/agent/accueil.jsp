@@ -6,6 +6,8 @@
   <title>Espace agent</title>
 </head>
 <body>
+  <%@ include file="/WEB-INF/views/common/header.jspf" %>
+
   <h1>AGENT</h1>
 </body>
 </html>
