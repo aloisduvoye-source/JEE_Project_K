@@ -8,6 +8,15 @@
 
     <!-- Les servlets sont déclarées avec l'annotation @WebServlet dans le package controller -->
 
+    <!-- Les JSP et les fragments inclus (.jspf, comme l'en-tête) sont en UTF-8 -->
+    <jsp-config>
+        <jsp-property-group>
+            <url-pattern>*.jsp</url-pattern>
+            <url-pattern>*.jspf</url-pattern>
+            <page-encoding>UTF-8</page-encoding>
+        </jsp-property-group>
+    </jsp-config>
+
     <!-- Page affichée quand un utilisateur ouvre une page réservée à un autre rôle (RoleFiltre) -->
     <error-page>
         <error-code>403</error-code>
