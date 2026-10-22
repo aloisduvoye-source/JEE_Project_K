@@ -16,7 +16,8 @@
     <a href="#types">Types d'assurance</a> |
     <a href="#contrats">Contrats</a> |
     <a href="#sinistres">Sinistres</a> |
-    <a href="#statistiques">Statistiques</a>
+    <a href="#statistiques">Statistiques</a> |
+    <a href="#indicateurs">Indicateurs</a>
   </nav>
 
   <section id="utilisateurs">
@@ -130,6 +131,17 @@
       <li>Montant des primes : –</li>
       <li>Montant des indemnisations : –</li>
       <li>Évolution des revenus : –</li>
+    </ul>
+  </section>
+
+  <section id="indicateurs">
+    <h2>Indicateurs de performance</h2>
+    <ul>
+      <li>Ratio indemnisations / primes encaissées : –</li>
+      <li>Délai moyen de traitement d'un sinistre : –</li>
+      <li>Taux d'acceptation des sinistres : –</li>
+      <li>Taux de résiliation des contrats : –</li>
+      <li>Paiements en retard : –</li>
     </ul>
   </section>
 </body>
