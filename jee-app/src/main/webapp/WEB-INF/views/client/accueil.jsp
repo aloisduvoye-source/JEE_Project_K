@@ -21,23 +21,7 @@
 
   <section id="contrats">
     <h2>Mes contrats</h2>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Numéro</th>
-          <th>Type d'assurance</th>
-          <th>Début</th>
-          <th>Fin</th>
-          <th>Prime</th>
-          <th>Statut</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colspan="6">Vous n'avez aucun contrat pour l'instant.</td>
-        </tr>
-      </tbody>
-    </table>
+    <p><a href="${pageContext.request.contextPath}/client/contrats">Voir mes contrats et leurs garanties</a></p>
   </section>
 
   <section id="garanties">
