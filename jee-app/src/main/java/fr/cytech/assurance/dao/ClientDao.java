@@ -41,6 +41,16 @@ public class ClientDao extends GenericDao<Client> {
         }
     }
 
+    // Fiche client d'un utilisateur (celui qui est connecté, par exemple), ou null s'il n'est pas client
+    public Client trouverParUtilisateur(Long idUtilisateur) {
+        return enLecture(em -> em.createQuery(
+                        "SELECT c FROM Client c WHERE c.utilisateur.id = :idUtilisateur", Client.class)
+                .setParameter("idUtilisateur", idUtilisateur)
+                .getResultStream()
+                .findFirst()
+                .orElse(null));
+    }
+
     // Vrai si un utilisateur a déjà cette valeur dans ce champ ("identifiant" ou "email")
     private static boolean existe(EntityManager em, String champ, String valeur) {
         return em.createQuery("SELECT COUNT(u) FROM Utilisateur u WHERE u." + champ + " = :valeur", Long.class)
