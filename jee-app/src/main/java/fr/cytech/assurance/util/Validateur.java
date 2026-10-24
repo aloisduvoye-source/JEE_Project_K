@@ -1,5 +1,6 @@
 package fr.cytech.assurance.util;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
@@ -86,6 +87,56 @@ public class Validateur {
             return date;
         } catch (DateTimeParseException e) {
             erreur(champ, libelle + " n'est pas valide.");
+            return null;
+        }
+    }
+
+    // Identifiant choisi dans une liste (client, type d'assurance...) : obligatoire et numérique
+    // Renvoie l'identifiant lu, ou null s'il est absent ou invalide
+    public Long identifiant(String champ, String valeur, String libelle) {
+        if (valeur.isEmpty()) {
+            erreur(champ, libelle + " est obligatoire.");
+            return null;
+        }
+        try {
+            return Long.valueOf(valeur);
+        } catch (NumberFormatException e) {
+            erreur(champ, libelle + " n'est pas valide.");
+            return null;
+        }
+    }
+
+    // Date obligatoire (au format du champ HTML type="date" : AAAA-MM-JJ)
+    // Renvoie la date lue, ou null si le champ est vide ou invalide
+    public LocalDate date(String champ, String valeur, String libelle) {
+        if (valeur.isEmpty()) {
+            erreur(champ, libelle + " est obligatoire.");
+            return null;
+        }
+        try {
+            return LocalDate.parse(valeur);
+        } catch (DateTimeParseException e) {
+            erreur(champ, libelle + " n'est pas valide.");
+            return null;
+        }
+    }
+
+    // Montant obligatoire, avec au plus 2 décimales (virgule ou point acceptés)
+    // Renvoie le montant lu, ou null si le champ est vide ou invalide
+    public BigDecimal montant(String champ, String valeur, String libelle) {
+        if (valeur.isEmpty()) {
+            erreur(champ, libelle + " est obligatoire.");
+            return null;
+        }
+        try {
+            BigDecimal montant = new BigDecimal(valeur.replace(',', '.'));
+            if (montant.scale() > 2) {
+                erreur(champ, libelle + " ne doit pas avoir plus de 2 décimales.");
+                return null;
+            }
+            return montant;
+        } catch (NumberFormatException e) {
+            erreur(champ, libelle + " n'est pas un montant valide.");
             return null;
         }
     }

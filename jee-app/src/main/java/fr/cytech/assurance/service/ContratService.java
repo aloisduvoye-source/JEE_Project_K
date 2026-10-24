@@ -11,6 +11,7 @@ import fr.cytech.assurance.model.TypeAssurance;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,16 @@ public class ContratService {
     private final ContratDao contratDao = new ContratDao();
     private final ClientDao clientDao = new ClientDao();
     private final TypeAssuranceDao typeAssuranceDao = new TypeAssuranceDao();
+
+    // Tous les contrats, du plus récent au plus ancien
+    public List<Contrat> listerContrats() {
+        return contratDao.listerTousAvecDetails();
+    }
+
+    // Contrats d'un client, du plus récent au plus ancien, avec leur type et leurs garanties
+    public List<Contrat> listerContratsDuClient(Long idClient) {
+        return contratDao.listerParClient(idClient);
+    }
 
     /**
      * Crée un contrat en EN_ATTENTE, avec un numéro attribué automatiquement.

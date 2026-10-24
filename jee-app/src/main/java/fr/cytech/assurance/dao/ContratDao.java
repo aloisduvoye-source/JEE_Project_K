@@ -68,6 +68,16 @@ public class ContratDao extends GenericDao<Contrat> {
                 .orElse(null));
     }
 
+    // Tous les contrats, du plus récent au plus ancien, avec leur client et leur type déjà chargés
+    public List<Contrat> listerTousAvecDetails() {
+        return enLecture(em -> em.createQuery(
+                        "SELECT c FROM Contrat c"
+                                + " JOIN FETCH c.client cl JOIN FETCH cl.utilisateur"
+                                + " JOIN FETCH c.typeAssurance"
+                                + " ORDER BY c.numero DESC", Contrat.class)
+                .getResultList());
+    }
+
     // Contrats d'un client, du plus récent au plus ancien, avec leur type et leurs garanties
     public List<Contrat> listerParClient(Long idClient) {
         return enLecture(em -> em.createQuery(

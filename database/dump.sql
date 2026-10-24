@@ -3,6 +3,9 @@
 -- (utilisateurs, clients, contrats, garanties, sinistres, paiements...).
 -- À exécuter après schema.sql.
 
+-- Le fichier est en UTF-8 : sans cette ligne, un client MySQL réglé en latin1 abîme les accents
+SET NAMES utf8mb4;
+
 -- ============================================================
 -- Données de référence imposées par le sujet (§2.3 et §2.4)
 -- ============================================================
