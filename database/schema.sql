@@ -4,6 +4,9 @@
 -- À exécuter en premier sur une base vide.
 -- Toute modification d'une table doit être reportée ici.
 
+-- Le fichier est en UTF-8 : sans cette ligne, un client MySQL réglé en latin1 abîme les accents
+SET NAMES utf8mb4;
+
 DROP TABLE IF EXISTS message_assistant;
 DROP TABLE IF EXISTS paiement;
 DROP TABLE IF EXISTS commentaire_sinistre;
