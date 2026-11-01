@@ -7,16 +7,26 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceException;
 import org.hibernate.exception.ConstraintViolationException;
 
-// CRUD (trouverParId, listerTous, creer, modifier, supprimer) hérité de GenericDao
+/**
+ * Accès en base aux fiches clients.
+ * <p>
+ * Le CRUD (trouverParId, listerTous, creer, modifier, supprimer) est hérité de {@link GenericDao}.
+ */
 public class ClientDao extends GenericDao<Client> {
 
     public ClientDao() {
         super(Client.class);
     }
 
-    // Crée le compte utilisateur et la fiche client dans la même transaction :
-    // si l'une des deux insertions échoue, rien n'est enregistré
-    // Lève UtilisateurDejaExistantException si l'identifiant ou l'email est déjà pris
+    /**
+     * Crée le compte utilisateur et la fiche client associée dans une seule transaction.
+     * <p>
+     * Si l'une des deux insertions échoue, rien n'est enregistré.
+     *
+     * @param client      fiche client à créer
+     * @param utilisateur compte utilisateur à créer et à relier au client
+     * @throws UtilisateurDejaExistantException si l'identifiant ou l'email est déjà pris
+     */
     public void creerAvecUtilisateur(Client client, Utilisateur utilisateur) {
         try {
             enTransaction(em -> {
@@ -41,7 +51,12 @@ public class ClientDao extends GenericDao<Client> {
         }
     }
 
-    // Fiche client d'un utilisateur (celui qui est connecté, par exemple), ou null s'il n'est pas client
+    /**
+     * Recherche la fiche client d'un utilisateur (celui qui est connecté, par exemple).
+     *
+     * @param idUtilisateur identifiant de l'utilisateur
+     * @return la fiche client, ou {@code null} si l'utilisateur n'est pas client
+     */
     public Client trouverParUtilisateur(Long idUtilisateur) {
         return enLecture(em -> em.createQuery(
                         "SELECT c FROM Client c WHERE c.utilisateur.id = :idUtilisateur", Client.class)

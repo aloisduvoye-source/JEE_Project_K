@@ -9,7 +9,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-// CRUD (trouverParId, listerTous, creer, modifier, supprimer) hérité de GenericDao
+/**
+ * Accès en base aux contrats.
+ * <p>
+ * Le CRUD (trouverParId, listerTous, creer, modifier, supprimer) est hérité de {@link GenericDao}.
+ */
 public class ContratDao extends GenericDao<Contrat> {
 
     // Numéro du tout premier contrat ; les suivants sont incrémentés
@@ -19,16 +23,30 @@ public class ContratDao extends GenericDao<Contrat> {
         super(Contrat.class);
     }
 
-    // Prochain numéro de contrat libre : le plus grand existant + 1
+    /**
+     * Calcule le prochain numéro de contrat libre : le plus grand numéro existant + 1.
+     *
+     * @return le prochain numéro, ou 100001 s'il n'existe encore aucun contrat
+     */
     public long prochainNumero() {
         Long max = enLecture(em -> em.createQuery("SELECT MAX(c.numero) FROM Contrat c", Long.class)
                 .getSingleResult());
         return max == null ? PREMIER_NUMERO : max + 1;
     }
 
-    // Crée le contrat en le reliant au client, au type d'assurance et aux garanties désignés par leur id,
-    // dans une seule transaction : si l'un d'eux n'existe pas, rien n'est enregistré
-    // Les règles métier (garanties proposées par le type, dates, prime...) sont vérifiées par le service
+    /**
+     * Crée un contrat relié à un client, un type d'assurance et des garanties désignés par leur id.
+     * <p>
+     * Tout se fait dans une seule transaction : si l'un d'eux n'existe pas, rien n'est enregistré.
+     * Les règles métier (garanties proposées par le type, dates, prime...) sont vérifiées par le service.
+     *
+     * @param contrat         contrat à créer, sans client, type ni garanties
+     * @param idClient        identifiant du client
+     * @param idTypeAssurance identifiant du type d'assurance
+     * @param idsGaranties    identifiants des garanties souscrites
+     * @return le contrat enregistré
+     * @throws IllegalArgumentException si le client, le type ou l'une des garanties n'existe pas
+     */
     public Contrat creerAvecGaranties(Contrat contrat, Long idClient, Long idTypeAssurance, Set<Long> idsGaranties) {
         return enTransaction(em -> {
             Client client = em.find(Client.class, idClient);
@@ -54,7 +72,12 @@ public class ContratDao extends GenericDao<Contrat> {
         });
     }
 
-    // Contrat avec son client, son type et ses garanties déjà chargés (lisibles dans une JSP), ou null
+    /**
+     * Recherche un contrat avec son client, son type et ses garanties déjà chargés (lisibles dans une JSP).
+     *
+     * @param id identifiant du contrat
+     * @return le contrat avec ses détails, ou {@code null} s'il n'existe pas
+     */
     public Contrat trouverAvecDetails(Long id) {
         return enLecture(em -> em.createQuery(
                         "SELECT DISTINCT c FROM Contrat c"
@@ -68,7 +91,11 @@ public class ContratDao extends GenericDao<Contrat> {
                 .orElse(null));
     }
 
-    // Tous les contrats, du plus récent au plus ancien, avec leur client et leur type déjà chargés
+    /**
+     * Liste tous les contrats, du plus récent au plus ancien, avec leur client et leur type déjà chargés.
+     *
+     * @return les contrats triés par numéro décroissant, liste vide s'il n'y en a aucun
+     */
     public List<Contrat> listerTousAvecDetails() {
         return enLecture(em -> em.createQuery(
                         "SELECT c FROM Contrat c"
@@ -78,7 +105,12 @@ public class ContratDao extends GenericDao<Contrat> {
                 .getResultList());
     }
 
-    // Contrats d'un client, du plus récent au plus ancien, avec leur type et leurs garanties
+    /**
+     * Liste les contrats d'un client, du plus récent au plus ancien, avec leur type et leurs garanties.
+     *
+     * @param idClient identifiant du client
+     * @return les contrats triés par date de début décroissante, liste vide si le client n'en a aucun
+     */
     public List<Contrat> listerParClient(Long idClient) {
         return enLecture(em -> em.createQuery(
                         "SELECT DISTINCT c FROM Contrat c"
