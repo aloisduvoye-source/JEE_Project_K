@@ -12,10 +12,12 @@ import java.util.function.Function;
  * Opérations CRUD communes à toutes les entités.
  * Chaque DAO hérite de cette classe et n'ajoute que ses requêtes spécifiques :
  *
+ * <pre>{@code
  *   public class ContratDao extends GenericDao<Contrat> {
  *       public ContratDao() { super(Contrat.class); }
  *   }
- *
+ * }</pre>
+ * <p>
  * Attention : l'EntityManager est fermé à la fin de chaque méthode. Les collections chargées
  * à la demande (@ManyToMany, ex. contrat.getGaranties()) doivent être récupérées dans la requête
  * avec "JOIN FETCH" si une servlet ou une JSP doit les lire.
