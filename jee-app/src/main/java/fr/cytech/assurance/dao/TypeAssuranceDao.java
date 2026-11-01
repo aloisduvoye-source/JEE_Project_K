@@ -30,4 +30,9 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
                 .findFirst()
                 .orElse(null));
     }
+
+    public boolean existeAvecNom(String nom, Long idExclu){
+        TypeAssurance typeAssurance = trouverParNom(nom);
+        return typeAssurance != idExclu && !typeAssurance.getId().equals(idExclu);
+    }
 }
