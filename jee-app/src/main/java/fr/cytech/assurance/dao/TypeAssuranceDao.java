@@ -2,6 +2,7 @@ package fr.cytech.assurance.dao;
 
 import fr.cytech.assurance.model.TypeAssurance;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 // CRUD (trouverParId, listerTous, creer, modifier, supprimer) hérité de GenericDao
@@ -61,5 +62,15 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
                         "SELECT COUNT(c) FROM Contrat c WHERE c.typeAssurance.id = :id", Long.class)
                 .setParameter("id", id)
                 .getSingleResult()) > 0;
+    }
+
+    // Modifie uniquement nom, description et prix de base (les garanties proposées ne sont pas touchées)
+    // Renvoie false si aucun type n'a cet id
+    public boolean modifierInfos(Long id, String nom, String description, BigDecimal prixBase) {
+        return mettreAJour(id, t -> {
+            t.setNom(nom);
+            t.setDescription(description);
+            t.setPrixBase(prixBase);
+        });
     }
 }
