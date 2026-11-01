@@ -31,8 +31,10 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
                 .orElse(null));
     }
 
-    public boolean existeAvecNom(String nom, Long idExclu){
+    // Vrai si un autre type que celui d'id idExclu porte déjà ce nom
+    // idExclu = null à la création, id du type modifié lors d'une modification
+    public boolean existeAvecNom(String nom, Long idExclu) {
         TypeAssurance typeAssurance = trouverParNom(nom);
-        return typeAssurance != idExclu && !typeAssurance.getId().equals(idExclu);
+        return typeAssurance != null && !typeAssurance.getId().equals(idExclu);
     }
 }
