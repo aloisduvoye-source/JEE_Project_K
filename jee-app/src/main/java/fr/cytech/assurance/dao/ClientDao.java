@@ -7,16 +7,28 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceException;
 import org.hibernate.exception.ConstraintViolationException;
 
-// CRUD (trouverParId, listerTous, creer, modifier, supprimer) hérité de GenericDao
+import java.util.List;
+
+/**
+ * Accès en base aux fiches clients.
+ * <p>
+ * Le CRUD (trouverParId, listerTous, creer, modifier, supprimer) est hérité de {@link GenericDao}.
+ */
 public class ClientDao extends GenericDao<Client> {
 
     public ClientDao() {
         super(Client.class);
     }
 
-    // Crée le compte utilisateur et la fiche client dans la même transaction :
-    // si l'une des deux insertions échoue, rien n'est enregistré
-    // Lève UtilisateurDejaExistantException si l'identifiant ou l'email est déjà pris
+    /**
+     * Crée le compte utilisateur et la fiche client associée dans une seule transaction.
+     * <p>
+     * Si l'une des deux insertions échoue, rien n'est enregistré.
+     *
+     * @param client      fiche client à créer
+     * @param utilisateur compte utilisateur à créer et à relier au client
+     * @throws UtilisateurDejaExistantException si l'identifiant ou l'email est déjà pris
+     */
     public void creerAvecUtilisateur(Client client, Utilisateur utilisateur) {
         try {
             enTransaction(em -> {
@@ -41,7 +53,12 @@ public class ClientDao extends GenericDao<Client> {
         }
     }
 
-    // Fiche client d'un utilisateur (celui qui est connecté, par exemple), ou null s'il n'est pas client
+    /**
+     * Recherche la fiche client d'un utilisateur (celui qui est connecté, par exemple).
+     *
+     * @param idUtilisateur identifiant de l'utilisateur
+     * @return la fiche client, ou {@code null} si l'utilisateur n'est pas client
+     */
     public Client trouverParUtilisateur(Long idUtilisateur) {
         return enLecture(em -> em.createQuery(
                         "SELECT c FROM Client c WHERE c.utilisateur.id = :idUtilisateur", Client.class)
@@ -49,6 +66,36 @@ public class ClientDao extends GenericDao<Client> {
                 .getResultStream()
                 .findFirst()
                 .orElse(null));
+    }
+
+    /**
+     * Liste tous les clients triés par nom puis prénom, avec leur compte utilisateur déjà chargé.
+     * <p>
+     * Le nom, le prénom et l'email sont dans l'utilisateur : ils restent ainsi lisibles dans une JSP.
+     *
+     * @return les clients triés, liste vide s'il n'y en a aucun
+     */
+    public List<Client> listerAvecUtilisateur() {
+        return enLecture(em -> em.createQuery(
+                        "SELECT c FROM Client c JOIN FETCH c.utilisateur u ORDER BY u.nom, u.prenom", Client.class)
+                .getResultList());
+    }
+
+    /**
+     * Recherche les clients dont le nom, le prénom ou l'email contient un mot-clé, sans tenir compte des majuscules.
+     *
+     * @param motCle texte à chercher ({@code %} et {@code _} servent de jokers)
+     * @return les clients correspondants triés par nom puis prénom, avec leur utilisateur déjà chargé
+     */
+    public List<Client> rechercher(String motCle) {
+        return enLecture(em -> em.createQuery(
+                        "SELECT c FROM Client c JOIN FETCH c.utilisateur u"
+                                + " WHERE LOWER(u.nom) LIKE LOWER(:motif)"
+                                + " OR LOWER(u.prenom) LIKE LOWER(:motif)"
+                                + " OR LOWER(u.email) LIKE LOWER(:motif)"
+                                + " ORDER BY u.nom, u.prenom", Client.class)
+                .setParameter("motif", "%" + motCle + "%")
+                .getResultList());
     }
 
     // Vrai si un utilisateur a déjà cette valeur dans ce champ ("identifiant" ou "email")

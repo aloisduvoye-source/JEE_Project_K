@@ -32,9 +32,6 @@ public class Sinistre {
     @JoinColumn(name = "id_contrat", nullable = false)
     private Contrat contrat;
 
-    @Column(name = "numero", nullable = false, unique = true)
-    private Long numero;
-
     // Date à laquelle le sinistre a eu lieu
     @Column(name = "date_sinistre", nullable = false)
     private LocalDate dateSinistre;
@@ -78,8 +75,6 @@ public class Sinistre {
     public void setId(Long id) {this.id = id;}
     public Contrat getContrat() {return contrat;}
     public void setContrat(Contrat contrat) {this.contrat = contrat;}
-    public Long getNumero() {return numero;}
-    public void setNumero(Long numero) {this.numero = numero;}
     public LocalDate getDateSinistre() {return dateSinistre;}
     public void setDateSinistre(LocalDate dateSinistre) {this.dateSinistre = dateSinistre;}
     public LocalDateTime getDateDeclaration() {return dateDeclaration;}

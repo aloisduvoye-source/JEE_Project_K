@@ -37,9 +37,6 @@ public class Contrat {
     @JoinColumn(name = "id_type_assurance", nullable = false)
     private TypeAssurance typeAssurance;
 
-    @Column(name = "numero", nullable = false, unique = true)
-    private Long numero;
-
     @Column(name = "date_debut", nullable = false)
     private LocalDate dateDebut;
 
@@ -81,8 +78,6 @@ public class Contrat {
     public void setClient(Client client) {this.client = client;}
     public TypeAssurance getTypeAssurance() {return typeAssurance;}
     public void setTypeAssurance(TypeAssurance typeAssurance) {this.typeAssurance = typeAssurance;}
-    public Long getNumero() {return numero;}
-    public void setNumero(Long numero) {this.numero = numero;}
     public LocalDate getDateDebut() {return dateDebut;}
     public void setDateDebut(LocalDate dateDebut) {this.dateDebut = dateDebut;}
     public LocalDate getDateFin() {return dateFin;}

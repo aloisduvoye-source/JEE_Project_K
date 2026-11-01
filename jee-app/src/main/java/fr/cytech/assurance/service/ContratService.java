@@ -82,7 +82,6 @@ public class ContratService {
         }
 
         Contrat contrat = new Contrat();   // statut EN_ATTENTE par défaut
-        contrat.setNumero(contratDao.prochainNumero());
         contrat.setDateDebut(dateDebut);
         contrat.setDateFin(dateFin);
         contrat.setPrime(prime);

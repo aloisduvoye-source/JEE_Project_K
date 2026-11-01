@@ -11,11 +11,13 @@ import java.util.regex.Pattern;
  * Vérification des saisies d'un formulaire, commune à toutes les servlets.
  * Chaque méthode ajoute un message au champ concerné ; seule la première erreur d'un champ est gardée.
  *
+ * <pre>{@code
  *   Validateur v = new Validateur();
  *   v.obligatoire("nom", nom, "Le nom", 100);
  *   v.email("email", email);
  *   if (!v.aErreur("email") && emailDejaPris) {v.erreur("email", "Cet email est déjà utilisé.");}
  *   if (!v.estValide()) {request.setAttribute("erreurs", v.getErreurs()); ...}
+ * }</pre>
  */
 public class Validateur {
 
