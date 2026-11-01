@@ -9,14 +9,15 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
         super(TypeAssurance.class);
     }
 
-    public TypeAssurance trouverAvecNom(String nom){
+    // Type portant ce nom (unique en base), ou null
+    public TypeAssurance trouverParNom(String nom) {
         return enLecture(em -> em.createQuery(
-                        "SELECT DISTINCT t FROM TypeAssurance t WHERE t.nom = :nom",
+                        "SELECT t FROM TypeAssurance t WHERE t.nom = :nom",
                         TypeAssurance.class)
-                .setParameter("nom", nom),
-                .getResultStream(),
-                .findFirst(),
-                orElse(null));
+                .setParameter("nom", nom)
+                .getResultStream()
+                .findFirst()
+                .orElse(null));
     }
 
     // Type avec ses garanties disponibles déjà chargées (lisibles hors du DAO), ou null
