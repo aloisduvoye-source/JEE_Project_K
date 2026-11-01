@@ -7,6 +7,8 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceException;
 import org.hibernate.exception.ConstraintViolationException;
 
+import java.util.List;
+
 /**
  * Accès en base aux fiches clients.
  * <p>
@@ -64,6 +66,36 @@ public class ClientDao extends GenericDao<Client> {
                 .getResultStream()
                 .findFirst()
                 .orElse(null));
+    }
+
+    /**
+     * Liste tous les clients triés par nom puis prénom, avec leur compte utilisateur déjà chargé.
+     * <p>
+     * Le nom, le prénom et l'email sont dans l'utilisateur : ils restent ainsi lisibles dans une JSP.
+     *
+     * @return les clients triés, liste vide s'il n'y en a aucun
+     */
+    public List<Client> listerAvecUtilisateur() {
+        return enLecture(em -> em.createQuery(
+                        "SELECT c FROM Client c JOIN FETCH c.utilisateur u ORDER BY u.nom, u.prenom", Client.class)
+                .getResultList());
+    }
+
+    /**
+     * Recherche les clients dont le nom, le prénom ou l'email contient un mot-clé, sans tenir compte des majuscules.
+     *
+     * @param motCle texte à chercher ({@code %} et {@code _} servent de jokers)
+     * @return les clients correspondants triés par nom puis prénom, avec leur utilisateur déjà chargé
+     */
+    public List<Client> rechercher(String motCle) {
+        return enLecture(em -> em.createQuery(
+                        "SELECT c FROM Client c JOIN FETCH c.utilisateur u"
+                                + " WHERE LOWER(u.nom) LIKE LOWER(:motif)"
+                                + " OR LOWER(u.prenom) LIKE LOWER(:motif)"
+                                + " OR LOWER(u.email) LIKE LOWER(:motif)"
+                                + " ORDER BY u.nom, u.prenom", Client.class)
+                .setParameter("motif", "%" + motCle + "%")
+                .getResultList());
     }
 
     // Vrai si un utilisateur a déjà cette valeur dans ce champ ("identifiant" ou "email")
