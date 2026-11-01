@@ -4,7 +4,9 @@ import fr.cytech.assurance.model.Client;
 import fr.cytech.assurance.model.Contrat;
 import fr.cytech.assurance.model.Garantie;
 import fr.cytech.assurance.model.TypeAssurance;
+import fr.cytech.assurance.model.enums.StatutContrat;
 
+import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -106,5 +108,52 @@ public class ContratDao extends GenericDao<Contrat> {
                                 + " ORDER BY c.dateDebut DESC", Contrat.class)
                 .setParameter("idClient", idClient)
                 .getResultList());
+    }
+
+    /**
+     * Liste les contrats ayant ce statut, du plus récent au plus ancien, avec leur client et leur type déjà chargés.
+     *
+     * @param statut statut recherché
+     * @return les contrats triés par id décroissant, liste vide si aucun n'a ce statut
+     */
+    public List<Contrat> listerParStatut(StatutContrat statut) {
+        return enLecture(em -> em.createQuery(
+                        "SELECT c FROM Contrat c"
+                                + " JOIN FETCH c.client cl JOIN FETCH cl.utilisateur"
+                                + " JOIN FETCH c.typeAssurance"
+                                + " WHERE c.statut = :statut"
+                                + " ORDER BY c.id DESC", Contrat.class)
+                .setParameter("statut", statut)
+                .getResultList());
+    }
+
+    /**
+     * Change le statut d'un contrat (activation, suspension, expiration).
+     * <p>
+     * Pour une résiliation, utiliser {@link #resilier}, qui enregistre aussi la date et le motif.
+     * Les transitions autorisées sont vérifiées par le service.
+     *
+     * @param id     identifiant du contrat
+     * @param statut nouveau statut
+     * @return {@code false} si aucun contrat n'a cet id
+     */
+    public boolean changerStatut(Long id, StatutContrat statut) {
+        return mettreAJour(id, c -> c.setStatut(statut));
+    }
+
+    /**
+     * Résilie un contrat : statut RESILIE, avec la date et le motif de résiliation.
+     *
+     * @param id    identifiant du contrat
+     * @param date  date de résiliation (obligatoire en base pour un contrat résilié)
+     * @param motif raison de la résiliation, ou {@code null}
+     * @return {@code false} si aucun contrat n'a cet id
+     */
+    public boolean resilier(Long id, LocalDate date, String motif) {
+        return mettreAJour(id, c -> {
+            c.setStatut(StatutContrat.RESILIE);
+            c.setDateResiliation(date);
+            c.setMotifResiliation(motif);
+        });
     }
 }
