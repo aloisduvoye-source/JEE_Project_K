@@ -1,5 +1,6 @@
 package fr.cytech.assurance.dao;
 
+import fr.cytech.assurance.model.Garantie;
 import fr.cytech.assurance.model.TypeAssurance;
 
 import java.math.BigDecimal;
@@ -72,5 +73,23 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
             t.setDescription(description);
             t.setPrixBase(prixBase);
         });
+    }
+
+    // Propose cette garantie avec ce type (sans effet si elle l'était déjà)
+    // Renvoie false si le type ou la garantie n'existe pas
+    public boolean ajouterGarantie(Long idType, Long idGarantie) {
+        return enTransaction(em -> {
+            TypeAssurance type = em.find(TypeAssurance.class, idType);
+            Garantie garantie = em.find(Garantie.class, idGarantie);
+            if (type == null || garantie == null) {return false;}
+            type.getGaranties().add(garantie);
+            return true;
+        });
+    }
+
+    // Ne propose plus cette garantie avec ce type (les contrats existants gardent leurs garanties)
+    // Renvoie false si aucun type n'a cet id
+    public boolean retirerGarantie(Long idType, Long idGarantie) {
+        return mettreAJour(idType, t -> t.getGaranties().removeIf(g -> g.getId().equals(idGarantie)));
     }
 }
