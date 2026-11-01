@@ -1,6 +1,9 @@
 package fr.cytech.assurance.dao;
 
 import fr.cytech.assurance.model.Utilisateur;
+import fr.cytech.assurance.model.enums.Role;
+
+import java.util.List;
 
 /**
  * Accès en base aux comptes utilisateurs.
@@ -105,5 +108,29 @@ public class UtilisateurDao extends GenericDao<Utilisateur> {
             u.setPrenom(prenom);
             u.setEmail(email);
         });
+    }
+
+    /**
+     * Liste les utilisateurs ayant ce rôle, triés par nom puis prénom.
+     *
+     * @param role rôle recherché (client, agent ou administrateur)
+     * @return les utilisateurs triés, liste vide si aucun n'a ce rôle
+     */
+    public List<Utilisateur> listerParRole(Role role) {
+        return enLecture(em -> em.createQuery(
+                        "SELECT u FROM Utilisateur u WHERE u.role = :role ORDER BY u.nom, u.prenom", Utilisateur.class)
+                .setParameter("role", role)
+                .getResultList());
+    }
+
+    /**
+     * Active ou désactive un compte. Un compte désactivé ne peut plus se connecter.
+     *
+     * @param id    identifiant de l'utilisateur
+     * @param actif {@code true} pour activer le compte, {@code false} pour le désactiver
+     * @return {@code false} si aucun utilisateur n'a cet id
+     */
+    public boolean changerEtat(Long id, boolean actif) {
+        return mettreAJour(id, u -> u.setActif(actif));
     }
 }
