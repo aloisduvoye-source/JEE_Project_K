@@ -39,6 +39,15 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
                 .getResultList());
     }
 
+    // Types dont le nom contient motCle (sans tenir compte des majuscules), triés par nom
+    public List<TypeAssurance> rechercher(String motCle) {
+        return enLecture(em -> em.createQuery(
+                        "SELECT t FROM TypeAssurance t WHERE LOWER(t.nom) LIKE LOWER(:motif) ORDER BY t.nom",
+                        TypeAssurance.class)
+                .setParameter("motif", "%" + motCle + "%")
+                .getResultList());
+    }
+
     // Type avec ses garanties disponibles déjà chargées (lisibles hors du DAO), ou null
     public TypeAssurance trouverAvecGaranties(Long id) {
         return enLecture(em -> em.createQuery(
