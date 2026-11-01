@@ -29,6 +29,14 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
                 .getResultList());
     }
 
+    // Tous les types triés par nom, avec leurs garanties déjà chargées (lisibles dans une JSP)
+    public List<TypeAssurance> listerAvecGaranties() {
+        return enLecture(em -> em.createQuery(
+                        "SELECT DISTINCT t FROM TypeAssurance t LEFT JOIN FETCH t.garanties ORDER BY t.nom",
+                        TypeAssurance.class)
+                .getResultList());
+    }
+
     // Type avec ses garanties disponibles déjà chargées (lisibles hors du DAO), ou null
     public TypeAssurance trouverAvecGaranties(Long id) {
         return enLecture(em -> em.createQuery(
