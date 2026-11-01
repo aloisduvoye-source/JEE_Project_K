@@ -32,7 +32,7 @@
     <tbody>
       <c:forEach var="ct" items="${contrats}">
         <tr>
-          <td><c:out value="${ct.numero}"/></td>
+          <td><c:out value="${ct.id}"/></td>
           <td><c:out value="${ct.client.utilisateur.nom} ${ct.client.utilisateur.prenom}"/></td>
           <td><c:out value="${ct.typeAssurance.nom}"/></td>
           <td><c:out value="${ct.dateDebut}"/></td>

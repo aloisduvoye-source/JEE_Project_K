@@ -17,7 +17,7 @@
 
   <c:forEach var="ct" items="${contrats}">
     <section>
-      <h2>Contrat n° <c:out value="${ct.numero}"/> : <c:out value="${ct.typeAssurance.nom}"/></h2>
+      <h2>Contrat n° <c:out value="${ct.id}"/> : <c:out value="${ct.typeAssurance.nom}"/></h2>
       <p>
         Du <c:out value="${ct.dateDebut}"/> au <c:out value="${ct.dateFin}"/>,
         prime annuelle de <c:out value="${ct.prime}"/> €.

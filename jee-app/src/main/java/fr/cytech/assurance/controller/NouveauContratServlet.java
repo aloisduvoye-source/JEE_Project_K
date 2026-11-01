@@ -73,7 +73,7 @@ public class NouveauContratServlet extends HttpServlet {
         if (v.estValide()) {
             try {
                 Contrat contrat = contratService.creerContrat(idClient, idType, idsGaranties, dateDebut, dateFin, prime);
-                response.sendRedirect(request.getContextPath() + "/agent/contrats?cree=" + contrat.getNumero());
+                response.sendRedirect(request.getContextPath() + "/agent/contrats?cree=" + contrat.getId());
                 return;
             } catch (ContratInvalideException e) {
                 v.erreur("global", e.getMessage());

@@ -16,9 +16,6 @@ import java.util.List;
  */
 public class SinistreDao extends GenericDao<Sinistre> {
 
-    // Numéro du tout premier sinistre ; les suivants sont incrémentés
-    private static final long PREMIER_NUMERO = 100001;
-
     // Début commun des requêtes qui chargent le contrat, son client et son type (lisibles dans une JSP)
     private static final String AVEC_DETAILS = "SELECT s FROM Sinistre s"
             + " JOIN FETCH s.contrat c JOIN FETCH c.client cl JOIN FETCH cl.utilisateur"
@@ -27,17 +24,6 @@ public class SinistreDao extends GenericDao<Sinistre> {
 
     public SinistreDao() {
         super(Sinistre.class);
-    }
-
-    /**
-     * Calcule le prochain numéro de sinistre libre : le plus grand numéro existant + 1.
-     *
-     * @return le prochain numéro, ou 100001 s'il n'existe encore aucun sinistre
-     */
-    public long prochainNumero() {
-        Long max = enLecture(em -> em.createQuery("SELECT MAX(s.numero) FROM Sinistre s", Long.class)
-                .getSingleResult());
-        return max == null ? PREMIER_NUMERO : max + 1;
     }
 
     /**

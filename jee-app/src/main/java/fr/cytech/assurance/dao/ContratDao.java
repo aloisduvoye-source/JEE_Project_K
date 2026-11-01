@@ -16,22 +16,8 @@ import java.util.Set;
  */
 public class ContratDao extends GenericDao<Contrat> {
 
-    // Numéro du tout premier contrat ; les suivants sont incrémentés
-    private static final long PREMIER_NUMERO = 100001;
-
     public ContratDao() {
         super(Contrat.class);
-    }
-
-    /**
-     * Calcule le prochain numéro de contrat libre : le plus grand numéro existant + 1.
-     *
-     * @return le prochain numéro, ou 100001 s'il n'existe encore aucun contrat
-     */
-    public long prochainNumero() {
-        Long max = enLecture(em -> em.createQuery("SELECT MAX(c.numero) FROM Contrat c", Long.class)
-                .getSingleResult());
-        return max == null ? PREMIER_NUMERO : max + 1;
     }
 
     /**
@@ -94,14 +80,14 @@ public class ContratDao extends GenericDao<Contrat> {
     /**
      * Liste tous les contrats, du plus récent au plus ancien, avec leur client et leur type déjà chargés.
      *
-     * @return les contrats triés par numéro décroissant, liste vide s'il n'y en a aucun
+     * @return les contrats triés par id décroissant, liste vide s'il n'y en a aucun
      */
     public List<Contrat> listerTousAvecDetails() {
         return enLecture(em -> em.createQuery(
                         "SELECT c FROM Contrat c"
                                 + " JOIN FETCH c.client cl JOIN FETCH cl.utilisateur"
                                 + " JOIN FETCH c.typeAssurance"
-                                + " ORDER BY c.numero DESC", Contrat.class)
+                                + " ORDER BY c.id DESC", Contrat.class)
                 .getResultList());
     }
 

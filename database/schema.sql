@@ -53,7 +53,6 @@ CREATE TABLE IF NOT EXISTS contrat(
     id                      SERIAL PRIMARY KEY,
     id_client               BIGINT UNSIGNED NOT NULL,
     id_type_assurance       BIGINT UNSIGNED NOT NULL,
-    numero                  BIGINT NOT NULL UNIQUE,
     date_debut              DATE NOT NULL,
     date_fin                DATE NOT NULL,
     prime                   DECIMAL(12,2) NOT NULL,
@@ -67,7 +66,7 @@ CREATE TABLE IF NOT EXISTS contrat(
     FOREIGN KEY (id_client) REFERENCES client(id),
     FOREIGN KEY (id_type_assurance) REFERENCES type_assurance(id),
     FOREIGN KEY (id_contrat_precedent) REFERENCES contrat(id) ON DELETE SET NULL
-);
+) AUTO_INCREMENT = 100001;   -- l'id sert de numéro de contrat affiché : le premier est le n° 100001
 
 CREATE TABLE IF NOT EXISTS garantie(
     id                      SERIAL PRIMARY KEY,
@@ -100,7 +99,6 @@ CREATE TABLE IF NOT EXISTS contrat_garantie(
 CREATE TABLE IF NOT EXISTS sinistre(
     id                      SERIAL PRIMARY KEY,
     id_contrat              BIGINT UNSIGNED NOT NULL,
-    numero                  BIGINT NOT NULL UNIQUE,
     date_sinistre           DATE NOT NULL,
     date_declaration        TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     description             TEXT NOT NULL,
@@ -114,7 +112,7 @@ CREATE TABLE IF NOT EXISTS sinistre(
     CONSTRAINT chk_sinistre_indemnisation CHECK (statut <> 'INDEMNISE' OR (montant_indemnisation IS NOT NULL AND date_indemnisation IS NOT NULL)),
     FOREIGN KEY (id_contrat) REFERENCES contrat(id),
     FOREIGN KEY (id_agent) REFERENCES utilisateur(id) ON DELETE SET NULL
-);
+) AUTO_INCREMENT = 100001;   -- l'id sert de numéro de sinistre affiché : le premier est le n° 100001
 
 CREATE TABLE IF NOT EXISTS piece_justificative(
     id                      SERIAL PRIMARY KEY,
