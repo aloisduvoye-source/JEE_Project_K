@@ -2,6 +2,8 @@ package fr.cytech.assurance.dao;
 
 import fr.cytech.assurance.model.TypeAssurance;
 
+import java.util.List;
+
 // CRUD (trouverParId, listerTous, creer, modifier, supprimer) hérité de GenericDao
 public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
 
@@ -18,6 +20,13 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
                 .getResultStream()
                 .findFirst()
                 .orElse(null));
+    }
+
+    // Tous les types d'assurance, triés par nom
+    public List<TypeAssurance> listerParNom() {
+        return enLecture(em -> em.createQuery(
+                        "SELECT t FROM TypeAssurance t ORDER BY t.nom", TypeAssurance.class)
+                .getResultList());
     }
 
     // Type avec ses garanties disponibles déjà chargées (lisibles hors du DAO), ou null
