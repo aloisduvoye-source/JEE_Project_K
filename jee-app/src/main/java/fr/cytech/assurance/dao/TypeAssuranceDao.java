@@ -37,4 +37,12 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
         TypeAssurance typeAssurance = trouverParNom(nom);
         return typeAssurance != null && !typeAssurance.getId().equals(idExclu);
     }
+
+    // Vrai si au moins un contrat utilise ce type : il ne peut alors pas être supprimé (clé étrangère)
+    public boolean estUtiliseParContrat(Long id) {
+        return enLecture(em -> em.createQuery(
+                        "SELECT COUNT(c) FROM Contrat c WHERE c.typeAssurance.id = :id", Long.class)
+                .setParameter("id", id)
+                .getSingleResult()) > 0;
+    }
 }
