@@ -31,9 +31,9 @@ public abstract class GenericDao<T> {
     }
 
     /**
-     * Recherche une entité par son identifiant.
+     * Recherche une entité par son id.
      *
-     * @param id identifiant de l'entité
+     * @param id id de l'entité
      * @return l'entité, ou {@code null} si aucune n'a cet id
      */
     public T trouverParId(Long id) {
@@ -79,7 +79,7 @@ public abstract class GenericDao<T> {
     /**
      * Supprime une entité. Sans effet si aucune n'a cet id.
      *
-     * @param id identifiant de l'entité à supprimer
+     * @param id id de l'entité à supprimer
      */
     public void supprimer(Long id) {
         enTransaction(em -> {
@@ -97,7 +97,7 @@ public abstract class GenericDao<T> {
      * L'entité est chargée dans la transaction et Hibernate enregistre les changements au commit :
      * contrairement à {@link #modifier}, rien d'autre n'est écrasé.
      *
-     * @param id           identifiant de l'entité
+     * @param id           id de l'entité
      * @param modification changements à appliquer à l'entité chargée
      * @return {@code false} si aucune entité n'a cet id
      */

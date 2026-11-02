@@ -75,7 +75,7 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
     /**
      * Recherche un type d'assurance avec ses garanties disponibles déjà chargées.
      *
-     * @param id identifiant du type
+     * @param id id du type
      * @return le type avec ses garanties, ou {@code null} s'il n'existe pas
      */
     public TypeAssurance trouverAvecGaranties(Long id) {
@@ -107,7 +107,7 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
      * <p>
      * Un type utilisé ne peut pas être supprimé (clé étrangère dans la table contrat).
      *
-     * @param id identifiant du type
+     * @param id id du type
      * @return {@code true} si au moins un contrat utilise ce type
      */
     public boolean estUtiliseParContrat(Long id) {
@@ -122,7 +122,7 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
      * <p>
      * Les garanties proposées ne sont pas modifiées, contrairement à {@link #modifier}.
      *
-     * @param id          identifiant du type
+     * @param id          id du type
      * @param nom         nouveau nom
      * @param description nouvelle description
      * @param prixBase    nouveau prix de base
@@ -141,8 +141,8 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
      * <p>
      * Sans effet si la garantie était déjà proposée.
      *
-     * @param idType     identifiant du type
-     * @param idGarantie identifiant de la garantie à ajouter
+     * @param idType     id du type
+     * @param idGarantie id de la garantie à ajouter
      * @return {@code false} si le type ou la garantie n'existe pas
      */
     public boolean ajouterGarantie(Long idType, Long idGarantie) {
@@ -160,8 +160,8 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
      * <p>
      * Les contrats existants conservent leurs garanties.
      *
-     * @param idType     identifiant du type
-     * @param idGarantie identifiant de la garantie à retirer
+     * @param idType     id du type
+     * @param idGarantie id de la garantie à retirer
      * @return {@code false} si aucun type n'a cet id
      */
     public boolean retirerGarantie(Long idType, Long idGarantie) {

@@ -21,7 +21,7 @@ public class PieceJustificativeDao extends GenericDao<PieceJustificative> {
     /**
      * Liste les pièces jointes à un sinistre, de la plus ancienne à la plus récente.
      *
-     * @param idSinistre identifiant du sinistre
+     * @param idSinistre id du sinistre
      * @return les pièces du sinistre, liste vide s'il n'en a aucune
      */
     public List<PieceJustificative> listerParSinistre(Long idSinistre) {
@@ -37,7 +37,7 @@ public class PieceJustificativeDao extends GenericDao<PieceJustificative> {
      * <p>
      * Permet de vérifier, avant un téléchargement, que la pièce appartient bien au client connecté.
      *
-     * @param id identifiant de la pièce
+     * @param id id de la pièce
      * @return la pièce avec son propriétaire, ou {@code null} si elle n'existe pas
      */
     public PieceJustificative trouverAvecProprietaire(Long id) {
@@ -54,7 +54,7 @@ public class PieceJustificativeDao extends GenericDao<PieceJustificative> {
     /**
      * Joint une pièce à un sinistre, dans une seule transaction.
      *
-     * @param idSinistre identifiant du sinistre
+     * @param idSinistre id du sinistre
      * @param piece      pièce à enregistrer (nom, chemin et type du fichier déjà remplis)
      * @return la pièce enregistrée
      * @throws IllegalArgumentException si le sinistre n'existe pas

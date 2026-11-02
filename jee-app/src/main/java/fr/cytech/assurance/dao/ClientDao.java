@@ -56,7 +56,7 @@ public class ClientDao extends GenericDao<Client> {
     /**
      * Recherche la fiche client d'un utilisateur (celui qui est connecté, par exemple).
      *
-     * @param idUtilisateur identifiant de l'utilisateur
+     * @param idUtilisateur id de l'utilisateur
      * @return la fiche client, ou {@code null} si l'utilisateur n'est pas client
      */
     public Client trouverParUtilisateur(Long idUtilisateur) {
