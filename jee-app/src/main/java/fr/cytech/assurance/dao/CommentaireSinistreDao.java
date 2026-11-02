@@ -20,7 +20,7 @@ public class CommentaireSinistreDao extends GenericDao<CommentaireSinistre> {
     /**
      * Liste les commentaires d'un sinistre, du plus ancien au plus récent, avec leur auteur déjà chargé.
      *
-     * @param idSinistre identifiant du sinistre
+     * @param idSinistre id du sinistre
      * @return les commentaires du sinistre, liste vide s'il n'en a aucun
      */
     public List<CommentaireSinistre> listerParSinistre(Long idSinistre) {
@@ -35,8 +35,8 @@ public class CommentaireSinistreDao extends GenericDao<CommentaireSinistre> {
     /**
      * Ajoute un commentaire à un sinistre, dans une seule transaction.
      *
-     * @param idSinistre identifiant du sinistre commenté
-     * @param idAuteur   identifiant de l'utilisateur (agent) qui écrit le commentaire
+     * @param idSinistre id du sinistre commenté
+     * @param idAuteur   id de l'utilisateur (agent) qui écrit le commentaire
      * @param contenu    texte du commentaire
      * @return le commentaire enregistré
      * @throws IllegalArgumentException si le sinistre ou l'auteur n'existe pas

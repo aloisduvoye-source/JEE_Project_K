@@ -22,7 +22,7 @@ public class MessageAssistantDao extends GenericDao<MessageAssistant> {
     /**
      * Liste toute la conversation d'un utilisateur, du plus ancien message au plus récent.
      *
-     * @param idUtilisateur identifiant de l'utilisateur
+     * @param idUtilisateur id de l'utilisateur
      * @return les messages, liste vide si l'utilisateur n'a jamais écrit à l'assistant
      */
     public List<MessageAssistant> listerParUtilisateur(Long idUtilisateur) {
@@ -38,7 +38,7 @@ public class MessageAssistantDao extends GenericDao<MessageAssistant> {
      * <p>
      * Sert à donner le contexte récent de la conversation à l'assistant sans renvoyer tout l'historique.
      *
-     * @param idUtilisateur identifiant de l'utilisateur
+     * @param idUtilisateur id de l'utilisateur
      * @param nombre        nombre maximal de messages à renvoyer
      * @return au plus {@code nombre} messages, liste vide s'il n'y en a aucun
      */
@@ -57,7 +57,7 @@ public class MessageAssistantDao extends GenericDao<MessageAssistant> {
     /**
      * Ajoute un message à la conversation d'un utilisateur, dans une seule transaction.
      *
-     * @param idUtilisateur identifiant de l'utilisateur
+     * @param idUtilisateur id de l'utilisateur
      * @param auteur        qui a écrit le message : le client ou l'assistant
      * @param contenu       texte du message
      * @return le message enregistré
@@ -81,7 +81,7 @@ public class MessageAssistantDao extends GenericDao<MessageAssistant> {
     /**
      * Supprime toute la conversation d'un utilisateur.
      *
-     * @param idUtilisateur identifiant de l'utilisateur
+     * @param idUtilisateur id de l'utilisateur
      * @return le nombre de messages supprimés
      */
     public int supprimerHistorique(Long idUtilisateur) {

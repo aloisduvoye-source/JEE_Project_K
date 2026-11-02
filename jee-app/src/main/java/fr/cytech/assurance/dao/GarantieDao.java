@@ -62,7 +62,7 @@ public class GarantieDao extends GenericDao<Garantie> {
      * Une garantie souscrite ne peut pas être supprimée (clé étrangère dans contrat_garantie).
      * Une garantie seulement proposée par un type d'assurance peut l'être : le lien est supprimé avec elle.
      *
-     * @param id identifiant de la garantie
+     * @param id id de la garantie
      * @return {@code true} si au moins un contrat a souscrit cette garantie
      */
     public boolean estUtiliseeParContrat(Long id) {
@@ -75,7 +75,7 @@ public class GarantieDao extends GenericDao<Garantie> {
     /**
      * Modifie le nom, la description, le plafond et la franchise d'une garantie.
      *
-     * @param id          identifiant de la garantie
+     * @param id          id de la garantie
      * @param nom         nouveau nom
      * @param description nouvelle description
      * @param plafond     nouveau montant maximal remboursé, ou {@code null} s'il n'y en a pas

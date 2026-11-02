@@ -21,7 +21,7 @@ public class PaiementDao extends GenericDao<Paiement> {
     /**
      * Liste les échéances d'un contrat, de la plus ancienne à la plus récente.
      *
-     * @param idContrat identifiant du contrat
+     * @param idContrat id du contrat
      * @return les paiements du contrat, liste vide s'il n'en a aucun
      */
     public List<Paiement> listerParContrat(Long idContrat) {
@@ -37,7 +37,7 @@ public class PaiementDao extends GenericDao<Paiement> {
      * <p>
      * Le contrat et son type sont déjà chargés (lisibles dans une JSP).
      *
-     * @param idClient identifiant du client
+     * @param idClient id du client
      * @return les paiements du client, liste vide s'il n'en a aucun
      */
     public List<Paiement> listerParClient(Long idClient) {
@@ -85,7 +85,7 @@ public class PaiementDao extends GenericDao<Paiement> {
     /**
      * Enregistre le règlement d'une échéance et la passe au statut EFFECTUE.
      *
-     * @param id           identifiant du paiement
+     * @param id           id du paiement
      * @param datePaiement date du règlement
      * @param mode         moyen de paiement utilisé
      * @return {@code false} si aucun paiement n'a cet id
@@ -101,7 +101,7 @@ public class PaiementDao extends GenericDao<Paiement> {
     /**
      * Annule une échéance (par exemple après la résiliation du contrat).
      *
-     * @param id identifiant du paiement
+     * @param id id du paiement
      * @return {@code false} si aucun paiement n'a cet id
      */
     public boolean annuler(Long id) {

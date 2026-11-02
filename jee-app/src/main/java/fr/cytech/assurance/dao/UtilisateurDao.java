@@ -47,9 +47,9 @@ public class UtilisateurDao extends GenericDao<Utilisateur> {
     }
 
     /**
-     * Indique si un utilisateur a déjà cet identifiant.
+     * Indique si un utilisateur a déjà cet identifiant de connexion.
      *
-     * @param identifiant identifiant à vérifier
+     * @param identifiant identifiant de connexion à vérifier
      * @return {@code true} si l'identifiant est déjà pris
      */
     public boolean identifiantExiste(String identifiant) {
@@ -83,7 +83,7 @@ public class UtilisateurDao extends GenericDao<Utilisateur> {
     /**
      * Remplace le mot de passe d'un utilisateur.
      *
-     * @param id          identifiant de l'utilisateur
+     * @param id          id de l'utilisateur
      * @param nouveauHash mot de passe déjà haché ({@code BCrypt.hashpw}), jamais en clair
      * @return {@code false} si aucun utilisateur n'a cet id
      */
@@ -96,7 +96,7 @@ public class UtilisateurDao extends GenericDao<Utilisateur> {
      * <p>
      * Le rôle, le mot de passe et l'état du compte ne sont pas modifiés.
      *
-     * @param id     identifiant de l'utilisateur
+     * @param id     id de l'utilisateur
      * @param nom    nouveau nom
      * @param prenom nouveau prénom
      * @param email  nouvel email
@@ -126,7 +126,7 @@ public class UtilisateurDao extends GenericDao<Utilisateur> {
     /**
      * Active ou désactive un compte. Un compte désactivé ne peut plus se connecter.
      *
-     * @param id    identifiant de l'utilisateur
+     * @param id    id de l'utilisateur
      * @param actif {@code true} pour activer le compte, {@code false} pour le désactiver
      * @return {@code false} si aucun utilisateur n'a cet id
      */

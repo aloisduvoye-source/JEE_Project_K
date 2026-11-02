@@ -29,9 +29,9 @@ public class ContratDao extends GenericDao<Contrat> {
      * Les règles métier (garanties proposées par le type, dates, prime...) sont vérifiées par le service.
      *
      * @param contrat         contrat à créer, sans client, type ni garanties
-     * @param idClient        identifiant du client
-     * @param idTypeAssurance identifiant du type d'assurance
-     * @param idsGaranties    identifiants des garanties souscrites
+     * @param idClient        id du client
+     * @param idTypeAssurance id du type d'assurance
+     * @param idsGaranties    ids des garanties souscrites
      * @return le contrat enregistré
      * @throws IllegalArgumentException si le client, le type ou l'une des garanties n'existe pas
      */
@@ -63,7 +63,7 @@ public class ContratDao extends GenericDao<Contrat> {
     /**
      * Recherche un contrat avec son client, son type et ses garanties déjà chargés (lisibles dans une JSP).
      *
-     * @param id identifiant du contrat
+     * @param id id du contrat
      * @return le contrat avec ses détails, ou {@code null} s'il n'existe pas
      */
     public Contrat trouverAvecDetails(Long id) {
@@ -96,7 +96,7 @@ public class ContratDao extends GenericDao<Contrat> {
     /**
      * Liste les contrats d'un client, du plus récent au plus ancien, avec leur type et leurs garanties.
      *
-     * @param idClient identifiant du client
+     * @param idClient id du client
      * @return les contrats triés par date de début décroissante, liste vide si le client n'en a aucun
      */
     public List<Contrat> listerParClient(Long idClient) {
@@ -133,7 +133,7 @@ public class ContratDao extends GenericDao<Contrat> {
      * Pour une résiliation, utiliser {@link #resilier}, qui enregistre aussi la date et le motif.
      * Les transitions autorisées sont vérifiées par le service.
      *
-     * @param id     identifiant du contrat
+     * @param id     id du contrat
      * @param statut nouveau statut
      * @return {@code false} si aucun contrat n'a cet id
      */
@@ -144,7 +144,7 @@ public class ContratDao extends GenericDao<Contrat> {
     /**
      * Résilie un contrat : statut RESILIE, avec la date et le motif de résiliation.
      *
-     * @param id    identifiant du contrat
+     * @param id    id du contrat
      * @param date  date de résiliation (obligatoire en base pour un contrat résilié)
      * @param motif raison de la résiliation, ou {@code null}
      * @return {@code false} si aucun contrat n'a cet id

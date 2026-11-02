@@ -29,7 +29,7 @@ public class SinistreDao extends GenericDao<Sinistre> {
     /**
      * Recherche un sinistre avec son contrat, le client, le type d'assurance et l'agent déjà chargés.
      *
-     * @param id identifiant du sinistre
+     * @param id id du sinistre
      * @return le sinistre avec ses détails, ou {@code null} s'il n'existe pas
      */
     public Sinistre trouverAvecDetails(Long id) {
@@ -43,7 +43,7 @@ public class SinistreDao extends GenericDao<Sinistre> {
     /**
      * Liste les sinistres d'un contrat, du plus récent au plus ancien.
      *
-     * @param idContrat identifiant du contrat
+     * @param idContrat id du contrat
      * @return les sinistres avec leurs détails, liste vide si le contrat n'en a aucun
      */
     public List<Sinistre> listerParContrat(Long idContrat) {
@@ -56,7 +56,7 @@ public class SinistreDao extends GenericDao<Sinistre> {
     /**
      * Liste les sinistres de tous les contrats d'un client, du plus récent au plus ancien.
      *
-     * @param idClient identifiant du client
+     * @param idClient id du client
      * @return les sinistres avec leurs détails, liste vide si le client n'en a aucun
      */
     public List<Sinistre> listerParClient(Long idClient) {
@@ -82,7 +82,7 @@ public class SinistreDao extends GenericDao<Sinistre> {
     /**
      * Liste les sinistres attribués à un agent, du plus ancien au plus récent (ordre de traitement).
      *
-     * @param idAgent identifiant de l'utilisateur agent
+     * @param idAgent id de l'utilisateur agent
      * @return les sinistres avec leurs détails, liste vide si aucun ne lui est attribué
      */
     public List<Sinistre> listerParAgent(Long idAgent) {
@@ -97,7 +97,7 @@ public class SinistreDao extends GenericDao<Sinistre> {
      * <p>
      * Les transitions autorisées (par exemple DECLARE vers EN_ANALYSE) sont vérifiées par le service.
      *
-     * @param id     identifiant du sinistre
+     * @param id     id du sinistre
      * @param statut nouveau statut
      * @return {@code false} si aucun sinistre n'a cet id
      */
@@ -110,8 +110,8 @@ public class SinistreDao extends GenericDao<Sinistre> {
      * <p>
      * Le rôle de l'utilisateur (agent) est vérifié par le service.
      *
-     * @param id      identifiant du sinistre
-     * @param idAgent identifiant de l'utilisateur agent
+     * @param id      id du sinistre
+     * @param idAgent id de l'utilisateur agent
      * @return {@code false} si le sinistre ou l'utilisateur n'existe pas
      */
     public boolean affecterAgent(Long id, Long idAgent) {
@@ -127,7 +127,7 @@ public class SinistreDao extends GenericDao<Sinistre> {
     /**
      * Enregistre l'indemnisation d'un sinistre et le passe au statut INDEMNISE.
      *
-     * @param id      identifiant du sinistre
+     * @param id      id du sinistre
      * @param montant montant versé au client
      * @param date    date du versement
      * @return {@code false} si aucun sinistre n'a cet id
