@@ -76,6 +76,25 @@ public class TypeAssuranceService {
         }
     }
 
+    // Ne propose plus cette garantie pour les nouveaux contrats ; les contrats existants la conservent
+    // Lève TypeAssuranceInvalideException si le type n'existe pas, si la garantie n'est pas proposée
+    // ou si c'est la dernière (un contrat exige au moins une garantie : le type ne serait plus souscriptible)
+    public void retirerGarantie(Long idType, Long idGarantie) {
+        TypeAssurance type = typeAssuranceDao.trouverAvecGaranties(idType);
+        if (type == null) {
+            throw typeIntrouvable();
+        }
+        boolean proposee = type.getGaranties().stream().anyMatch(g -> g.getId().equals(idGarantie));
+        if (!proposee) {
+            throw new TypeAssuranceInvalideException("Cette garantie n'est pas proposée pour ce type d'assurance.");
+        }
+        if (type.getGaranties().size() == 1) {
+            throw new TypeAssuranceInvalideException(
+                    "Un type d'assurance doit proposer au moins une garantie : celle-ci ne peut pas être retirée.");
+        }
+        typeAssuranceDao.retirerGarantie(idType, idGarantie);
+    }
+
     // idExclu : id du type en cours de modification (il peut garder son nom), null à la création
     private void verifierNomDisponible(String nom, Long idExclu) {
         if (typeAssuranceDao.existeAvecNom(nom, idExclu)) {
