@@ -14,6 +14,9 @@
   <c:if test="${not empty param.cree}">
     <p>Le type d'assurance a été créé.</p>
   </c:if>
+  <c:if test="${not empty param.modifie}">
+    <p>Le type d'assurance a été modifié.</p>
+  </c:if>
   <c:if test="${not empty param.supprime}">
     <p>Le type d'assurance a été supprimé.</p>
   </c:if>
@@ -49,6 +52,7 @@
             <c:if test="${empty type.garanties}">Aucune</c:if>
           </td>
           <td>
+            <a href="${pageContext.request.contextPath}/admin/types-assurance/modifier?id=${type.id}">Modifier</a>
             <%-- POST : la suppression ne se fait pas par un simple lien ; refusée si un contrat utilise ce type --%>
             <form method="post" action="${pageContext.request.contextPath}/admin/types-assurance/supprimer"
                   onsubmit="return confirm('Supprimer ce type d\'assurance ?');">
