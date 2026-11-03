@@ -70,7 +70,7 @@ public class ModifierTypeAssuranceServlet extends HttpServlet {
         Validateur v = new Validateur();
         v.obligatoire("nom", nom, "Le nom", 100);
         v.longueur("description", description, "La description", 1000);
-        BigDecimal prixBase = v.montant("prixBase", Validateur.nettoyer(request.getParameter("prixBase")), "Le prix de base");
+        BigDecimal prixBase = v.montantPositif("prixBase", Validateur.nettoyer(request.getParameter("prixBase")), "Le prix de base");
 
         if (v.estValide()) {
             try {
