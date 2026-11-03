@@ -15,7 +15,10 @@
     <p>Le contrat n° <c:out value="${param.cree}"/> a été créé. Il est en attente d'activation.</p>
   </c:if>
 
-  <p><a href="${pageContext.request.contextPath}/agent/contrats/nouveau">Nouveau contrat</a></p>
+  <%-- Seul un agent crée des contrats : l'admin consulte cette page sans le lien --%>
+  <c:if test="${sessionScope.utilisateur.role == 'AGENT'}">
+    <p><a href="${pageContext.request.contextPath}/agent/contrats/nouveau">Nouveau contrat</a></p>
+  </c:if>
 
   <table border="1">
     <thead>

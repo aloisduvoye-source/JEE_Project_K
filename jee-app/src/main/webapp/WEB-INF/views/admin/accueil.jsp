@@ -44,21 +44,9 @@
 
   <section id="types">
     <h2>Types d'assurance</h2>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Nom</th>
-          <th>Description</th>
-          <th>Prix de base</th>
-          <th>Garanties disponibles</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colspan="4">Aucun type d'assurance à afficher pour l'instant.</td>
-        </tr>
-      </tbody>
-    </table>
+    <ul>
+      <li><a href="${pageContext.request.contextPath}/admin/types-assurance">Gérer les types d'assurance</a></li>
+    </ul>
   </section>
 
   <section id="contrats">
