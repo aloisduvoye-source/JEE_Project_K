@@ -32,6 +32,9 @@ CREATE TABLE IF NOT EXISTS utilisateur(
     date_creation           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE UNIQUE INDEX uk_utilisateur_admin_unique
+    ON utilisateur ((CASE WHEN role = 'ADMIN' THEN 1 END));
+
 CREATE TABLE IF NOT EXISTS client(
     id                      SERIAL PRIMARY KEY,
     id_utilisateur          BIGINT UNSIGNED NOT NULL UNIQUE,
