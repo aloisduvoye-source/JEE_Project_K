@@ -11,6 +11,12 @@
 
   <h1>Types d'assurance</h1>
 
+  <c:if test="${not empty param.cree}">
+    <p>Le type d'assurance a été créé.</p>
+  </c:if>
+
+  <p><a href="${pageContext.request.contextPath}/admin/types-assurance/nouveau">Nouveau type d'assurance</a></p>
+
   <table border="1">
     <thead>
       <tr>
