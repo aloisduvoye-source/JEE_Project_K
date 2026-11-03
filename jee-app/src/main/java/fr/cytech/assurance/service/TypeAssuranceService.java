@@ -1,18 +1,22 @@
 package fr.cytech.assurance.service;
 
+import fr.cytech.assurance.dao.GarantieDao;
 import fr.cytech.assurance.dao.TypeAssuranceDao;
 import fr.cytech.assurance.exception.TypeAssuranceInvalideException;
+import fr.cytech.assurance.model.Garantie;
 import fr.cytech.assurance.model.TypeAssurance;
 import jakarta.persistence.PersistenceException;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Set;
 
 // Règles et lectures concernant le catalogue des types d'assurance
 // Les servlets vérifient le format des saisies (Validateur), ce service applique les règles métier
 public class TypeAssuranceService {
 
     private final TypeAssuranceDao typeAssuranceDao = new TypeAssuranceDao();
+    private final GarantieDao garantieDao = new GarantieDao();
 
     // Types d'assurance triés par nom
     public List<TypeAssurance> listerTous() {
@@ -29,16 +33,33 @@ public class TypeAssuranceService {
         return typeAssuranceDao.trouverAvecGaranties(id);
     }
 
-    // Crée un type sans garantie : elles sont ajoutées ensuite avec ajouterGarantie
-    // Lève TypeAssuranceInvalideException si le nom est déjà pris ou le prix incorrect
-    public TypeAssurance creer(String nom, String description, BigDecimal prixBase) {
+    // Toutes les garanties existantes triées par nom, pour choisir celles qu'un type propose
+    public List<Garantie> listerGaranties() {
+        return garantieDao.listerParNom();
+    }
+
+    // Crée un type avec les garanties qu'il propose, en une seule opération
+    // Lève TypeAssuranceInvalideException si le nom est déjà pris, le prix incorrect,
+    // aucune garantie choisie (un contrat en exige au moins une) ou une garantie inexistante
+    public TypeAssurance creer(String nom, String description, BigDecimal prixBase, Set<Long> idsGaranties) {
         verifierNomDisponible(nom, null);
         verifierPrixBase(prixBase);
+        if (idsGaranties == null || idsGaranties.isEmpty()) {
+            throw new TypeAssuranceInvalideException("Choisissez au moins une garantie.");
+        }
 
         TypeAssurance type = new TypeAssurance();
         type.setNom(nom);
         type.setDescription(descriptionOuNull(description));
         type.setPrixBase(prixBase);
+        for (Long idGarantie : idsGaranties) {
+            Garantie garantie = garantieDao.trouverParId(idGarantie);
+            if (garantie == null) {
+                throw new TypeAssuranceInvalideException("Une des garanties choisies n'existe pas.");
+            }
+            type.getGaranties().add(garantie);
+        }
+        // Le type et ses lignes dans type_assurance_garantie sont enregistrés dans la même transaction
         return typeAssuranceDao.creer(type);
     }
 
