@@ -3,6 +3,7 @@ package fr.cytech.assurance.service;
 import fr.cytech.assurance.dao.TypeAssuranceDao;
 import fr.cytech.assurance.exception.TypeAssuranceInvalideException;
 import fr.cytech.assurance.model.TypeAssurance;
+import jakarta.persistence.PersistenceException;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -49,6 +50,24 @@ public class TypeAssuranceService {
         }
     }
 
+    // Supprime un type et ses liens vers les garanties (les garanties elles-mêmes sont conservées)
+    // Lève TypeAssuranceInvalideException si le type n'existe pas ou si un contrat l'utilise
+    public void supprimer(Long id) {
+        if (typeAssuranceDao.trouverParId(id) == null) {
+            throw typeIntrouvable();
+        }
+        if (typeAssuranceDao.estUtiliseParContrat(id)) {
+            throw typeUtiliseParContrat();
+        }
+        try {
+            typeAssuranceDao.supprimer(id);
+        } catch (PersistenceException e) {
+            // Un contrat a été créé avec ce type entre la vérification et la suppression :
+            // la clé étrangère de la table contrat refuse la suppression
+            throw typeUtiliseParContrat();
+        }
+    }
+
     // idExclu : id du type en cours de modification (il peut garder son nom), null à la création
     private void verifierNomDisponible(String nom, Long idExclu) {
         if (typeAssuranceDao.existeAvecNom(nom, idExclu)) {
@@ -65,6 +84,11 @@ public class TypeAssuranceService {
 
     private TypeAssuranceInvalideException typeIntrouvable() {
         return new TypeAssuranceInvalideException("Ce type d'assurance n'existe pas.");
+    }
+
+    private TypeAssuranceInvalideException typeUtiliseParContrat() {
+        return new TypeAssuranceInvalideException(
+                "Ce type d'assurance est utilisé par au moins un contrat : il ne peut pas être supprimé.");
     }
 
     // Une description vide est enregistrée comme absente (NULL en base)
