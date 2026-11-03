@@ -36,6 +36,19 @@ public class TypeAssuranceService {
         return typeAssuranceDao.creer(type);
     }
 
+    // Modifie le nom, la description et le prix de base ; les garanties proposées ne changent pas
+    // Les contrats existants gardent leur prime : le prix de base ne compte que pour les nouveaux contrats
+    // Lève TypeAssuranceInvalideException si le type n'existe pas, le nom est pris ou le prix incorrect
+    public void modifier(Long id, String nom, String description, BigDecimal prixBase) {
+        verifierNomDisponible(nom, id);
+        verifierPrixBase(prixBase);
+
+        // modifierInfos et non modifier (merge) : merge effacerait les garanties non chargées
+        if (!typeAssuranceDao.modifierInfos(id, nom, descriptionOuNull(description), prixBase)) {
+            throw typeIntrouvable();
+        }
+    }
+
     // idExclu : id du type en cours de modification (il peut garder son nom), null à la création
     private void verifierNomDisponible(String nom, Long idExclu) {
         if (typeAssuranceDao.existeAvecNom(nom, idExclu)) {
@@ -48,6 +61,10 @@ public class TypeAssuranceService {
         if (prixBase == null || prixBase.signum() <= 0) {
             throw new TypeAssuranceInvalideException("Le prix de base doit être supérieur à 0.");
         }
+    }
+
+    private TypeAssuranceInvalideException typeIntrouvable() {
+        return new TypeAssuranceInvalideException("Ce type d'assurance n'existe pas.");
     }
 
     // Une description vide est enregistrée comme absente (NULL en base)
