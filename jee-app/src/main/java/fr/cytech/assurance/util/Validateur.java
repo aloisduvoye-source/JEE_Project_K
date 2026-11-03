@@ -143,6 +143,17 @@ public class Validateur {
         }
     }
 
+    // Montant obligatoire et strictement positif (prix, prime...), avec au plus 2 décimales
+    // Renvoie le montant lu, ou null si le champ est vide, invalide, nul ou négatif
+    public BigDecimal montantPositif(String champ, String valeur, String libelle) {
+        BigDecimal montant = montant(champ, valeur, libelle);
+        if (montant != null && montant.signum() <= 0) {
+            erreur(champ, libelle + " doit être supérieur à 0.");
+            return null;
+        }
+        return montant;
+    }
+
     // Nouveau mot de passe : longueur minimale, puis confirmation identique
     public void nouveauMotDePasse(String champ, String valeur, String libelle,
                                   String champConfirmation, String confirmation) {
