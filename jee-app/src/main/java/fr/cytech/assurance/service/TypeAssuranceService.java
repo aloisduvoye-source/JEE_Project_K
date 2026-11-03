@@ -19,6 +19,11 @@ public class TypeAssuranceService {
         return typeAssuranceDao.listerParNom();
     }
 
+    // Types triés par nom, avec leurs garanties disponibles déjà chargées (lisibles dans une JSP)
+    public List<TypeAssurance> listerAvecGaranties() {
+        return typeAssuranceDao.listerAvecGaranties();
+    }
+
     // Type avec ses garanties disponibles, ou null
     public TypeAssurance trouverAvecGaranties(Long id) {
         return typeAssuranceDao.trouverAvecGaranties(id);
