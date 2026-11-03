@@ -14,6 +14,14 @@
   <c:if test="${not empty param.cree}">
     <p>Le type d'assurance a été créé.</p>
   </c:if>
+  <c:if test="${not empty param.supprime}">
+    <p>Le type d'assurance a été supprimé.</p>
+  </c:if>
+  <%-- Erreur de suppression transmise par la session (SupprimerTypeAssuranceServlet), affichée une seule fois --%>
+  <c:if test="${not empty sessionScope.erreurTypeAssurance}">
+    <p><c:out value="${sessionScope.erreurTypeAssurance}"/></p>
+    <c:remove var="erreurTypeAssurance" scope="session"/>
+  </c:if>
 
   <p><a href="${pageContext.request.contextPath}/admin/types-assurance/nouveau">Nouveau type d'assurance</a></p>
 
@@ -24,6 +32,7 @@
         <th>Description</th>
         <th>Prix de base</th>
         <th>Garanties disponibles</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -39,11 +48,19 @@
             </c:forEach>
             <c:if test="${empty type.garanties}">Aucune</c:if>
           </td>
+          <td>
+            <%-- POST : la suppression ne se fait pas par un simple lien ; refusée si un contrat utilise ce type --%>
+            <form method="post" action="${pageContext.request.contextPath}/admin/types-assurance/supprimer"
+                  onsubmit="return confirm('Supprimer ce type d\'assurance ?');">
+              <input type="hidden" name="id" value="${type.id}">
+              <button type="submit">Supprimer</button>
+            </form>
+          </td>
         </tr>
       </c:forEach>
       <c:if test="${empty types}">
         <tr>
-          <td colspan="4">Aucun type d'assurance pour l'instant.</td>
+          <td colspan="5">Aucun type d'assurance pour l'instant.</td>
         </tr>
       </c:if>
     </tbody>
