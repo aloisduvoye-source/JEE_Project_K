@@ -49,6 +49,7 @@
     </tbody>
   </table>
 
-  <p><a href="${pageContext.request.contextPath}/agent/accueil">Retour à l'espace agent</a></p>
+  <%-- Page partagée agent / admin : retour vers l'espace du rôle connecté --%>
+  <p><a href="${pageContext.request.contextPath}${sessionScope.utilisateur.role.accueil}">Retour à mon espace</a></p>
 </body>
 </html>
