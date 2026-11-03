@@ -32,6 +32,12 @@ CREATE TABLE IF NOT EXISTS utilisateur(
     date_creation           TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Un seul administrateur : l'expression vaut 1 pour un ADMIN et NULL sinon.
+-- Un index UNIQUE accepte plusieurs NULL, donc seul un deuxième ADMIN est refusé
+-- (à l'insertion comme lors d'un changement de rôle).
+CREATE UNIQUE INDEX uk_utilisateur_admin_unique
+    ON utilisateur ((CASE WHEN role = 'ADMIN' THEN 1 END));
+
 CREATE TABLE IF NOT EXISTS client(
     id                      SERIAL PRIMARY KEY,
     id_utilisateur          BIGINT UNSIGNED NOT NULL UNIQUE,
