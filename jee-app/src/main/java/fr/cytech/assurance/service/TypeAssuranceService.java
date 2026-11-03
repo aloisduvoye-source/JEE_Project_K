@@ -68,6 +68,14 @@ public class TypeAssuranceService {
         }
     }
 
+    // Propose une garantie existante avec ce type (sans effet si elle l'était déjà)
+    // Lève TypeAssuranceInvalideException si le type ou la garantie n'existe pas
+    public void ajouterGarantie(Long idType, Long idGarantie) {
+        if (!typeAssuranceDao.ajouterGarantie(idType, idGarantie)) {
+            throw new TypeAssuranceInvalideException("Ce type d'assurance ou cette garantie n'existe pas.");
+        }
+    }
+
     // idExclu : id du type en cours de modification (il peut garder son nom), null à la création
     private void verifierNomDisponible(String nom, Long idExclu) {
         if (typeAssuranceDao.existeAvecNom(nom, idExclu)) {
