@@ -67,12 +67,15 @@
               <input type="hidden" name="action" value="${type.actif ? 'archiver' : 'reactiver'}">
               <button type="submit">${type.actif ? 'Archiver' : 'Réactiver'}</button>
             </form>
-            <%-- POST : la suppression ne se fait pas par un simple lien ; refusée si un contrat utilise ce type --%>
-            <form method="post" action="${pageContext.request.contextPath}/admin/types-assurance/supprimer"
-                  onsubmit="return confirm('Supprimer ce type d\'assurance ?');">
-              <input type="hidden" name="id" value="${type.id}">
-              <button type="submit">Supprimer</button>
-            </form>
+            <%-- Suppression proposée seulement pour un type jamais utilisé (créé par erreur, doublon...) :
+                 un type utilisé par un contrat s'archive. Le service refuse de toute façon la suppression. --%>
+            <c:if test="${not typesUtilises.contains(type.id)}">
+              <form method="post" action="${pageContext.request.contextPath}/admin/types-assurance/supprimer"
+                    onsubmit="return confirm('Supprimer ce type d\'assurance ?');">
+                <input type="hidden" name="id" value="${type.id}">
+                <button type="submit">Supprimer</button>
+              </form>
+            </c:if>
           </td>
         </tr>
       </c:forEach>
