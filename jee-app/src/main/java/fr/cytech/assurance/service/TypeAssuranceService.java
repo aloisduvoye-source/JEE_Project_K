@@ -23,6 +23,11 @@ public class TypeAssuranceService {
         return typeAssuranceDao.listerParNom();
     }
 
+    // Types non archivés triés par nom : ceux que l'on peut proposer pour un nouveau contrat
+    public List<TypeAssurance> listerActifs() {
+        return typeAssuranceDao.listerActifs();
+    }
+
     // Types triés par nom, avec leurs garanties disponibles déjà chargées (lisibles dans une JSP)
     public List<TypeAssurance> listerAvecGaranties() {
         return typeAssuranceDao.listerAvecGaranties();
