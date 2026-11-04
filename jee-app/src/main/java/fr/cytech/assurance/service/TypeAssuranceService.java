@@ -163,7 +163,8 @@ public class TypeAssuranceService {
 
     private TypeAssuranceInvalideException typeUtiliseParContrat() {
         return new TypeAssuranceInvalideException(
-                "Ce type d'assurance est utilisé par au moins un contrat : il ne peut pas être supprimé.");
+                "Ce type d'assurance est utilisé par au moins un contrat : il ne peut pas être supprimé. "
+                        + "Archivez-le pour ne plus le proposer.");
     }
 
     // Une description vide est enregistrée comme absente (NULL en base)
