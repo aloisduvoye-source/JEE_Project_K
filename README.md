@@ -41,6 +41,7 @@ mvn -f jee-app/pom.xml clean package    # doit afficher BUILD SUCCESS
 
 # 3. Publier la branche puis ouvrir la Pull Request sur GitHub
 git push -u origin nom_de_la_branche
+```
 
 ## Prérequis
 - **Java 17** ou plus (`java -version`) et **Maven** (`mvn -version`) : pour construire l'application
