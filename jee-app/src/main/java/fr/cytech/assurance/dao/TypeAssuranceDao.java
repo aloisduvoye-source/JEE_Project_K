@@ -4,7 +4,9 @@ import fr.cytech.assurance.model.Garantie;
 import fr.cytech.assurance.model.TypeAssurance;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Accès en base aux types d'assurance.
@@ -126,6 +128,19 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
                         "SELECT COUNT(c) FROM Contrat c WHERE c.typeAssurance.id = :id", Long.class)
                 .setParameter("id", id)
                 .getSingleResult()) > 0;
+    }
+
+    /**
+     * Ids des types d'assurance utilisés par au moins un contrat, en une seule requête.
+     * <p>
+     * Sert à la liste des types : on évite une requête {@link #estUtiliseParContrat} par ligne.
+     *
+     * @return les ids des types utilisés, ensemble vide si aucun contrat n'existe
+     */
+    public Set<Long> idsUtilisesParContrat() {
+        return enLecture(em -> new HashSet<>(em.createQuery(
+                        "SELECT DISTINCT c.typeAssurance.id FROM Contrat c", Long.class)
+                .getResultList()));
     }
 
     /**
