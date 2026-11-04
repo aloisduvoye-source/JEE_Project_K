@@ -18,11 +18,6 @@ public class TypeAssuranceService {
     private final TypeAssuranceDao typeAssuranceDao = new TypeAssuranceDao();
     private final GarantieDao garantieDao = new GarantieDao();
 
-    // Types d'assurance triés par nom
-    public List<TypeAssurance> listerTous() {
-        return typeAssuranceDao.listerParNom();
-    }
-
     // Types non archivés triés par nom : ceux que l'on peut proposer pour un nouveau contrat
     public List<TypeAssurance> listerActifs() {
         return typeAssuranceDao.listerActifs();

@@ -36,17 +36,6 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
     }
 
     /**
-     * Liste tous les types d'assurance, triés par nom.
-     *
-     * @return les types triés, liste vide s'il n'y en a aucun
-     */
-    public List<TypeAssurance> listerParNom() {
-        return enLecture(em -> em.createQuery(
-                        "SELECT t FROM TypeAssurance t ORDER BY t.nom", TypeAssurance.class)
-                .getResultList());
-    }
-
-    /**
      * Liste les types d'assurance non archivés, triés par nom : ceux que l'on peut souscrire.
      *
      * @return les types actifs triés, liste vide s'il n'y en a aucun
@@ -68,20 +57,6 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
         return enLecture(em -> em.createQuery(
                         "SELECT DISTINCT t FROM TypeAssurance t LEFT JOIN FETCH t.garanties ORDER BY t.nom",
                         TypeAssurance.class)
-                .getResultList());
-    }
-
-    /**
-     * Recherche les types dont le nom contient un mot-clé, sans tenir compte des majuscules.
-     *
-     * @param motCle texte à chercher dans le nom ({@code %} et {@code _} servent de jokers)
-     * @return les types correspondants triés par nom, liste vide si aucun ne correspond
-     */
-    public List<TypeAssurance> rechercher(String motCle) {
-        return enLecture(em -> em.createQuery(
-                        "SELECT t FROM TypeAssurance t WHERE LOWER(t.nom) LIKE LOWER(:motif) ORDER BY t.nom",
-                        TypeAssurance.class)
-                .setParameter("motif", "%" + motCle + "%")
                 .getResultList());
     }
 
