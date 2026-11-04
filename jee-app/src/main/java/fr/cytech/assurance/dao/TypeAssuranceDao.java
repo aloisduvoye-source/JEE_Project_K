@@ -45,6 +45,17 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
     }
 
     /**
+     * Liste les types d'assurance non archivés, triés par nom : ceux que l'on peut souscrire.
+     *
+     * @return les types actifs triés, liste vide s'il n'y en a aucun
+     */
+    public List<TypeAssurance> listerActifs() {
+        return enLecture(em -> em.createQuery(
+                        "SELECT t FROM TypeAssurance t WHERE t.actif = true ORDER BY t.nom", TypeAssurance.class)
+                .getResultList());
+    }
+
+    /**
      * Liste tous les types d'assurance triés par nom, avec leurs garanties déjà chargées.
      * <p>
      * Les garanties restent lisibles après la fermeture de l'EntityManager (dans une JSP par exemple).
@@ -134,6 +145,19 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
             t.setDescription(description);
             t.setPrixBase(prixBase);
         });
+    }
+
+    /**
+     * Archive ou réactive un type d'assurance.
+     * <p>
+     * Un type archivé n'est plus proposé pour les nouveaux contrats ; les contrats existants le conservent.
+     *
+     * @param id    id du type
+     * @param actif {@code true} pour réactiver le type, {@code false} pour l'archiver
+     * @return {@code false} si aucun type n'a cet id
+     */
+    public boolean changerEtat(Long id, boolean actif) {
+        return mettreAJour(id, t -> t.setActif(actif));
     }
 
     /**
