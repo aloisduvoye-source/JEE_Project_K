@@ -62,9 +62,8 @@
           <td>
             <a href="${pageContext.request.contextPath}/admin/types-assurance/modifier?id=${type.id}">Modifier</a>
             <%-- Archiver : alternative à la suppression pour un type utilisé par des contrats --%>
-            <form method="post" action="${pageContext.request.contextPath}/admin/types-assurance/archiver">
+            <form method="post" action="${pageContext.request.contextPath}/admin/types-assurance/${type.actif ? 'archiver' : 'reactiver'}">
               <input type="hidden" name="id" value="${type.id}">
-              <input type="hidden" name="action" value="${type.actif ? 'archiver' : 'reactiver'}">
               <button type="submit">${type.actif ? 'Archiver' : 'Réactiver'}</button>
             </form>
             <%-- Suppression proposée seulement pour un type jamais utilisé (créé par erreur, doublon...) :
