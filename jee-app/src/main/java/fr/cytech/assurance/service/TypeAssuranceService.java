@@ -108,6 +108,14 @@ public class TypeAssuranceService {
         }
     }
 
+    // Réactive un type archivé : il est de nouveau proposé pour les nouveaux contrats
+    // Lève TypeAssuranceInvalideException si le type n'existe pas
+    public void reactiver(Long id) {
+        if (!typeAssuranceDao.changerEtat(id, true)) {
+            throw typeIntrouvable();
+        }
+    }
+
     // Propose une garantie existante avec ce type (sans effet si elle l'était déjà)
     // Lève TypeAssuranceInvalideException si le type ou la garantie n'existe pas
     public void ajouterGarantie(Long idType, Long idGarantie) {
