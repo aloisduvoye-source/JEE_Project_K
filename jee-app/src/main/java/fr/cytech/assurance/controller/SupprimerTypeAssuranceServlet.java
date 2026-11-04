@@ -2,6 +2,7 @@ package fr.cytech.assurance.controller;
 
 import fr.cytech.assurance.exception.TypeAssuranceInvalideException;
 import fr.cytech.assurance.service.TypeAssuranceService;
+import fr.cytech.assurance.util.MessageFlash;
 import fr.cytech.assurance.util.Validateur;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -15,9 +16,6 @@ import java.io.IOException;
 @WebServlet("/admin/types-assurance/supprimer")
 public class SupprimerTypeAssuranceServlet extends HttpServlet {
 
-    // Message d'erreur gardé en session le temps de la redirection, affiché une fois par la liste
-    public static final String ATTRIBUT_ERREUR = "erreurTypeAssurance";
-
     private final TypeAssuranceService typeAssuranceService = new TypeAssuranceService();
 
     @Override
@@ -27,7 +25,7 @@ public class SupprimerTypeAssuranceServlet extends HttpServlet {
         Validateur v = new Validateur();
         Long id = v.identifiant("id", Validateur.nettoyer(request.getParameter("id")), "Le type d'assurance");
         if (!v.estValide()) {
-            request.getSession().setAttribute(ATTRIBUT_ERREUR, v.getErreurs().get("id"));
+            MessageFlash.erreur(request, v.getErreurs().get("id"));
             response.sendRedirect(liste);
             return;
         }
@@ -37,7 +35,7 @@ public class SupprimerTypeAssuranceServlet extends HttpServlet {
             response.sendRedirect(liste + "?supprime=1");
         } catch (TypeAssuranceInvalideException e) {
             // Type introuvable ou utilisé par un contrat
-            request.getSession().setAttribute(ATTRIBUT_ERREUR, e.getMessage());
+            MessageFlash.erreur(request, e.getMessage());
             response.sendRedirect(liste);
         }
     }

@@ -26,10 +26,10 @@
   <c:if test="${not empty param.reactive}">
     <p>Le type d'assurance a été réactivé.</p>
   </c:if>
-  <%-- Erreur transmise par la session (suppression, archivage...), affichée une seule fois --%>
-  <c:if test="${not empty sessionScope.erreurTypeAssurance}">
-    <p><c:out value="${sessionScope.erreurTypeAssurance}"/></p>
-    <c:remove var="erreurTypeAssurance" scope="session"/>
+  <%-- Erreur enregistrée avant la redirection (MessageFlash), affichée une seule fois --%>
+  <c:if test="${not empty sessionScope.messageErreur}">
+    <p><c:out value="${sessionScope.messageErreur}"/></p>
+    <c:remove var="messageErreur" scope="session"/>
   </c:if>
 
   <p><a href="${pageContext.request.contextPath}/admin/types-assurance/nouveau">Nouveau type d'assurance</a></p>

@@ -4,6 +4,7 @@ import fr.cytech.assurance.exception.TypeAssuranceInvalideException;
 import fr.cytech.assurance.model.Garantie;
 import fr.cytech.assurance.model.TypeAssurance;
 import fr.cytech.assurance.service.TypeAssuranceService;
+import fr.cytech.assurance.util.MessageFlash;
 import fr.cytech.assurance.util.Validateur;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -129,7 +130,7 @@ public class ModifierTypeAssuranceServlet extends HttpServlet {
 
     // Type introuvable : retour à la liste, qui affiche le message une fois
     private void retourListe(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        request.getSession().setAttribute(SupprimerTypeAssuranceServlet.ATTRIBUT_ERREUR, "Ce type d'assurance n'existe pas.");
+        MessageFlash.erreur(request, "Ce type d'assurance n'existe pas.");
         response.sendRedirect(request.getContextPath() + "/admin/types-assurance");
     }
 

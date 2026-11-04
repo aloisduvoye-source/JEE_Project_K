@@ -2,6 +2,7 @@ package fr.cytech.assurance.controller;
 
 import fr.cytech.assurance.exception.TypeAssuranceInvalideException;
 import fr.cytech.assurance.service.TypeAssuranceService;
+import fr.cytech.assurance.util.MessageFlash;
 import fr.cytech.assurance.util.Validateur;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -25,7 +26,7 @@ public class ArchiverTypeAssuranceServlet extends HttpServlet {
         Validateur v = new Validateur();
         Long id = v.identifiant("id", Validateur.nettoyer(request.getParameter("id")), "Le type d'assurance");
         if (!v.estValide()) {
-            request.getSession().setAttribute(SupprimerTypeAssuranceServlet.ATTRIBUT_ERREUR, v.getErreurs().get("id"));
+            MessageFlash.erreur(request, v.getErreurs().get("id"));
             response.sendRedirect(liste);
             return;
         }
@@ -41,7 +42,7 @@ public class ArchiverTypeAssuranceServlet extends HttpServlet {
             }
         } catch (TypeAssuranceInvalideException e) {
             // Type introuvable
-            request.getSession().setAttribute(SupprimerTypeAssuranceServlet.ATTRIBUT_ERREUR, e.getMessage());
+            MessageFlash.erreur(request, e.getMessage());
             response.sendRedirect(liste);
         }
     }
