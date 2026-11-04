@@ -33,6 +33,11 @@ public class TypeAssurance {
     @Column(name = "prix_base", nullable = false, precision = 12, scale = 2)
     private BigDecimal prixBase;
 
+    // Un type archivé n'est plus proposé pour les nouveaux contrats,
+    // mais reste lié aux contrats existants (historique, sinistres, statistiques)
+    @Column(name = "actif", nullable = false)
+    private boolean actif = true;
+
     // Garanties que l'on peut souscrire avec ce type d'assurance (table type_assurance_garantie)
     @ManyToMany
     @JoinTable(name = "type_assurance_garantie",
@@ -51,6 +56,8 @@ public class TypeAssurance {
     public void setDescription(String description) {this.description = description;}
     public BigDecimal getPrixBase() {return prixBase;}
     public void setPrixBase(BigDecimal prixBase) {this.prixBase = prixBase;}
+    public boolean isActif() {return actif;}
+    public void setActif(boolean actif) {this.actif = actif;}
     public Set<Garantie> getGaranties() {return garanties;}
     public void setGaranties(Set<Garantie> garanties) {this.garanties = garanties;}
 }
