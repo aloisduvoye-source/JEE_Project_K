@@ -26,6 +26,23 @@ jee-app/                 Version 1 : Servlets + JSP + Hibernate/JDBC (Tomcat)
     assets/              css/, js/, img/
 ```
 
+## Travailler à plusieurs (branches et Pull Requests)
+
+On ne travaille jamais directement sur `main` : chaque mission part de `main` à jour dans sa propre branche, puis revient via une Pull Request relue par un autre membre.
+
+```bash
+# 1. Repartir de main à jour et créer sa branche (une mission = une branche)
+git switch main
+git pull origin main
+git switch -c nom_de_la_branche
+
+# 2. Travailler, puis committer. Ne JAMAIS committer sans compiler :
+mvn -f jee-app/pom.xml clean package    # doit afficher BUILD SUCCESS
+
+# 3. Publier la branche puis ouvrir la Pull Request sur GitHub
+git push -u origin nom_de_la_branche
+```
+
 ## Prérequis
 - **Java 17** ou plus (`java -version`) et **Maven** (`mvn -version`) : pour construire l'application
 - **Docker** avec **Docker Compose** : MySQL et Tomcat tournent dans des conteneurs, rien d'autre à installer

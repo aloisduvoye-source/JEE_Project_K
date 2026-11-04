@@ -1,0 +1,25 @@
+# CI du projet : compile l'application à chaque push sur main et à chaque Pull Request.
+# Java 17, comme le Tomcat du projet (tomcat:10.1-jdk17).
+
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Recuperer le code
+        uses: actions/checkout@v5
+
+      - name: Installer Java 17
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Compiler (mvn clean package)
+        run: mvn -f jee-app/pom.xml clean package
