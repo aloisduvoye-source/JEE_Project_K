@@ -34,6 +34,16 @@ public class Validateur {
         return valeur == null ? "" : valeur.trim();
     }
 
+    // Identifiant facultatif lu dans l'adresse (?id=..., ?type=...), sans message d'erreur
+    // Renvoie null s'il est absent ou non numérique : la servlet décide quoi afficher
+    public static Long idOuNull(String valeur) {
+        try {
+            return Long.valueOf(nettoyer(valeur));
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
     // Ajoute un message, sauf si le champ a déjà une erreur
     public void erreur(String champ, String message) {
         erreurs.putIfAbsent(champ, message);

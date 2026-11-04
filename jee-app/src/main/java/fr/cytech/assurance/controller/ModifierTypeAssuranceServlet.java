@@ -120,12 +120,8 @@ public class ModifierTypeAssuranceServlet extends HttpServlet {
 
     // Type désigné par le paramètre id (avec ses garanties), ou null s'il est absent, invalide ou inconnu
     private TypeAssurance typeDemande(HttpServletRequest request) {
-        String valeur = Validateur.nettoyer(request.getParameter("id"));
-        try {
-            return valeur.isEmpty() ? null : typeAssuranceService.trouverAvecGaranties(Long.valueOf(valeur));
-        } catch (NumberFormatException e) {
-            return null;
-        }
+        Long id = Validateur.idOuNull(request.getParameter("id"));
+        return id == null ? null : typeAssuranceService.trouverAvecGaranties(id);
     }
 
     // Type introuvable : retour à la liste, qui affiche le message une fois
