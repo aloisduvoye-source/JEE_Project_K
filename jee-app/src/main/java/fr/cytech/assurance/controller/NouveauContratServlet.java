@@ -85,13 +85,14 @@ public class NouveauContratServlet extends HttpServlet {
         for (String champ : new String[]{"client", "dateDebut", "dateFin", "prime"}) {
             request.setAttribute(champ, Validateur.nettoyer(request.getParameter(champ)));
         }
-        afficher(request, response, idType == null ? null : typeAssuranceService.trouverAvecGaranties(idType), idsGaranties);
+        afficher(request, response, typeDemande(Validateur.nettoyer(request.getParameter("type"))), idsGaranties);
     }
 
-    // Type demandé dans l'adresse (?type=...), ou null s'il est absent ou inconnu
+    // Type demandé (?type=...), ou null s'il est absent, inconnu ou archivé (retour à l'étape 1)
     private TypeAssurance typeDemande(String valeur) {
         try {
-            return valeur.isEmpty() ? null : typeAssuranceService.trouverAvecGaranties(Long.valueOf(valeur));
+            TypeAssurance type = valeur.isEmpty() ? null : typeAssuranceService.trouverAvecGaranties(Long.valueOf(valeur));
+            return type != null && type.isActif() ? type : null;
         } catch (NumberFormatException e) {
             return null;
         }
@@ -99,7 +100,8 @@ public class NouveauContratServlet extends HttpServlet {
 
     private void afficher(HttpServletRequest request, HttpServletResponse response,
                           TypeAssurance type, Set<Long> garantiesCochees) throws ServletException, IOException {
-        request.setAttribute("types", typeAssuranceService.listerTous());
+        // Seuls les types non archivés sont proposés pour un nouveau contrat
+        request.setAttribute("types", typeAssuranceService.listerActifs());
         request.setAttribute("typeChoisi", type);
         if (type != null) {
             request.setAttribute("clients", clientService.listerActifs());
