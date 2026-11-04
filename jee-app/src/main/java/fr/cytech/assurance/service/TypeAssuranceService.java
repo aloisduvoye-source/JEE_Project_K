@@ -33,6 +33,11 @@ public class TypeAssuranceService {
         return typeAssuranceDao.listerAvecGaranties();
     }
 
+    // Ids des types utilisés par au moins un contrat : ceux-là ne peuvent pas être supprimés, seulement archivés
+    public Set<Long> idsUtilisesParContrat() {
+        return typeAssuranceDao.idsUtilisesParContrat();
+    }
+
     // Type avec ses garanties disponibles, ou null
     public TypeAssurance trouverAvecGaranties(Long id) {
         return typeAssuranceDao.trouverAvecGaranties(id);
