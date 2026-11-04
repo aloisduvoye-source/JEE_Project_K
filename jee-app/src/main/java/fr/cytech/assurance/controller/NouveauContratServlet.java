@@ -17,9 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -59,16 +57,7 @@ public class NouveauContratServlet extends HttpServlet {
         LocalDate dateFin = v.date("dateFin", Validateur.nettoyer(request.getParameter("dateFin")), "La date de fin");
         BigDecimal prime = v.montant("prime", Validateur.nettoyer(request.getParameter("prime")), "La prime");
 
-        Set<Long> idsGaranties = new HashSet<>();
-        String[] garantiesCochees = request.getParameterValues("garanties");
-        if (garantiesCochees != null) {
-            for (String id : garantiesCochees) {
-                Long idGarantie = v.identifiant("garanties", Validateur.nettoyer(id), "Une garantie");
-                if (idGarantie != null) {
-                    idsGaranties.add(idGarantie);
-                }
-            }
-        }
+        Set<Long> idsGaranties = v.identifiants("garanties", request.getParameterValues("garanties"), "Une garantie");
 
         if (v.estValide()) {
             try {
