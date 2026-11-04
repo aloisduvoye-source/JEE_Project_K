@@ -53,6 +53,10 @@ public class ContratService {
         if (type == null) {
             throw new ContratInvalideException("Type d'assurance inconnu.");
         }
+        // Un type archivé n'est plus proposé : il reste seulement lié aux contrats déjà existants
+        if (!type.isActif()) {
+            throw new ContratInvalideException("Ce type d'assurance est archivé : il n'est plus proposé.");
+        }
 
         // Le sujet : un contrat contient une ou plusieurs garanties
         if (idsGaranties == null || idsGaranties.isEmpty()) {

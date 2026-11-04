@@ -49,6 +49,7 @@ CREATE TABLE IF NOT EXISTS type_assurance(
     nom                     VARCHAR(100) NOT NULL UNIQUE,
     description             TEXT,
     prix_base               DECIMAL(12,2) NOT NULL,
+    actif                   BOOLEAN NOT NULL DEFAULT TRUE,  -- FALSE : archivé, plus proposé pour les nouveaux contrats
     CONSTRAINT chk_type_assurance_prix CHECK (prix_base >= 0)
 );
 

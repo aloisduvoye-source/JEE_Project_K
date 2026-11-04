@@ -22,6 +22,8 @@ public class TypeAssuranceServlet extends HttpServlet {
             throws ServletException, IOException {
         // Garanties chargées dans la requête : la JSP lit type.garanties après la fermeture de l'EntityManager
         request.setAttribute("types", typeAssuranceService.listerAvecGaranties());
+        // Types utilisés par un contrat : la JSP ne leur affiche pas le bouton Supprimer
+        request.setAttribute("typesUtilises", typeAssuranceService.idsUtilisesParContrat());
         request.getRequestDispatcher(VUE).forward(request, response);
     }
 }

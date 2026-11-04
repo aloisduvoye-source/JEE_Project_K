@@ -4,7 +4,9 @@ import fr.cytech.assurance.model.Garantie;
 import fr.cytech.assurance.model.TypeAssurance;
 
 import java.math.BigDecimal;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Accès en base aux types d'assurance.
@@ -41,6 +43,17 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
     public List<TypeAssurance> listerParNom() {
         return enLecture(em -> em.createQuery(
                         "SELECT t FROM TypeAssurance t ORDER BY t.nom", TypeAssurance.class)
+                .getResultList());
+    }
+
+    /**
+     * Liste les types d'assurance non archivés, triés par nom : ceux que l'on peut souscrire.
+     *
+     * @return les types actifs triés, liste vide s'il n'y en a aucun
+     */
+    public List<TypeAssurance> listerActifs() {
+        return enLecture(em -> em.createQuery(
+                        "SELECT t FROM TypeAssurance t WHERE t.actif = true ORDER BY t.nom", TypeAssurance.class)
                 .getResultList());
     }
 
@@ -118,6 +131,19 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
     }
 
     /**
+     * Ids des types d'assurance utilisés par au moins un contrat, en une seule requête.
+     * <p>
+     * Sert à la liste des types : on évite une requête {@link #estUtiliseParContrat} par ligne.
+     *
+     * @return les ids des types utilisés, ensemble vide si aucun contrat n'existe
+     */
+    public Set<Long> idsUtilisesParContrat() {
+        return enLecture(em -> new HashSet<>(em.createQuery(
+                        "SELECT DISTINCT c.typeAssurance.id FROM Contrat c", Long.class)
+                .getResultList()));
+    }
+
+    /**
      * Modifie le nom, la description et le prix de base d'un type d'assurance.
      * <p>
      * Les garanties proposées ne sont pas modifiées, contrairement à {@link #modifier}.
@@ -134,6 +160,19 @@ public class TypeAssuranceDao extends GenericDao<TypeAssurance> {
             t.setDescription(description);
             t.setPrixBase(prixBase);
         });
+    }
+
+    /**
+     * Archive ou réactive un type d'assurance.
+     * <p>
+     * Un type archivé n'est plus proposé pour les nouveaux contrats ; les contrats existants le conservent.
+     *
+     * @param id    id du type
+     * @param actif {@code true} pour réactiver le type, {@code false} pour l'archiver
+     * @return {@code false} si aucun type n'a cet id
+     */
+    public boolean changerEtat(Long id, boolean actif) {
+        return mettreAJour(id, t -> t.setActif(actif));
     }
 
     /**

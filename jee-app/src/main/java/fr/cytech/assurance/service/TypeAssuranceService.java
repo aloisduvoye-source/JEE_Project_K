@@ -23,9 +23,19 @@ public class TypeAssuranceService {
         return typeAssuranceDao.listerParNom();
     }
 
+    // Types non archivés triés par nom : ceux que l'on peut proposer pour un nouveau contrat
+    public List<TypeAssurance> listerActifs() {
+        return typeAssuranceDao.listerActifs();
+    }
+
     // Types triés par nom, avec leurs garanties disponibles déjà chargées (lisibles dans une JSP)
     public List<TypeAssurance> listerAvecGaranties() {
         return typeAssuranceDao.listerAvecGaranties();
+    }
+
+    // Ids des types utilisés par au moins un contrat : ceux-là ne peuvent pas être supprimés, seulement archivés
+    public Set<Long> idsUtilisesParContrat() {
+        return typeAssuranceDao.idsUtilisesParContrat();
     }
 
     // Type avec ses garanties disponibles, ou null
@@ -94,6 +104,23 @@ public class TypeAssuranceService {
         }
     }
 
+    // Archive un type : il n'est plus proposé pour les nouveaux contrats, les contrats existants le gardent
+    // Possible même si des contrats l'utilisent (c'est l'alternative à la suppression)
+    // Lève TypeAssuranceInvalideException si le type n'existe pas
+    public void archiver(Long id) {
+        if (!typeAssuranceDao.changerEtat(id, false)) {
+            throw typeIntrouvable();
+        }
+    }
+
+    // Réactive un type archivé : il est de nouveau proposé pour les nouveaux contrats
+    // Lève TypeAssuranceInvalideException si le type n'existe pas
+    public void reactiver(Long id) {
+        if (!typeAssuranceDao.changerEtat(id, true)) {
+            throw typeIntrouvable();
+        }
+    }
+
     // Propose une garantie existante avec ce type (sans effet si elle l'était déjà)
     // Lève TypeAssuranceInvalideException si le type ou la garantie n'existe pas
     public void ajouterGarantie(Long idType, Long idGarantie) {
@@ -141,7 +168,8 @@ public class TypeAssuranceService {
 
     private TypeAssuranceInvalideException typeUtiliseParContrat() {
         return new TypeAssuranceInvalideException(
-                "Ce type d'assurance est utilisé par au moins un contrat : il ne peut pas être supprimé.");
+                "Ce type d'assurance est utilisé par au moins un contrat : il ne peut pas être supprimé. "
+                        + "Archivez-le pour ne plus le proposer.");
     }
 
     // Une description vide est enregistrée comme absente (NULL en base)
