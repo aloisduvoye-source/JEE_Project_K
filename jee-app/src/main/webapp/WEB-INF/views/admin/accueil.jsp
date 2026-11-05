@@ -14,6 +14,7 @@
   <nav>
     <a href="#utilisateurs">Utilisateurs</a> |
     <a href="#types">Types d'assurance</a> |
+    <a href="#garanties">Garanties</a> |
     <a href="#contrats">Contrats</a> |
     <a href="#sinistres">Sinistres</a> |
     <a href="#statistiques">Statistiques</a> |
@@ -46,6 +47,13 @@
     <h2>Types d'assurance</h2>
     <ul>
       <li><a href="${pageContext.request.contextPath}/admin/types-assurance">Gérer les types d'assurance</a></li>
+    </ul>
+  </section>
+
+  <section id="garanties">
+    <h2>Garanties</h2>
+    <ul>
+      <li><a href="${pageContext.request.contextPath}/admin/garanties">Gérer les garanties</a></li>
     </ul>
   </section>
 

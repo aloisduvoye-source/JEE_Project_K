@@ -180,6 +180,15 @@ public class Validateur {
         }
         return montant;
     }
+    
+        // Montant facultatif : renvoie null si le champ est vide, sinon applique les mêmes règles
+    // que montant() (au plus 2 décimales, virgule ou point acceptés)
+    public BigDecimal montantFacultatif(String champ, String valeur, String libelle) {
+        if (valeur.isEmpty()) {
+            return null;
+        }
+        return montant(champ, valeur, libelle);
+    }
 
     // Nouveau mot de passe : longueur minimale, puis confirmation identique
     public void nouveauMotDePasse(String champ, String valeur, String libelle,
