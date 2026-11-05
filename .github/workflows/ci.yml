@@ -23,3 +23,17 @@ jobs:
 
       - name: Compiler (mvn clean package)
         run: mvn -f jee-app/pom.xml clean package
+
+      - name: Fichier .env factice
+        run: printf 'DB_USER=ci\nDB_PASSWORD=ci\nAI_API_KEY=\n' > .env
+
+      - name: Lancer MySQL + Tomcat
+        run: docker compose up -d --build --wait
+
+      - name: L'application démarre et répond
+        run: curl -fsS --retry 20 --retry-delay 3 --retry-all-errors http://localhost:8080/connexion > /dev/null
+
+      - name: Logs en cas d'échec
+        if: failure()
+        run: docker compose logs
+
