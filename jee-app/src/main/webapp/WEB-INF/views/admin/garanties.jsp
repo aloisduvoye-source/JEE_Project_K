@@ -44,8 +44,18 @@
           <td><c:out value="${garantie.nom}"/></td>
           <td><c:out value="${garantie.description}"/></td>
           <%-- Plafond et franchise sont facultatifs : la base les accepte vides --%>
-          <td>${garantie.plafond != null ? garantie.plafond : 'Aucun'}</td>
-          <td>${garantie.franchise != null ? garantie.franchise : 'Aucune'}</td>
+          <td>
+            <c:choose>
+              <c:when test="${garantie.plafond != null}"><c:out value="${garantie.plafond}"/> €</c:when>
+              <c:otherwise>Aucun</c:otherwise>
+            </c:choose>
+          </td>
+          <td>
+            <c:choose>
+              <c:when test="${garantie.franchise != null}"><c:out value="${garantie.franchise}"/> €</c:when>
+              <c:otherwise>Aucune</c:otherwise>
+            </c:choose>
+          </td>
           <td>
             <a href="${pageContext.request.contextPath}/admin/garanties/modifier?id=${garantie.id}">Modifier</a>
             <%-- Suppression en POST uniquement ; le service refuse si la garantie est souscrite par un contrat --%>
