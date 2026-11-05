@@ -24,6 +24,8 @@ import java.util.regex.Pattern;
 public class Validateur {
 
     public static final int LONGUEUR_MIN_MOT_DE_PASSE = 8;
+    // Les montants sont en DECIMAL(12,2) dans la base : au plus 10 chiffres avant la virgule
+    private static final int CHIFFRES_ENTIERS_MAX_MONTANT = 10;
     private static final Pattern FORMAT_EMAIL = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
     private static final Pattern FORMAT_TELEPHONE = Pattern.compile("^[0-9 +.()-]{6,20}$");
 
@@ -151,6 +153,7 @@ public class Validateur {
     }
 
     // Montant obligatoire, avec au plus 2 décimales (virgule ou point acceptés)
+    // et au plus 10 chiffres avant la virgule (taille des colonnes en base)
     // Renvoie le montant lu, ou null si le champ est vide ou invalide
     public BigDecimal montant(String champ, String valeur, String libelle) {
         if (valeur.isEmpty()) {
@@ -161,6 +164,11 @@ public class Validateur {
             BigDecimal montant = new BigDecimal(valeur.replace(',', '.'));
             if (montant.scale() > 2) {
                 erreur(champ, libelle + " ne doit pas avoir plus de 2 décimales.");
+                return null;
+            }
+            // precision - scale = nombre de chiffres avant la virgule
+            if (montant.precision() - montant.scale() > CHIFFRES_ENTIERS_MAX_MONTANT) {
+                erreur(champ, libelle + " ne doit pas dépasser 9 999 999 999,99 €.");
                 return null;
             }
             return montant;
