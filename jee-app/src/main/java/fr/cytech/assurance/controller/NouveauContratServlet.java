@@ -17,9 +17,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.util.Arrays;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -41,7 +39,7 @@ public class NouveauContratServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        TypeAssurance type = typeDemande(Validateur.nettoyer(request.getParameter("type")));
+        TypeAssurance type = typeDemande(request.getParameter("type"));
         if (type != null) {
             request.setAttribute("prime", type.getPrixBase().toPlainString());
         }
@@ -59,16 +57,7 @@ public class NouveauContratServlet extends HttpServlet {
         LocalDate dateFin = v.date("dateFin", Validateur.nettoyer(request.getParameter("dateFin")), "La date de fin");
         BigDecimal prime = v.montant("prime", Validateur.nettoyer(request.getParameter("prime")), "La prime");
 
-        Set<Long> idsGaranties = new HashSet<>();
-        String[] garantiesCochees = request.getParameterValues("garanties");
-        if (garantiesCochees != null) {
-            for (String id : garantiesCochees) {
-                Long idGarantie = v.identifiant("garanties", Validateur.nettoyer(id), "Une garantie");
-                if (idGarantie != null) {
-                    idsGaranties.add(idGarantie);
-                }
-            }
-        }
+        Set<Long> idsGaranties = v.identifiants("garanties", request.getParameterValues("garanties"), "Une garantie");
 
         if (v.estValide()) {
             try {
@@ -85,17 +74,14 @@ public class NouveauContratServlet extends HttpServlet {
         for (String champ : new String[]{"client", "dateDebut", "dateFin", "prime"}) {
             request.setAttribute(champ, Validateur.nettoyer(request.getParameter(champ)));
         }
-        afficher(request, response, typeDemande(Validateur.nettoyer(request.getParameter("type"))), idsGaranties);
+        afficher(request, response, typeDemande(request.getParameter("type")), idsGaranties);
     }
 
     // Type demandé (?type=...), ou null s'il est absent, inconnu ou archivé (retour à l'étape 1)
     private TypeAssurance typeDemande(String valeur) {
-        try {
-            TypeAssurance type = valeur.isEmpty() ? null : typeAssuranceService.trouverAvecGaranties(Long.valueOf(valeur));
-            return type != null && type.isActif() ? type : null;
-        } catch (NumberFormatException e) {
-            return null;
-        }
+        Long id = Validateur.idOuNull(valeur);
+        TypeAssurance type = id == null ? null : typeAssuranceService.trouverAvecGaranties(id);
+        return type != null && type.isActif() ? type : null;
     }
 
     private void afficher(HttpServletRequest request, HttpServletResponse response,

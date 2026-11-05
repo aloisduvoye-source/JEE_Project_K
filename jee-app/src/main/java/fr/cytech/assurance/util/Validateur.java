@@ -4,7 +4,9 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 /**
@@ -30,6 +32,16 @@ public class Validateur {
     // Paramètre de formulaire sans espaces autour, jamais null
     public static String nettoyer(String valeur) {
         return valeur == null ? "" : valeur.trim();
+    }
+
+    // Identifiant facultatif lu dans l'adresse (?id=..., ?type=...), sans message d'erreur
+    // Renvoie null s'il est absent ou non numérique : la servlet décide quoi afficher
+    public static Long idOuNull(String valeur) {
+        try {
+            return Long.valueOf(nettoyer(valeur));
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     // Ajoute un message, sauf si le champ a déjà une erreur
@@ -106,6 +118,21 @@ public class Validateur {
             erreur(champ, libelle + " n'est pas valide.");
             return null;
         }
+    }
+
+    // Identifiants des cases cochées (request.getParameterValues : null si aucune case n'est cochée)
+    // Renvoie les identifiants valides lus, ensemble vide si rien n'est coché ; une valeur non numérique ajoute une erreur
+    public Set<Long> identifiants(String champ, String[] valeurs, String libelle) {
+        Set<Long> ids = new HashSet<>();
+        if (valeurs != null) {
+            for (String valeur : valeurs) {
+                Long id = identifiant(champ, nettoyer(valeur), libelle);
+                if (id != null) {
+                    ids.add(id);
+                }
+            }
+        }
+        return ids;
     }
 
     // Date obligatoire (au format du champ HTML type="date" : AAAA-MM-JJ)

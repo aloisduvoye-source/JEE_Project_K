@@ -12,7 +12,6 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.math.BigDecimal;
-import java.util.HashSet;
 import java.util.Set;
 
 // Création d'un type d'assurance par l'administrateur : nom, description, prix de base, garanties proposées
@@ -41,16 +40,7 @@ public class NouveauTypeAssuranceServlet extends HttpServlet {
         v.longueur("description", description, "La description", 1000);
         BigDecimal prixBase = v.montantPositif("prixBase", Validateur.nettoyer(request.getParameter("prixBase")), "Le prix de base");
 
-        Set<Long> idsGaranties = new HashSet<>();
-        String[] garantiesCochees = request.getParameterValues("garanties");
-        if (garantiesCochees != null) {
-            for (String id : garantiesCochees) {
-                Long idGarantie = v.identifiant("garanties", Validateur.nettoyer(id), "Une garantie");
-                if (idGarantie != null) {
-                    idsGaranties.add(idGarantie);
-                }
-            }
-        }
+        Set<Long> idsGaranties = v.identifiants("garanties", request.getParameterValues("garanties"), "Une garantie");
 
         if (v.estValide()) {
             try {

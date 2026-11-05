@@ -26,10 +26,10 @@
   <c:if test="${not empty param.reactive}">
     <p>Le type d'assurance a été réactivé.</p>
   </c:if>
-  <%-- Erreur transmise par la session (suppression, archivage...), affichée une seule fois --%>
-  <c:if test="${not empty sessionScope.erreurTypeAssurance}">
-    <p><c:out value="${sessionScope.erreurTypeAssurance}"/></p>
-    <c:remove var="erreurTypeAssurance" scope="session"/>
+  <%-- Erreur enregistrée avant la redirection (MessageFlash), affichée une seule fois --%>
+  <c:if test="${not empty sessionScope.messageErreur}">
+    <p><c:out value="${sessionScope.messageErreur}"/></p>
+    <c:remove var="messageErreur" scope="session"/>
   </c:if>
 
   <p><a href="${pageContext.request.contextPath}/admin/types-assurance/nouveau">Nouveau type d'assurance</a></p>
@@ -62,9 +62,8 @@
           <td>
             <a href="${pageContext.request.contextPath}/admin/types-assurance/modifier?id=${type.id}">Modifier</a>
             <%-- Archiver : alternative à la suppression pour un type utilisé par des contrats --%>
-            <form method="post" action="${pageContext.request.contextPath}/admin/types-assurance/archiver">
+            <form method="post" action="${pageContext.request.contextPath}/admin/types-assurance/${type.actif ? 'archiver' : 'reactiver'}">
               <input type="hidden" name="id" value="${type.id}">
-              <input type="hidden" name="action" value="${type.actif ? 'archiver' : 'reactiver'}">
               <button type="submit">${type.actif ? 'Archiver' : 'Réactiver'}</button>
             </form>
             <%-- Suppression proposée seulement pour un type jamais utilisé (créé par erreur, doublon...) :
