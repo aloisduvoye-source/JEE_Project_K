@@ -1,140 +1,102 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Espace agent</title>
+  <%@ include file="/WEB-INF/views/common/head.jspf" %>
+  <title>Espace agent · Billy Assurance</title>
 </head>
 <body>
   <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
-  <h1>Espace agent</h1>
+  <main id="contenu" class="page">
+    <div class="conteneur apparition">
+      <section class="banniere">
+        <p class="banniere-sur-titre">Espace agent</p>
+        <h1>Bonjour <c:out value="${sessionScope.utilisateur.prenom}"/>,</h1>
+        <p>Créez et suivez les contrats de vos clients. Les sinistres, les paiements et les statistiques arrivent bientôt.</p>
+        <div class="banniere-actions">
+          <a class="bouton bouton-blanc" href="${pageContext.request.contextPath}/agent/contrats/nouveau">
+            <svg class="icone" aria-hidden="true"><use href="#i-plus"/></svg>Nouveau contrat
+          </a>
+          <a class="bouton bouton-fantome" href="${pageContext.request.contextPath}/agent/contrats">Voir les contrats</a>
+        </div>
+      </section>
 
-  <%-- Onglets : liens vers les sections de cette page (à remplacer par des pages /agent/... plus tard) --%>
-  <nav>
-    <a href="#clients">Clients</a> |
-    <a href="#contrats">Contrats</a> |
-    <a href="#sinistres">Sinistres</a> |
-    <a href="#paiements">Paiements</a> |
-    <a href="#garanties">Garanties</a> |
-    <a href="#statistiques">Statistiques</a>
-  </nav>
+      <div>
+        <div class="titre-section"><h2>Gestion</h2></div>
+        <%-- Les tuiles "Bientôt" deviendront des liens quand les pages /agent/... existeront --%>
+        <div class="grille grille-tuiles">
+          <a class="tuile" href="${pageContext.request.contextPath}/agent/contrats">
+            <span class="pastille ton-primaire"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg></span>
+            <div>
+              <h3>Contrats</h3>
+              <p>Tous les contrats, avec leur client, leur période et leur statut.</p>
+            </div>
+            <span class="tuile-lien">Ouvrir <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
+          </a>
+          <a class="tuile" href="${pageContext.request.contextPath}/agent/contrats/nouveau">
+            <span class="pastille ton-succes"><svg class="icone" aria-hidden="true"><use href="#i-plus"/></svg></span>
+            <div>
+              <h3>Nouveau contrat</h3>
+              <p>Choisir un type d'assurance, un client et ses garanties.</p>
+            </div>
+            <span class="tuile-lien">Créer <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
+          </a>
+          <div class="tuile tuile-bientot">
+            <span class="badge ton-neutre">Bientôt</span>
+            <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-utilisateurs"/></svg></span>
+            <div><h3>Clients</h3><p>Rechercher un client et consulter sa fiche.</p></div>
+          </div>
+          <div class="tuile tuile-bientot">
+            <span class="badge ton-neutre">Bientôt</span>
+            <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg></span>
+            <div><h3>Sinistres</h3><p>Analyser, accepter ou refuser les sinistres déclarés.</p></div>
+          </div>
+          <div class="tuile tuile-bientot">
+            <span class="badge ton-neutre">Bientôt</span>
+            <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-carte"/></svg></span>
+            <div><h3>Paiements</h3><p>Enregistrer les paiements et suivre les retards.</p></div>
+          </div>
+          <div class="tuile tuile-bientot">
+            <span class="badge ton-neutre">Bientôt</span>
+            <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg></span>
+            <div><h3>Garanties</h3><p>Créer et modifier les garanties proposées.</p></div>
+          </div>
+        </div>
+      </div>
 
-  <section id="clients">
-    <h2>Clients</h2>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Nom</th>
-          <th>Prénom</th>
-          <th>Email</th>
-          <th>Téléphone</th>
-          <th>Contrats</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colspan="5">Aucun client à afficher pour l'instant.</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+      <div>
+        <div class="titre-section">
+          <h2>Statistiques</h2>
+          <span class="badge ton-neutre">Bientôt</span>
+        </div>
+        <div class="grille grille-stats">
+          <div class="carte stat">
+            <div class="stat-entete"><span class="stat-libelle">Clients</span><span class="pastille pastille-petite ton-primaire"><svg class="icone" aria-hidden="true"><use href="#i-utilisateurs"/></svg></span></div>
+            <div class="stat-valeur en-attente">—</div>
+            <div class="stat-detail">Total et nouveaux clients</div>
+          </div>
+          <div class="carte stat">
+            <div class="stat-entete"><span class="stat-libelle">Contrats actifs</span><span class="pastille pastille-petite ton-succes"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg></span></div>
+            <div class="stat-valeur en-attente">—</div>
+            <div class="stat-detail">Expirés, résiliés, évolution</div>
+          </div>
+          <div class="carte stat">
+            <div class="stat-entete"><span class="stat-libelle">Chiffre d'affaires</span><span class="pastille pastille-petite ton-info"><svg class="icone" aria-hidden="true"><use href="#i-euro"/></svg></span></div>
+            <div class="stat-valeur en-attente">—</div>
+            <div class="stat-detail">Paiements encaissés</div>
+          </div>
+          <div class="carte stat">
+            <div class="stat-entete"><span class="stat-libelle">Indemnisations</span><span class="pastille pastille-petite ton-attention"><svg class="icone" aria-hidden="true"><use href="#i-stats"/></svg></span></div>
+            <div class="stat-valeur en-attente">—</div>
+            <div class="stat-detail">Montants versés aux clients</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
 
-  <section id="contrats">
-    <h2>Contrats</h2>
-    <ul>
-      <li><a href="${pageContext.request.contextPath}/agent/contrats">Voir tous les contrats</a></li>
-      <li><a href="${pageContext.request.contextPath}/agent/contrats/nouveau">Nouveau contrat</a></li>
-    </ul>
-  </section>
-
-  <section id="sinistres">
-    <h2>Sinistres</h2>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Numéro</th>
-          <th>Contrat</th>
-          <th>Date</th>
-          <th>Type</th>
-          <th>Montant estimé</th>
-          <th>Statut</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colspan="6">Aucun sinistre à afficher pour l'instant.</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section id="paiements">
-    <h2>Paiements</h2>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Contrat</th>
-          <th>Client</th>
-          <th>Échéance</th>
-          <th>Montant</th>
-          <th>Date de paiement</th>
-          <th>Mode</th>
-          <th>Statut</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colspan="7">Aucun paiement à afficher pour l'instant.</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section id="garanties">
-    <h2>Garanties</h2>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Nom</th>
-          <th>Description</th>
-          <th>Plafond</th>
-          <th>Franchise</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colspan="4">Aucune garantie à afficher pour l'instant.</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section id="statistiques">
-    <h2>Statistiques</h2>
-
-    <h3>Clients</h3>
-    <ul>
-      <li>Nombre total de clients : –</li>
-      <li>Nouveaux clients : –</li>
-      <li>Répartition par type d'assurance : –</li>
-    </ul>
-
-    <h3>Contrats</h3>
-    <ul>
-      <li>Contrats actifs : –</li>
-      <li>Contrats expirés : –</li>
-      <li>Contrats résiliés : –</li>
-      <li>Évolution du nombre de contrats : –</li>
-    </ul>
-
-    <h3>Finances</h3>
-    <ul>
-      <li>Chiffre d'affaires : –</li>
-      <li>Montant des primes : –</li>
-      <li>Montant des indemnisations : –</li>
-      <li>Évolution des revenus : –</li>
-    </ul>
-  </section>
+  <%@ include file="/WEB-INF/views/common/footer.jspf" %>
 </body>
 </html>

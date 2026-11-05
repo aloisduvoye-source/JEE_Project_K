@@ -1,36 +1,66 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Mon compte</title>
+  <%@ include file="/WEB-INF/views/common/head.jspf" %>
+  <title>Mon compte · Billy Assurance</title>
 </head>
 <body>
   <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
-  <h1>Mon compte</h1>
+  <main id="contenu" class="page">
+    <div class="conteneur conteneur-etroit apparition">
+      <div class="entete-page">
+        <div>
+          <h1>Mon compte</h1>
+          <p class="sous-titre">Vos informations personnelles et votre sécurité.</p>
+        </div>
+      </div>
 
-  <c:if test="${param.succes == 'profil'}">
-    <p>Vos informations ont été mises à jour.</p>
-  </c:if>
-  <c:if test="${param.succes == 'motdepasse'}">
-    <p>Votre mot de passe a été modifié.</p>
-  </c:if>
+      <c:if test="${param.succes == 'profil'}">
+        <div class="alerte ton-succes" role="status" data-nettoyer-url="succes">
+          <svg class="icone" aria-hidden="true"><use href="#i-succes"/></svg>
+          <div class="alerte-texte">Vos informations ont été mises à jour.</div>
+        </div>
+      </c:if>
+      <c:if test="${param.succes == 'motdepasse'}">
+        <div class="alerte ton-succes" role="status" data-nettoyer-url="succes">
+          <svg class="icone" aria-hidden="true"><use href="#i-succes"/></svg>
+          <div class="alerte-texte">Votre mot de passe a été modifié.</div>
+        </div>
+      </c:if>
 
-  <p>Nom : <c:out value="${compte.nom}"/></p>
-  <p>Prénom : <c:out value="${compte.prenom}"/></p>
-  <p>Email : <c:out value="${compte.email}"/></p>
-  <p>Identifiant : <c:out value="${compte.identifiant}"/></p>
-  <p>Rôle : <c:out value="${compte.role}"/></p>
+      <section class="carte">
+        <div class="profil-banniere">
+          <span class="avatar avatar-grand"><c:out value="${fn:toUpperCase(fn:substring(compte.prenom, 0, 1))}${fn:toUpperCase(fn:substring(compte.nom, 0, 1))}"/></span>
+          <div>
+            <h2><c:out value="${compte.prenom} ${compte.nom}"/></h2>
+            <p class="texte-doux"><c:out value="${compte.email}"/></p>
+          </div>
+          <span class="badge ton-primaire" style="margin-left:auto">
+            ${compte.role == 'ADMIN' ? 'Administrateur' : (compte.role == 'AGENT' ? 'Agent' : 'Client')}
+          </span>
+        </div>
+        <dl class="liste-infos">
+          <div><dt>Prénom</dt><dd><c:out value="${compte.prenom}"/></dd></div>
+          <div><dt>Nom</dt><dd><c:out value="${compte.nom}"/></dd></div>
+          <div><dt>Email</dt><dd><c:out value="${compte.email}"/></dd></div>
+          <div><dt>Identifiant</dt><dd><c:out value="${compte.identifiant}"/></dd></div>
+        </dl>
+        <div class="carte-pied">
+          <a class="bouton" href="${pageContext.request.contextPath}/compte/mot-de-passe">
+            <svg class="icone" aria-hidden="true"><use href="#i-cle"/></svg>Changer mon mot de passe
+          </a>
+          <a class="bouton bouton-principal" href="${pageContext.request.contextPath}/compte/profil">
+            <svg class="icone" aria-hidden="true"><use href="#i-crayon"/></svg>Modifier mes informations
+          </a>
+        </div>
+      </section>
+    </div>
+  </main>
 
-  <form method="get" action="${pageContext.request.contextPath}/compte/profil">
-    <button type="submit">Modifier mes informations</button>
-  </form>
-  <form method="get" action="${pageContext.request.contextPath}/compte/mot-de-passe">
-    <button type="submit">Changer mon mot de passe</button>
-  </form>
-
-  <p><a href="${pageContext.request.contextPath}/">Retour à l'accueil</a></p>
+  <%@ include file="/WEB-INF/views/common/footer.jspf" %>
 </body>
 </html>

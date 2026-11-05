@@ -1,121 +1,97 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Espace admin</title>
+  <%@ include file="/WEB-INF/views/common/head.jspf" %>
+  <title>Administration · Billy Assurance</title>
 </head>
 <body>
   <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
-  <h1>Espace administrateur</h1>
+  <main id="contenu" class="page">
+    <div class="conteneur apparition">
+      <section class="banniere">
+        <p class="banniere-sur-titre">Administration</p>
+        <h1>Bonjour <c:out value="${sessionScope.utilisateur.prenom}"/>,</h1>
+        <p>Gérez le catalogue des types d'assurance et consultez l'ensemble des contrats. La gestion des utilisateurs et les indicateurs arrivent bientôt.</p>
+        <div class="banniere-actions">
+          <a class="bouton bouton-blanc" href="${pageContext.request.contextPath}/admin/types-assurance">
+            <svg class="icone" aria-hidden="true"><use href="#i-couches"/></svg>Types d'assurance
+          </a>
+          <a class="bouton bouton-fantome" href="${pageContext.request.contextPath}/agent/contrats">Voir les contrats</a>
+        </div>
+      </section>
 
-  <%-- Onglets : liens vers les sections de cette page (à remplacer par des pages /admin/... plus tard) --%>
-  <nav>
-    <a href="#utilisateurs">Utilisateurs</a> |
-    <a href="#types">Types d'assurance</a> |
-    <a href="#contrats">Contrats</a> |
-    <a href="#sinistres">Sinistres</a> |
-    <a href="#statistiques">Statistiques</a> |
-    <a href="#indicateurs">Indicateurs</a>
-  </nav>
+      <div>
+        <div class="titre-section"><h2>Gestion</h2></div>
+        <%-- Les tuiles "Bientôt" deviendront des liens quand les pages /admin/... existeront --%>
+        <div class="grille grille-tuiles">
+          <a class="tuile" href="${pageContext.request.contextPath}/admin/types-assurance">
+            <span class="pastille ton-violet"><svg class="icone" aria-hidden="true"><use href="#i-couches"/></svg></span>
+            <div>
+              <h3>Types d'assurance</h3>
+              <p>Créer, modifier, archiver un type et choisir ses garanties.</p>
+            </div>
+            <span class="tuile-lien">Gérer <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
+          </a>
+          <a class="tuile" href="${pageContext.request.contextPath}/agent/contrats">
+            <span class="pastille ton-primaire"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg></span>
+            <div>
+              <h3>Contrats</h3>
+              <p>L'ensemble des contrats, avec leur client et leur statut.</p>
+            </div>
+            <span class="tuile-lien">Consulter <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
+          </a>
+          <div class="tuile tuile-bientot">
+            <span class="badge ton-neutre">Bientôt</span>
+            <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-utilisateurs"/></svg></span>
+            <div><h3>Utilisateurs</h3><p>Créer des agents, activer ou désactiver des comptes.</p></div>
+          </div>
+          <div class="tuile tuile-bientot">
+            <span class="badge ton-neutre">Bientôt</span>
+            <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg></span>
+            <div><h3>Sinistres</h3><p>Tous les sinistres et leur traitement.</p></div>
+          </div>
+        </div>
+      </div>
 
-  <section id="utilisateurs">
-    <h2>Utilisateurs</h2>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Nom</th>
-          <th>Prénom</th>
-          <th>Email</th>
-          <th>Identifiant</th>
-          <th>Rôle</th>
-          <th>Actif</th>
-          <th>Inscription</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colspan="7">Aucun utilisateur à afficher pour l'instant.</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
+      <div>
+        <div class="titre-section">
+          <h2>Indicateurs de performance</h2>
+          <span class="badge ton-neutre">Bientôt</span>
+        </div>
+        <div class="grille grille-stats">
+          <div class="carte stat">
+            <div class="stat-entete"><span class="stat-libelle">Indemnisations / primes</span><span class="pastille pastille-petite ton-primaire"><svg class="icone" aria-hidden="true"><use href="#i-indicateurs"/></svg></span></div>
+            <div class="stat-valeur en-attente">—</div>
+            <div class="stat-detail">Ratio sur les primes encaissées</div>
+          </div>
+          <div class="carte stat">
+            <div class="stat-entete"><span class="stat-libelle">Traitement d'un sinistre</span><span class="pastille pastille-petite ton-info"><svg class="icone" aria-hidden="true"><use href="#i-horloge"/></svg></span></div>
+            <div class="stat-valeur en-attente">—</div>
+            <div class="stat-detail">Délai moyen</div>
+          </div>
+          <div class="carte stat">
+            <div class="stat-entete"><span class="stat-libelle">Sinistres acceptés</span><span class="pastille pastille-petite ton-succes"><svg class="icone" aria-hidden="true"><use href="#i-succes"/></svg></span></div>
+            <div class="stat-valeur en-attente">—</div>
+            <div class="stat-detail">Taux d'acceptation</div>
+          </div>
+          <div class="carte stat">
+            <div class="stat-entete"><span class="stat-libelle">Résiliations</span><span class="pastille pastille-petite ton-danger"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg></span></div>
+            <div class="stat-valeur en-attente">—</div>
+            <div class="stat-detail">Taux de résiliation des contrats</div>
+          </div>
+          <div class="carte stat">
+            <div class="stat-entete"><span class="stat-libelle">Paiements en retard</span><span class="pastille pastille-petite ton-attention"><svg class="icone" aria-hidden="true"><use href="#i-carte"/></svg></span></div>
+            <div class="stat-valeur en-attente">—</div>
+            <div class="stat-detail">Échéances dépassées</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
 
-  <section id="types">
-    <h2>Types d'assurance</h2>
-    <ul>
-      <li><a href="${pageContext.request.contextPath}/admin/types-assurance">Gérer les types d'assurance</a></li>
-    </ul>
-  </section>
-
-  <section id="contrats">
-    <h2>Contrats</h2>
-    <ul>
-      <li><a href="${pageContext.request.contextPath}/agent/contrats">Voir tous les contrats</a></li>
-    </ul>
-  </section>
-
-  <section id="sinistres">
-    <h2>Sinistres</h2>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Numéro</th>
-          <th>Client</th>
-          <th>Contrat</th>
-          <th>Date</th>
-          <th>Type</th>
-          <th>Montant estimé</th>
-          <th>Indemnisation</th>
-          <th>Agent</th>
-          <th>Statut</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colspan="9">Aucun sinistre à afficher pour l'instant.</td>
-        </tr>
-      </tbody>
-    </table>
-  </section>
-
-  <section id="statistiques">
-    <h2>Statistiques globales</h2>
-
-    <h3>Clients</h3>
-    <ul>
-      <li>Nombre total de clients : –</li>
-      <li>Nouveaux clients : –</li>
-      <li>Répartition par type d'assurance : –</li>
-    </ul>
-
-    <h3>Contrats</h3>
-    <ul>
-      <li>Contrats actifs : –</li>
-      <li>Contrats expirés : –</li>
-      <li>Contrats résiliés : –</li>
-      <li>Évolution du nombre de contrats : –</li>
-    </ul>
-
-    <h3>Finances</h3>
-    <ul>
-      <li>Chiffre d'affaires : –</li>
-      <li>Montant des primes : –</li>
-      <li>Montant des indemnisations : –</li>
-      <li>Évolution des revenus : –</li>
-    </ul>
-  </section>
-
-  <section id="indicateurs">
-    <h2>Indicateurs de performance</h2>
-    <ul>
-      <li>Ratio indemnisations / primes encaissées : –</li>
-      <li>Délai moyen de traitement d'un sinistre : –</li>
-      <li>Taux d'acceptation des sinistres : –</li>
-      <li>Taux de résiliation des contrats : –</li>
-      <li>Paiements en retard : –</li>
-    </ul>
-  </section>
+  <%@ include file="/WEB-INF/views/common/footer.jspf" %>
 </body>
 </html>
