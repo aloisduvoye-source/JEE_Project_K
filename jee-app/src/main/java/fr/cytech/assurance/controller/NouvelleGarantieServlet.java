@@ -13,12 +13,12 @@ import java.io.IOException;
 import java.math.BigDecimal;
 
 /**
- * Création d'une garantie du référentiel, pour l'administrateur.
+ * Création d'une garantie du référentiel, pour l'agent (et l'administrateur) : §2.1 du sujet.
  *   GET  : affiche le formulaire vide
  *   POST : vérifie les saisies, enregistre puis redirige vers la liste (PRG)
- * URL protégée automatiquement par RoleFiltre : le préfixe /admin est réservé aux ADMIN.
+ * URL protégée automatiquement par RoleFiltre : le préfixe /agent est ouvert aux AGENT et ADMIN.
  */
-@WebServlet("/admin/garanties/nouvelle")
+@WebServlet("/agent/garanties/nouvelle")
 public class NouvelleGarantieServlet extends HttpServlet {
 
     private final GarantieService garantieService = new GarantieService();
@@ -26,7 +26,7 @@ public class NouvelleGarantieServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.getRequestDispatcher("/WEB-INF/views/admin/garantie-nouvelle.jsp")
+        request.getRequestDispatcher("/WEB-INF/views/agent/garantie-nouvelle.jsp")
                 .forward(request, response);
     }
 
@@ -59,7 +59,7 @@ public class NouvelleGarantieServlet extends HttpServlet {
         }
 
         // Post-Redirect-Get : un rechargement de la page ne renvoie pas le formulaire
-        response.sendRedirect(request.getContextPath() + "/admin/garanties?cree=1");
+        response.sendRedirect(request.getContextPath() + "/agent/garanties?cree=1");
     }
 
     // Ré-affiche le formulaire avec les saisies de l'utilisateur et les messages d'erreur
@@ -71,7 +71,7 @@ public class NouvelleGarantieServlet extends HttpServlet {
         request.setAttribute("plafond", plafond);
         request.setAttribute("franchise", franchise);
         request.setAttribute("erreurs", v.getErreurs());
-        request.getRequestDispatcher("/WEB-INF/views/admin/garantie-nouvelle.jsp")
+        request.getRequestDispatcher("/WEB-INF/views/agent/garantie-nouvelle.jsp")
                 .forward(request, response);
     }
 }

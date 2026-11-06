@@ -26,7 +26,7 @@
     <c:remove var="messageErreur" scope="session"/>
   </c:if>
 
-  <p><a href="${pageContext.request.contextPath}/admin/garanties/nouvelle">Nouvelle garantie</a></p>
+  <p><a href="${pageContext.request.contextPath}/agent/garanties/nouvelle">Nouvelle garantie</a></p>
 
   <table border="1">
     <thead>
@@ -57,9 +57,9 @@
             </c:choose>
           </td>
           <td>
-            <a href="${pageContext.request.contextPath}/admin/garanties/modifier?id=${garantie.id}">Modifier</a>
+            <a href="${pageContext.request.contextPath}/agent/garanties/modifier?id=${garantie.id}">Modifier</a>
             <%-- Suppression en POST uniquement ; le service refuse si la garantie est souscrite par un contrat --%>
-            <form method="post" action="${pageContext.request.contextPath}/admin/garanties/supprimer"
+            <form method="post" action="${pageContext.request.contextPath}/agent/garanties/supprimer"
                   onsubmit="return confirm('Supprimer cette garantie ?');">
               <input type="hidden" name="id" value="${garantie.id}">
               <button type="submit">Supprimer</button>
@@ -75,6 +75,6 @@
     </tbody>
   </table>
 
-  <p><a href="${pageContext.request.contextPath}/admin/accueil">Retour à l'espace administrateur</a></p>
+  <p><a href="${pageContext.request.contextPath}${sessionScope.utilisateur.role.accueil}">Retour à mon espace</a></p>
 </body>
 </html>

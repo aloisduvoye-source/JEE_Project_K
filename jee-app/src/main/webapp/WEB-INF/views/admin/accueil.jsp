@@ -53,7 +53,7 @@
   <section id="garanties">
     <h2>Garanties</h2>
     <ul>
-      <li><a href="${pageContext.request.contextPath}/admin/garanties">Gérer les garanties</a></li>
+      <li><a href="${pageContext.request.contextPath}/agent/garanties">Gérer les garanties</a></li>
     </ul>
   </section>
 

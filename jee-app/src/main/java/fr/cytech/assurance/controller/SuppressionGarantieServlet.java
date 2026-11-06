@@ -14,16 +14,16 @@ import java.io.IOException;
 /**
  * Suppression d'une garantie du référentiel, depuis le bouton de la liste des garanties.
  * En POST uniquement : un simple lien (GET) ne doit pas pouvoir modifier des données.
- * URL protégée automatiquement par RoleFiltre : le préfixe /admin est réservé aux ADMIN.
+ * URL protégée automatiquement par RoleFiltre : le préfixe /agent est ouvert aux AGENT et ADMIN.
  */
-@WebServlet("/admin/garanties/supprimer")
+@WebServlet("/agent/garanties/supprimer")
 public class SuppressionGarantieServlet extends HttpServlet {
 
     private final GarantieService garantieService = new GarantieService();
 
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        String liste = request.getContextPath() + "/admin/garanties";
+        String liste = request.getContextPath() + "/agent/garanties";
 
         // Même lecture de l'identifiant que pour les types d'assurance
         Validateur v = new Validateur();
