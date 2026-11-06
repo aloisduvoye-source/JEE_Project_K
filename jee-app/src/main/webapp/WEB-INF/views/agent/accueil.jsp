@@ -93,21 +93,9 @@
 
   <section id="garanties">
     <h2>Garanties</h2>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Nom</th>
-          <th>Description</th>
-          <th>Plafond</th>
-          <th>Franchise</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colspan="4">Aucune garantie à afficher pour l'instant.</td>
-        </tr>
-      </tbody>
-    </table>
+    <ul>
+      <li><a href="${pageContext.request.contextPath}/agent/garanties">Gérer les garanties</a></li>
+    </ul>
   </section>
 
   <section id="statistiques">

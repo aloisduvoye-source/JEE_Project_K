@@ -4,18 +4,19 @@
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
-  <title>Nouvelle garantie</title>
+  <title>Modifier une garantie</title>
 </head>
 <body>
   <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
-  <h1>Nouvelle garantie</h1>
+  <h1>Modifier « <c:out value="${garantie.nom}"/> »</h1>
 
   <c:if test="${not empty erreurs.global}">
     <p><c:out value="${erreurs.global}"/></p>
   </c:if>
 
-  <form method="post" action="${pageContext.request.contextPath}/admin/garanties/nouvelle">
+  <form method="post" action="${pageContext.request.contextPath}/agent/garanties/modifier">
+    <input type="hidden" name="id" value="${garantie.id}">
     <p>
       <label for="nom">Nom</label>
       <input type="text" id="nom" name="nom" maxlength="100" value="<c:out value='${nom}'/>">
@@ -38,9 +39,9 @@
       (montant restant à la charge du client, facultatif)
       <c:out value="${erreurs.franchise}"/>
     </p>
-    <button type="submit">Créer la garantie</button>
+    <button type="submit">Enregistrer</button>
   </form>
 
-  <p><a href="${pageContext.request.contextPath}/admin/garanties">Retour à la liste des garanties</a></p>
+  <p><a href="${pageContext.request.contextPath}/agent/garanties">Retour à la liste des garanties</a></p>
 </body>
 </html>
