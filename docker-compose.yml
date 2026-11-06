@@ -18,7 +18,10 @@ services:
       - ./database/schema.sql:/docker-entrypoint-initdb.d/1-schema.sql:ro
       - ./database/dump.sql:/docker-entrypoint-initdb.d/2-dump.sql:ro
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      # 127.0.0.1 (TCP) et non localhost (socket) : pendant l'exécution de schema.sql et dump.sql,
+      # MySQL tourne sur un serveur temporaire sans réseau, que seul le socket atteint.
+      # Avec le socket, la base serait déclarée prête trop tôt et Tomcat ne pourrait pas s'y connecter.
+      test: ["CMD", "mysqladmin", "ping", "-h", "127.0.0.1"]
       interval: 5s
       timeout: 5s
       retries: 20

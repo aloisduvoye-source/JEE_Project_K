@@ -14,7 +14,7 @@
       <section class="banniere">
         <p class="banniere-sur-titre">Administration</p>
         <h1>Bonjour <c:out value="${sessionScope.utilisateur.prenom}"/>,</h1>
-        <p>Gérez le catalogue des types d'assurance et consultez l'ensemble des contrats. La gestion des utilisateurs et les indicateurs arrivent bientôt.</p>
+        <p>Gérez le catalogue des types d'assurance et des garanties, et consultez l'ensemble des contrats. La gestion des utilisateurs et les indicateurs arrivent bientôt.</p>
         <div class="banniere-actions">
           <a class="bouton bouton-blanc" href="${pageContext.request.contextPath}/admin/types-assurance">
             <svg class="icone" aria-hidden="true"><use href="#i-couches"/></svg>Types d'assurance
@@ -32,6 +32,14 @@
             <div>
               <h3>Types d'assurance</h3>
               <p>Créer, modifier, archiver un type et choisir ses garanties.</p>
+            </div>
+            <span class="tuile-lien">Gérer <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
+          </a>
+          <a class="tuile" href="${pageContext.request.contextPath}/admin/garanties">
+            <span class="pastille ton-succes"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg></span>
+            <div>
+              <h3>Garanties</h3>
+              <p>Créer, modifier, supprimer une garantie, avec son plafond et sa franchise.</p>
             </div>
             <span class="tuile-lien">Gérer <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
           </a>
