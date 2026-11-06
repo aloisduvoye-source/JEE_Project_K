@@ -118,7 +118,7 @@
                              ${garantiesCochees.contains(g.id) ? 'checked' : ''}>
                       <span>
                         <span class="case-titre"><c:out value="${g.nom}"/></span>
-                        <span class="case-detail">Plafond <app:euros valeur="${g.plafond}"/> · franchise <app:euros valeur="${g.franchise}"/></span>
+                        <span class="case-detail">Plafond <app:euros valeur="${g.plafond}" vide="aucun"/> · franchise <app:euros valeur="${g.franchise}" vide="aucune"/></span>
                       </span>
                     </label>
                   </c:forEach>

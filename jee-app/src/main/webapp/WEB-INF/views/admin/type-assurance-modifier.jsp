@@ -99,7 +99,7 @@
               <li>
                 <div>
                   <div class="cellule-principale"><c:out value="${g.nom}"/></div>
-                  <div class="detail">Plafond <app:euros valeur="${g.plafond}"/> · franchise <app:euros valeur="${g.franchise}"/></div>
+                  <div class="detail">Plafond <app:euros valeur="${g.plafond}" vide="aucun"/> · franchise <app:euros valeur="${g.franchise}" vide="aucune"/></div>
                 </div>
                 <%-- Un type doit garder au moins une garantie : pas de bouton sur la dernière --%>
                 <c:choose>

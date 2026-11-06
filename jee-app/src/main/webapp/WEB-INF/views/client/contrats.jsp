@@ -86,8 +86,8 @@
                   <span class="garantie-nom"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg><c:out value="${g.nom}"/></span>
                   <c:if test="${not empty g.description}"><p><c:out value="${g.description}"/></p></c:if>
                   <div class="garantie-chiffres">
-                    <span>Plafond<b class="nombre"><app:euros valeur="${g.plafond}"/></b></span>
-                    <span>Franchise<b class="nombre"><app:euros valeur="${g.franchise}"/></b></span>
+                    <span>Plafond<b class="nombre"><app:euros valeur="${g.plafond}" vide="Aucun"/></b></span>
+                    <span>Franchise<b class="nombre"><app:euros valeur="${g.franchise}" vide="Aucune"/></b></span>
                   </div>
                 </div>
               </c:forEach>
