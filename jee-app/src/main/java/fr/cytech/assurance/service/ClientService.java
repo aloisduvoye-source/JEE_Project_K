@@ -11,6 +11,11 @@ public class ClientService {
 
     private final ClientDao clientDao = new ClientDao();
 
+    // Tous les clients (comptes actifs ou désactivés), triés par nom puis prénom, avec leur compte déjà chargé
+    public List<Client> lister() {
+        return clientDao.listerAvecUtilisateur();
+    }
+
     // Clients dont le compte est actif, triés par nom puis prénom
     public List<Client> listerActifs() {
         return clientDao.listerTous().stream()
