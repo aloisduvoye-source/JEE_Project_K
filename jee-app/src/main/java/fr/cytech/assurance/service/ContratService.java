@@ -37,6 +37,11 @@ public class ContratService {
         return contratDao.listerTousAvecDetails();
     }
 
+    // Contrat avec son client, son type et ses garanties, ou null s'il n'existe pas
+    public Contrat trouverAvecDetails(Long id) {
+        return contratDao.trouverAvecDetails(id);
+    }
+
     // Contrats d'un client, du plus récent au plus ancien, avec leur type et leurs garanties
     public List<Contrat> listerContratsDuClient(Long idClient) {
         return contratDao.listerParClient(idClient);
