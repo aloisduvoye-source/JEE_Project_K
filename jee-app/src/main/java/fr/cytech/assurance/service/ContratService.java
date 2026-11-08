@@ -21,6 +21,10 @@ import java.util.stream.Collectors;
  */
 public class ContratService {
 
+    // Tous les contrats durent un an : la date de fin est calculée, l'agent ne la saisit pas.
+    // Le prix de base d'un type d'assurance et la prime d'un contrat sont donc des montants annuels
+    public static final int DUREE_EN_MOIS = 12;
+
     private final ContratDao contratDao = new ContratDao();
     private final ClientDao clientDao = new ClientDao();
     private final TypeAssuranceDao typeAssuranceDao = new TypeAssuranceDao();
@@ -37,10 +41,11 @@ public class ContratService {
 
     /**
      * Crée un contrat en EN_ATTENTE, avec un numéro attribué automatiquement.
+     * Il dure DUREE_EN_MOIS à partir de dateDebut : la date de fin est calculée ici.
      * Lève ContratInvalideException (message affichable) si une règle n'est pas respectée.
      */
     public Contrat creerContrat(Long idClient, Long idTypeAssurance, Set<Long> idsGaranties,
-                                LocalDate dateDebut, LocalDate dateFin, BigDecimal prime) {
+                                LocalDate dateDebut, BigDecimal prime) {
         Client client = idClient == null ? null : clientDao.trouverParId(idClient);
         if (client == null) {
             throw new ContratInvalideException("Client inconnu.");
@@ -69,11 +74,8 @@ public class ContratService {
                     + type.getNom().toLowerCase() + ".");
         }
 
-        if (dateDebut == null || dateFin == null) {
-            throw new ContratInvalideException("Les dates de début et de fin sont obligatoires.");
-        }
-        if (!dateFin.isAfter(dateDebut)) {
-            throw new ContratInvalideException("La date de fin doit être après la date de début.");
+        if (dateDebut == null) {
+            throw new ContratInvalideException("La date de début est obligatoire.");
         }
 
         if (prime == null || prime.signum() <= 0) {
@@ -87,8 +89,13 @@ public class ContratService {
 
         Contrat contrat = new Contrat();   // statut EN_ATTENTE par défaut
         contrat.setDateDebut(dateDebut);
-        contrat.setDateFin(dateFin);
+        contrat.setDateFin(dateFin(dateDebut));
         contrat.setPrime(prime);
         return contratDao.creerAvecGaranties(contrat, idClient, idTypeAssurance, idsGaranties);
+    }
+
+    // Fin d'un contrat qui commence à dateDebut : DUREE_EN_MOIS plus tard (le 29 février donne le 28 février)
+    public static LocalDate dateFin(LocalDate dateDebut) {
+        return dateDebut.plusMonths(DUREE_EN_MOIS);
     }
 }

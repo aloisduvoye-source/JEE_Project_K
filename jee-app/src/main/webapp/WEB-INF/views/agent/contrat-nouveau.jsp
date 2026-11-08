@@ -70,11 +70,8 @@
         <input type="date" id="dateDebut" name="dateDebut" value="<c:out value='${dateDebut}'/>">
         <c:out value="${erreurs.dateDebut}"/>
       </p>
-      <p>
-        <label for="dateFin">Date de fin</label>
-        <input type="date" id="dateFin" name="dateFin" value="<c:out value='${dateFin}'/>">
-        <c:out value="${erreurs.dateFin}"/>
-      </p>
+      <%-- Pas de date de fin à saisir : ContratService la calcule (même durée pour tous les contrats) --%>
+      <p>Durée : ${dureeEnMois} mois à partir de la date de début.</p>
       <p>
         <label for="prime">Prime annuelle (€)</label>
         <input type="text" id="prime" name="prime" value="<c:out value='${prime}'/>">
