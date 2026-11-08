@@ -1,5 +1,6 @@
 package fr.cytech.assurance.dao;
 
+import fr.cytech.assurance.exception.ContratInvalideException;
 import fr.cytech.assurance.model.Client;
 import fr.cytech.assurance.model.Contrat;
 import fr.cytech.assurance.model.Garantie;
@@ -8,6 +9,7 @@ import fr.cytech.assurance.model.TypeAssurance;
 import fr.cytech.assurance.model.enums.StatutContrat;
 import fr.cytech.assurance.model.enums.StatutPaiement;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.List;
@@ -67,6 +69,52 @@ public class ContratDao extends GenericDao<Contrat> {
             paiement.setDateEcheance(contrat.getDateDebut());
             em.persist(paiement);
             return contrat;
+        });
+    }
+
+    /**
+     * Modifie les garanties, les dates et la prime d'un contrat pas encore payé, et son paiement avec :
+     * montant = prime, échéance = date de début, de nouveau EN_ATTENTE (il était peut-être EN_RETARD).
+     * <p>
+     * Tout se fait dans une seule transaction. Le paiement est relu dans la transaction : si le client
+     * vient de payer, la modification est refusée (le prix d'un contrat payé ne peut plus changer).
+     * Les autres règles (garanties proposées par le type, dates, prime) sont vérifiées par le service.
+     *
+     * @throws ContratInvalideException si le contrat a été payé entre-temps
+     * @throws IllegalArgumentException si le contrat ou l'une des garanties n'existe pas
+     */
+    public void modifierAvantPaiement(Long id, Set<Long> idsGaranties, LocalDate dateDebut, LocalDate dateFin,
+                                      BigDecimal prime) {
+        enTransaction(em -> {
+            Contrat contrat = em.find(Contrat.class, id);
+            if (contrat == null) {
+                throw new IllegalArgumentException("Contrat introuvable : " + id);
+            }
+            List<Paiement> paiements = em.createQuery("SELECT p FROM Paiement p WHERE p.contrat.id = :id", Paiement.class)
+                    .setParameter("id", id)
+                    .getResultList();
+            if (paiements.stream().anyMatch(p -> p.getStatut() == StatutPaiement.EFFECTUE)) {
+                throw new ContratInvalideException("Ce contrat a été payé : il ne peut plus être modifié.");
+            }
+            List<Garantie> garanties = em.createQuery("SELECT g FROM Garantie g WHERE g.id IN :ids", Garantie.class)
+                    .setParameter("ids", idsGaranties)
+                    .getResultList();
+            if (garanties.size() != idsGaranties.size()) {
+                throw new IllegalArgumentException("Garantie introuvable parmi : " + idsGaranties);
+            }
+
+            contrat.setGaranties(new HashSet<>(garanties));
+            contrat.setDateDebut(dateDebut);
+            contrat.setDateFin(dateFin);
+            contrat.setPrime(prime);
+            for (Paiement paiement : paiements) {
+                if (paiement.getStatut() != StatutPaiement.ANNULE) {
+                    paiement.setMontant(prime);
+                    paiement.setDateEcheance(dateDebut);
+                    paiement.setStatut(StatutPaiement.EN_ATTENTE);
+                }
+            }
+            return null;
         });
     }
 

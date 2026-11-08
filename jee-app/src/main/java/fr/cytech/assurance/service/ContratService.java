@@ -10,6 +10,7 @@ import fr.cytech.assurance.model.Contrat;
 import fr.cytech.assurance.model.Garantie;
 import fr.cytech.assurance.model.TypeAssurance;
 import fr.cytech.assurance.model.enums.StatutContrat;
+import fr.cytech.assurance.model.enums.StatutPaiement;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -78,6 +79,57 @@ public class ContratService {
             throw new ContratInvalideException("Ce type d'assurance est archivé : il n'est plus proposé.");
         }
 
+        verifierGarantiesDateEtPrime(type, idsGaranties, dateDebut, prime, true);
+
+        Contrat contrat = new Contrat();   // statut EN_ATTENTE par défaut
+        contrat.setDateDebut(dateDebut);
+        contrat.setDateFin(dateFin(dateDebut));
+        contrat.setPrime(prime);
+        return contratDao.creerAvecGaranties(contrat, idClient, idTypeAssurance, idsGaranties);
+    }
+
+    /**
+     * Modifie un contrat pas encore payé (EN_ATTENTE ou SUSPENDU) : garanties, date de début, prime.
+     * Le client et le type ne changent pas (sinon, c'est un autre contrat). La date de fin est recalculée,
+     * et le paiement suit : nouveau montant, nouvelle échéance, de nouveau EN_ATTENTE.
+     * Un contrat payé ne peut plus être modifié : il n'y a qu'un seul paiement, son prix ne peut plus changer.
+     * Lève ContratInvalideException (message affichable) si une règle n'est pas respectée.
+     */
+    public void modifierContrat(Long idContrat, Set<Long> idsGaranties, LocalDate dateDebut, BigDecimal prime) {
+        Contrat contrat = idContrat == null ? null : contratDao.trouverAvecDetails(idContrat);
+        if (contrat == null) {
+            throw new ContratInvalideException("Contrat inconnu.");
+        }
+        if (!estModifiable(contrat)) {
+            throw new ContratInvalideException("Seul un contrat en attente ou suspendu, pas encore payé, peut être modifié.");
+        }
+        if (estPaye(idContrat)) {
+            throw new ContratInvalideException("Ce contrat a été payé : il ne peut plus être modifié.");
+        }
+        TypeAssurance type = typeAssuranceDao.trouverAvecGaranties(contrat.getTypeAssurance().getId());
+        // Prix de base vérifié seulement si la prime change : une hausse du prix de base
+        // ne s'applique qu'aux nouveaux contrats (page de modification d'un type d'assurance)
+        verifierGarantiesDateEtPrime(type, idsGaranties, dateDebut, prime, prime != null
+                && prime.compareTo(contrat.getPrime()) != 0);
+
+        contratDao.modifierAvantPaiement(idContrat, idsGaranties, dateDebut, dateFin(dateDebut), prime);
+        // Un contrat suspendu dont la date de début est repoussée redevient EN_ATTENTE
+        mettreAJourStatuts(LocalDate.now());
+    }
+
+    // Vrai si le statut permet une modification (le paiement est vérifié à part, avec estPaye)
+    public static boolean estModifiable(Contrat contrat) {
+        return contrat.getStatut() == StatutContrat.EN_ATTENTE || contrat.getStatut() == StatutContrat.SUSPENDU;
+    }
+
+    // Vrai si le paiement du contrat a été effectué
+    public boolean estPaye(Long idContrat) {
+        return paiementDao.listerParContrat(idContrat).stream().anyMatch(p -> p.getStatut() == StatutPaiement.EFFECTUE);
+    }
+
+    // Règles communes à la création et à la modification : garanties, date de début, prime
+    private static void verifierGarantiesDateEtPrime(TypeAssurance type, Set<Long> idsGaranties,
+                                                     LocalDate dateDebut, BigDecimal prime, boolean verifierPrixBase) {
         // Le sujet : un contrat contient une ou plusieurs garanties
         if (idsGaranties == null || idsGaranties.isEmpty()) {
             throw new ContratInvalideException("Choisissez au moins une garantie.");
@@ -101,16 +153,10 @@ public class ContratService {
             throw new ContratInvalideException("La prime doit être supérieure à zéro.");
         }
         // Le prix de base du type est un minimum : l'agent peut l'augmenter (garanties, profil), pas le baisser
-        if (prime.compareTo(type.getPrixBase()) < 0) {
+        if (verifierPrixBase && prime.compareTo(type.getPrixBase()) < 0) {
             throw new ContratInvalideException("La prime ne peut pas être inférieure au prix de base de l'"
                     + type.getNom().toLowerCase() + " (" + type.getPrixBase().toPlainString() + " €).");
         }
-
-        Contrat contrat = new Contrat();   // statut EN_ATTENTE par défaut
-        contrat.setDateDebut(dateDebut);
-        contrat.setDateFin(dateFin(dateDebut));
-        contrat.setPrime(prime);
-        return contratDao.creerAvecGaranties(contrat, idClient, idTypeAssurance, idsGaranties);
     }
 
     // Résiliation par un agent, de n'importe quel contrat en cours
