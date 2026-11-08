@@ -39,7 +39,7 @@
       <tr>
         <th>Nom</th>
         <th>Description</th>
-        <th>Prix de base</th>
+        <th>Prix de base annuel</th>
         <th>Garanties disponibles</th>
         <th>État</th>
         <th>Actions</th>

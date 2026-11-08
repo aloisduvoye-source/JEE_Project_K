@@ -11,6 +11,12 @@
 
   <h1>Mes contrats</h1>
 
+  <%-- Erreur enregistrée avant la redirection (MessageFlash), par exemple un contrat introuvable --%>
+  <c:if test="${not empty sessionScope.messageErreur}">
+    <p><c:out value="${sessionScope.messageErreur}"/></p>
+    <c:remove var="messageErreur" scope="session"/>
+  </c:if>
+
   <c:if test="${empty contrats}">
     <p>Vous n'avez aucun contrat pour l'instant.</p>
   </c:if>
@@ -23,6 +29,7 @@
         prime annuelle de <c:out value="${ct.prime}"/> €.
         Statut : <c:out value="${ct.statut}"/>
       </p>
+      <p><a href="${pageContext.request.contextPath}/client/contrats/detail?id=${ct.id}">Voir le contrat et son paiement</a></p>
 
       <table border="1">
         <thead>

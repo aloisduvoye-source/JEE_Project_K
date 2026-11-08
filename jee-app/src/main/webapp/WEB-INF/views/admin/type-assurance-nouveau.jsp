@@ -27,9 +27,9 @@
       <c:out value="${erreurs.description}"/>
     </p>
     <p>
-      <label for="prixBase">Prix de base (€)</label>
+      <label for="prixBase">Prix de base annuel (€)</label>
       <input type="text" id="prixBase" name="prixBase" value="<c:out value='${prixBase}'/>">
-      (prime minimale d'un contrat de ce type)
+      (prime minimale d'un contrat de ce type, pour un an)
       <c:out value="${erreurs.prixBase}"/>
     </p>
 

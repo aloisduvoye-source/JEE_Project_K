@@ -5,7 +5,9 @@ import fr.cytech.assurance.model.enums.ModePaiement;
 import fr.cytech.assurance.model.enums.StatutPaiement;
 
 import java.time.LocalDate;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Accès en base aux paiements (échéances) des contrats.
@@ -62,6 +64,18 @@ public class PaiementDao extends GenericDao<Paiement> {
                                 + " WHERE p.statut = :statut ORDER BY p.dateEcheance", Paiement.class)
                 .setParameter("statut", StatutPaiement.EN_RETARD)
                 .getResultList());
+    }
+
+    /**
+     * Ids des contrats dont le paiement a été effectué.
+     *
+     * @return les ids des contrats payés, ensemble vide si aucun ne l'est
+     */
+    public Set<Long> idsContratsPayes() {
+        return enLecture(em -> new HashSet<>(em.createQuery(
+                        "SELECT p.contrat.id FROM Paiement p WHERE p.statut = :effectue", Long.class)
+                .setParameter("effectue", StatutPaiement.EFFECTUE)
+                .getResultList()));
     }
 
     /**

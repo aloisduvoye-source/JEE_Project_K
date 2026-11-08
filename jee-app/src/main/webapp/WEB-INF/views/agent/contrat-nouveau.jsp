@@ -23,7 +23,7 @@
         <option value="">-- Choisir --</option>
         <c:forEach var="t" items="${types}">
           <option value="${t.id}" ${t.id == typeChoisi.id ? 'selected' : ''}>
-            <c:out value="${t.nom}"/> (à partir de <c:out value="${t.prixBase}"/> €)
+            <c:out value="${t.nom}"/> (à partir de <c:out value="${t.prixBase}"/> € par an)
           </option>
         </c:forEach>
       </select>
@@ -67,13 +67,14 @@
 
       <p>
         <label for="dateDebut">Date de début</label>
-        <input type="date" id="dateDebut" name="dateDebut" value="<c:out value='${dateDebut}'/>">
+        <input type="date" id="dateDebut" name="dateDebut" value="<c:out value='${dateDebut}'/>" min="${aujourdhui}">
         <c:out value="${erreurs.dateDebut}"/>
       </p>
+      <%-- Pas de date de fin à saisir : ContratService la calcule (même durée pour tous les contrats) --%>
+      <p>Durée : ${dureeEnMois} mois à partir de la date de début.</p>
       <p>
-        <label for="dateFin">Date de fin</label>
-        <input type="date" id="dateFin" name="dateFin" value="<c:out value='${dateFin}'/>">
-        <c:out value="${erreurs.dateFin}"/>
+        La prime se paie en une fois, au plus tard à la date de début :
+        le contrat devient actif à cette date s'il est payé, et suspendu sinon.
       </p>
       <p>
         <label for="prime">Prime annuelle (€)</label>

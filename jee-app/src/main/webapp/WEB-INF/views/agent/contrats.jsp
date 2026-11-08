@@ -12,7 +12,12 @@
   <h1>Contrats</h1>
 
   <c:if test="${not empty param.cree}">
-    <p>Le contrat n° <c:out value="${param.cree}"/> a été créé. Il est en attente d'activation.</p>
+    <p>Le contrat n° <c:out value="${param.cree}"/> a été créé. Il deviendra actif à sa date de début s'il est payé.</p>
+  </c:if>
+  <%-- Erreur enregistrée avant la redirection (MessageFlash), par exemple un contrat introuvable --%>
+  <c:if test="${not empty sessionScope.messageErreur}">
+    <p><c:out value="${sessionScope.messageErreur}"/></p>
+    <c:remove var="messageErreur" scope="session"/>
   </c:if>
 
   <%-- Seul un agent crée des contrats : l'admin consulte cette page sans le lien --%>
@@ -28,14 +33,14 @@
         <th>Type d'assurance</th>
         <th>Début</th>
         <th>Fin</th>
-        <th>Prime</th>
+        <th>Prime annuelle</th>
         <th>Statut</th>
       </tr>
     </thead>
     <tbody>
       <c:forEach var="ct" items="${contrats}">
         <tr>
-          <td><c:out value="${ct.id}"/></td>
+          <td><a href="${pageContext.request.contextPath}/agent/contrats/detail?id=${ct.id}"><c:out value="${ct.id}"/></a></td>
           <td><c:out value="${ct.client.utilisateur.nom} ${ct.client.utilisateur.prenom}"/></td>
           <td><c:out value="${ct.typeAssurance.nom}"/></td>
           <td><c:out value="${ct.dateDebut}"/></td>

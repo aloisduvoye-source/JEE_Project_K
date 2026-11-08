@@ -54,14 +54,13 @@ public class NouveauContratServlet extends HttpServlet {
         Long idType = v.identifiant("type", Validateur.nettoyer(request.getParameter("type")), "Le type d'assurance");
         Long idClient = v.identifiant("client", Validateur.nettoyer(request.getParameter("client")), "Le client");
         LocalDate dateDebut = v.date("dateDebut", Validateur.nettoyer(request.getParameter("dateDebut")), "La date de début");
-        LocalDate dateFin = v.date("dateFin", Validateur.nettoyer(request.getParameter("dateFin")), "La date de fin");
         BigDecimal prime = v.montant("prime", Validateur.nettoyer(request.getParameter("prime")), "La prime");
 
         Set<Long> idsGaranties = v.identifiants("garanties", request.getParameterValues("garanties"), "Une garantie");
 
         if (v.estValide()) {
             try {
-                Contrat contrat = contratService.creerContrat(idClient, idType, idsGaranties, dateDebut, dateFin, prime);
+                Contrat contrat = contratService.creerContrat(idClient, idType, idsGaranties, dateDebut, prime);
                 response.sendRedirect(request.getContextPath() + "/agent/contrats?cree=" + contrat.getId());
                 return;
             } catch (ContratInvalideException e) {
@@ -71,7 +70,7 @@ public class NouveauContratServlet extends HttpServlet {
 
         // Réaffiche le formulaire avec les valeurs saisies et les messages
         request.setAttribute("erreurs", v.getErreurs());
-        for (String champ : new String[]{"client", "dateDebut", "dateFin", "prime"}) {
+        for (String champ : new String[]{"client", "dateDebut", "prime"}) {
             request.setAttribute(champ, Validateur.nettoyer(request.getParameter(champ)));
         }
         afficher(request, response, typeDemande(request.getParameter("type")), idsGaranties);
@@ -89,6 +88,8 @@ public class NouveauContratServlet extends HttpServlet {
         // Seuls les types non archivés sont proposés pour un nouveau contrat
         request.setAttribute("types", typeAssuranceService.listerActifs());
         request.setAttribute("typeChoisi", type);
+        request.setAttribute("dureeEnMois", ContratService.DUREE_EN_MOIS);
+        request.setAttribute("aujourdhui", LocalDate.now());   // date de début minimale
         if (type != null) {
             request.setAttribute("clients", clientService.listerActifs());
             request.setAttribute("garantiesDisponibles", type.getGaranties().stream()
