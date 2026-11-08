@@ -26,12 +26,14 @@
         <c:when test="${utilisateurConnecte.role == 'AGENT'}">
           <a href="${pageContext.request.contextPath}/agent/accueil"><svg class="icone" aria-hidden="true"><use href="#i-grille"/></svg>Tableau de bord</a>
           <a href="${pageContext.request.contextPath}/agent/contrats"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg>Contrats</a>
-          <a href="${pageContext.request.contextPath}/agent/contrats/nouveau"><svg class="icone" aria-hidden="true"><use href="#i-plus"/></svg>Nouveau contrat</a>
+          <a href="${pageContext.request.contextPath}/agent/clients"><svg class="icone" aria-hidden="true"><use href="#i-utilisateurs"/></svg>Clients</a>
+          <a href="${pageContext.request.contextPath}/agent/garanties"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg>Garanties</a>
         </c:when>
         <c:when test="${utilisateurConnecte.role == 'ADMIN'}">
           <a href="${pageContext.request.contextPath}/admin/accueil"><svg class="icone" aria-hidden="true"><use href="#i-grille"/></svg>Tableau de bord</a>
+          <a href="${pageContext.request.contextPath}/admin/utilisateurs"><svg class="icone" aria-hidden="true"><use href="#i-utilisateurs"/></svg>Utilisateurs</a>
           <a href="${pageContext.request.contextPath}/admin/types-assurance"><svg class="icone" aria-hidden="true"><use href="#i-couches"/></svg>Types d'assurance</a>
-          <a href="${pageContext.request.contextPath}/admin/garanties"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg>Garanties</a>
+          <a href="${pageContext.request.contextPath}/agent/garanties"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg>Garanties</a>
           <a href="${pageContext.request.contextPath}/agent/contrats"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg>Contrats</a>
         </c:when>
         <c:otherwise>

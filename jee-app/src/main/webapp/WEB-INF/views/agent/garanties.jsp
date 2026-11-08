@@ -18,7 +18,7 @@
           <p class="sous-titre">Les couvertures que les types d'assurance peuvent proposer : responsabilité civile, vol, incendie…</p>
         </div>
         <div class="actions">
-          <a class="bouton bouton-principal" href="${pageContext.request.contextPath}/admin/garanties/nouvelle">
+          <a class="bouton bouton-principal" href="${pageContext.request.contextPath}/agent/garanties/nouvelle">
             <svg class="icone" aria-hidden="true"><use href="#i-plus"/></svg>Nouvelle garantie
           </a>
         </div>
@@ -51,7 +51,7 @@
             <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg></span>
             <h2>Aucune garantie</h2>
             <p>Créez une première garantie pour pouvoir la proposer dans un type d'assurance.</p>
-            <a class="bouton bouton-principal" href="${pageContext.request.contextPath}/admin/garanties/nouvelle">
+            <a class="bouton bouton-principal" href="${pageContext.request.contextPath}/agent/garanties/nouvelle">
               <svg class="icone" aria-hidden="true"><use href="#i-plus"/></svg>Nouvelle garantie
             </a>
           </div>
@@ -102,12 +102,12 @@
                       <td>
                         <div class="cellule-actions">
                           <a class="bouton bouton-petit bouton-fantome" title="Modifier"
-                             href="${pageContext.request.contextPath}/admin/garanties/modifier?id=${garantie.id}">
+                             href="${pageContext.request.contextPath}/agent/garanties/modifier?id=${garantie.id}">
                             <svg class="icone" aria-hidden="true"><use href="#i-crayon"/></svg>Modifier
                           </a>
                           <%-- Le service refuse la suppression d'une garantie souscrite par un contrat :
                                le message s'affiche alors en haut de cette liste --%>
-                          <form method="post" action="${pageContext.request.contextPath}/admin/garanties/supprimer"
+                          <form method="post" action="${pageContext.request.contextPath}/agent/garanties/supprimer"
                                 data-confirmer="Supprimer « <c:out value='${garantie.nom}'/> » ?"
                                 data-confirmer-texte="La suppression est définitive. Elle est refusée si un contrat a souscrit cette garantie."
                                 data-confirmer-bouton="Supprimer">

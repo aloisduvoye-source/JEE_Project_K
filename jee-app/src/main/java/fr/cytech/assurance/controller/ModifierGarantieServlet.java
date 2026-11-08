@@ -16,12 +16,12 @@ import java.math.BigDecimal;
 import java.util.Map;
 
 /**
- * Modification d'une garantie du référentiel, pour l'administrateur.
- *   GET  /admin/garanties/modifier?id=... : affiche le formulaire pré-rempli
+ * Modification d'une garantie du référentiel, pour l'agent (et l'administrateur) : §2.1 du sujet.
+ *   GET  /agent/garanties/modifier?id=... : affiche le formulaire pré-rempli
  *   POST : vérifie les saisies, enregistre puis redirige vers la liste (PRG)
- * URL protégée automatiquement par RoleFiltre : le préfixe /admin est réservé aux ADMIN.
+ * URL protégée automatiquement par RoleFiltre : le préfixe /agent est ouvert aux AGENT et ADMIN.
  */
-@WebServlet("/admin/garanties/modifier")
+@WebServlet("/agent/garanties/modifier")
 public class ModifierGarantieServlet extends HttpServlet {
 
     private final GarantieService garantieService = new GarantieService();
@@ -34,7 +34,7 @@ public class ModifierGarantieServlet extends HttpServlet {
         Garantie garantie = id == null ? null : garantieService.trouver(id);
         if (garantie == null) {
             MessageFlash.erreur(request, "Cette garantie n'existe pas.");
-            response.sendRedirect(request.getContextPath() + "/admin/garanties");
+            response.sendRedirect(request.getContextPath() + "/agent/garanties");
             return;
         }
 
@@ -48,7 +48,7 @@ public class ModifierGarantieServlet extends HttpServlet {
     @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        String liste = request.getContextPath() + "/admin/garanties";
+        String liste = request.getContextPath() + "/agent/garanties";
 
         String nom = Validateur.nettoyer(request.getParameter("nom"));
         String description = Validateur.nettoyer(request.getParameter("description"));
@@ -103,7 +103,7 @@ public class ModifierGarantieServlet extends HttpServlet {
         if (erreurs != null) {
             request.setAttribute("erreurs", erreurs);
         }
-        request.getRequestDispatcher("/WEB-INF/views/admin/garantie-modifier.jsp")
+        request.getRequestDispatcher("/WEB-INF/views/agent/garantie-modifier.jsp")
                 .forward(request, response);
     }
 

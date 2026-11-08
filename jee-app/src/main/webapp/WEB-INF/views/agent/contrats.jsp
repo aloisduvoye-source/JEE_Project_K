@@ -33,9 +33,17 @@
           <svg class="icone" aria-hidden="true"><use href="#i-succes"/></svg>
           <div class="alerte-texte">
             <strong>Le contrat n° <c:out value="${param.cree}"/> a été créé.</strong>
-            Il est en attente d'activation.
+            Il deviendra actif à sa date de début s'il est payé.
           </div>
         </div>
+      </c:if>
+      <%-- Erreur enregistrée avant la redirection (MessageFlash), par exemple un contrat introuvable --%>
+      <c:if test="${not empty sessionScope.messageErreur}">
+        <div class="alerte ton-danger" role="alert">
+          <svg class="icone" aria-hidden="true"><use href="#i-erreur"/></svg>
+          <div class="alerte-texte"><c:out value="${sessionScope.messageErreur}"/></div>
+        </div>
+        <c:remove var="messageErreur" scope="session"/>
       </c:if>
 
       <c:choose>
@@ -78,7 +86,8 @@
                     <th>Client</th>
                     <th>Type d'assurance</th>
                     <th>Période</th>
-                    <th class="a-droite">Prime</th>
+                    <th class="a-droite">Prime annuelle</th>
+                    <th><span class="visuellement-cache">Actions</span></th>
                     <th>Statut</th>
                   </tr>
                 </thead>
@@ -86,7 +95,7 @@
                   <c:forEach var="ct" items="${contrats}">
                     <c:set var="titulaire" value="${ct.client.utilisateur}"/>
                     <tr data-filtre-element data-filtre-cle="${ct.statut}">
-                      <td class="texte-doux nombre">#<c:out value="${ct.id}"/></td>
+                      <td class="nombre"><a class="cellule-principale" href="${pageContext.request.contextPath}/agent/contrats/detail?id=${ct.id}">#<c:out value="${ct.id}"/></a></td>
                       <td>
                         <div class="cellule-personne">
                           <span class="avatar"><c:out value="${fn:toUpperCase(fn:substring(titulaire.prenom, 0, 1))}${fn:toUpperCase(fn:substring(titulaire.nom, 0, 1))}"/></span>
@@ -100,10 +109,15 @@
                       <td class="nombre"><app:date valeur="${ct.dateDebut}"/> → <app:date valeur="${ct.dateFin}"/></td>
                       <td class="a-droite nombre cellule-principale"><app:euros valeur="${ct.prime}"/></td>
                       <td><app:statutContrat valeur="${ct.statut}"/></td>
+                      <td class="cellule-actions">
+                        <a class="bouton bouton-petit bouton-fantome" href="${pageContext.request.contextPath}/agent/contrats/detail?id=${ct.id}">
+                          Voir<svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg>
+                        </a>
+                      </td>
                     </tr>
                   </c:forEach>
                   <tr class="ligne-message" data-filtre-vide hidden>
-                    <td colspan="6">Aucun contrat ne correspond à la recherche.</td>
+                    <td colspan="7">Aucun contrat ne correspond à la recherche.</td>
                   </tr>
                 </tbody>
               </table>

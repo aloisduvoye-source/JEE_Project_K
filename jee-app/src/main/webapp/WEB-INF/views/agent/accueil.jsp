@@ -14,7 +14,7 @@
       <section class="banniere">
         <p class="banniere-sur-titre">Espace agent</p>
         <h1>Bonjour <c:out value="${sessionScope.utilisateur.prenom}"/>,</h1>
-        <p>Créez et suivez les contrats de vos clients. Les sinistres, les paiements et les statistiques arrivent bientôt.</p>
+        <p>Créez et suivez les contrats de vos clients et gérez les garanties. Les sinistres et les statistiques arrivent bientôt.</p>
         <div class="banniere-actions">
           <a class="bouton bouton-blanc" href="${pageContext.request.contextPath}/agent/contrats/nouveau">
             <svg class="icone" aria-hidden="true"><use href="#i-plus"/></svg>Nouveau contrat
@@ -43,10 +43,14 @@
             </div>
             <span class="tuile-lien">Créer <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
           </a>
-          <div class="tuile tuile-bientot">
-            <span class="badge ton-neutre">Bientôt</span>
-            <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-utilisateurs"/></svg></span>
-            <div><h3>Clients</h3><p>Rechercher un client et consulter sa fiche.</p></div>
+          <a class="tuile" href="${pageContext.request.contextPath}/agent/clients">
+            <span class="pastille ton-info"><svg class="icone" aria-hidden="true"><use href="#i-utilisateurs"/></svg></span>
+            <div>
+              <h3>Clients</h3>
+              <p>Rechercher un client et consulter ses contrats.</p>
+            </div>
+            <span class="tuile-lien">Ouvrir <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
+          </a>
           </div>
           <div class="tuile tuile-bientot">
             <span class="badge ton-neutre">Bientôt</span>
@@ -56,12 +60,16 @@
           <div class="tuile tuile-bientot">
             <span class="badge ton-neutre">Bientôt</span>
             <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-carte"/></svg></span>
-            <div><h3>Paiements</h3><p>Enregistrer les paiements et suivre les retards.</p></div>
+            <div><h3>Paiements</h3><p>Suivre les paiements et les retards de tous les contrats.</p></div>
           </div>
-          <div class="tuile tuile-bientot">
-            <span class="badge ton-neutre">Bientôt</span>
-            <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg></span>
-            <div><h3>Garanties</h3><p>Créer et modifier les garanties proposées.</p></div>
+          <a class="tuile" href="${pageContext.request.contextPath}/agent/garanties">
+            <span class="pastille ton-violet"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg></span>
+            <div>
+              <h3>Garanties</h3>
+              <p>Créer, modifier et supprimer les garanties proposées.</p>
+            </div>
+            <span class="tuile-lien">Gérer <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
+          </a>
           </div>
         </div>
       </div>

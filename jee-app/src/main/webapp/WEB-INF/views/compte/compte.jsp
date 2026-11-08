@@ -58,6 +58,23 @@
           </a>
         </div>
       </section>
+
+      <%-- L'administrateur ne peut pas supprimer son compte : il est le seul à gérer l'application --%>
+      <c:if test="${compte.role != 'ADMIN'}">
+        <section class="carte espace-haut">
+          <div class="carte-entete">
+            <div>
+              <h2>Supprimer mon compte</h2>
+              <p>Vous ne pourrez plus vous connecter. Les comptes liés à des contrats sont désactivés plutôt qu'effacés.</p>
+            </div>
+          </div>
+          <div class="carte-pied">
+            <a class="bouton bouton-danger-doux" href="${pageContext.request.contextPath}/compte/supprimer">
+              <svg class="icone" aria-hidden="true"><use href="#i-poubelle"/></svg>Supprimer mon compte
+            </a>
+          </div>
+        </section>
+      </c:if>
     </div>
   </main>
 

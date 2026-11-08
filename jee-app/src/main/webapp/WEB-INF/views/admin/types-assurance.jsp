@@ -80,7 +80,7 @@
                 <thead>
                   <tr>
                     <th>Type d'assurance</th>
-                    <th class="a-droite">Prix de base</th>
+                    <th class="a-droite">Prix de base annuel</th>
                     <th>Garanties disponibles</th>
                     <th>État</th>
                     <th class="a-droite">Actions</th>

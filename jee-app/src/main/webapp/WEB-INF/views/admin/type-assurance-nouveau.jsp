@@ -41,13 +41,13 @@
               <c:if test="${not empty erreurs.nom}"><span class="message-erreur"><c:out value="${erreurs.nom}"/></span></c:if>
             </div>
             <div class="champ ${not empty erreurs.prixBase ? 'a-erreur' : ''}">
-              <label for="prixBase">Prix de base<span class="obligatoire">*</span></label>
+              <label for="prixBase">Prix de base annuel<span class="obligatoire">*</span></label>
               <div class="saisie-groupe">
                 <input class="saisie" type="text" inputmode="decimal" id="prixBase" name="prixBase" placeholder="250,00"
                        value="<c:out value='${prixBase}'/>">
                 <span class="saisie-suffixe">€</span>
               </div>
-              <span class="aide">Prime minimale d'un contrat de ce type.</span>
+              <span class="aide">Prime minimale d'un contrat de ce type, pour un an.</span>
               <c:if test="${not empty erreurs.prixBase}"><span class="message-erreur"><c:out value="${erreurs.prixBase}"/></span></c:if>
             </div>
           </div>

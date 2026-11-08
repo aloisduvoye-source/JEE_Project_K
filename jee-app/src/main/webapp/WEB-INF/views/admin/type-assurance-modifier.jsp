@@ -70,7 +70,7 @@
               <c:if test="${not empty erreurs.description}"><span class="message-erreur"><c:out value="${erreurs.description}"/></span></c:if>
             </div>
             <div class="champ ${not empty erreurs.prixBase ? 'a-erreur' : ''}">
-              <label for="prixBase">Prix de base</label>
+              <label for="prixBase">Prix de base annuel</label>
               <div class="saisie-groupe">
                 <input class="saisie" type="text" inputmode="decimal" id="prixBase" name="prixBase" value="<c:out value='${prixBase}'/>">
                 <span class="saisie-suffixe">€</span>

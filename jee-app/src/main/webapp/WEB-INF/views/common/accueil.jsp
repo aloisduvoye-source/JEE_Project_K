@@ -10,6 +10,21 @@
   <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
   <main id="contenu">
+    <%-- Après « Supprimer mon compte » (SuppressionCompteServlet) --%>
+    <c:if test="${param.compte == 'supprime' or param.compte == 'desactive'}">
+      <div class="conteneur espace-haut">
+        <div class="alerte ton-info" role="status" data-nettoyer-url="compte">
+          <svg class="icone" aria-hidden="true"><use href="#i-info"/></svg>
+          <div class="alerte-texte">
+            <c:choose>
+              <c:when test="${param.compte == 'supprime'}">Votre compte a été supprimé.</c:when>
+              <c:otherwise>Votre compte a été désactivé : vos contrats et sinistres sont conservés par l'assurance.</c:otherwise>
+            </c:choose>
+          </div>
+        </div>
+      </div>
+    </c:if>
+
     <section class="hero">
       <div class="conteneur hero-grille">
         <div class="apparition">

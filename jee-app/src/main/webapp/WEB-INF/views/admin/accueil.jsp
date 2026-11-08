@@ -14,7 +14,7 @@
       <section class="banniere">
         <p class="banniere-sur-titre">Administration</p>
         <h1>Bonjour <c:out value="${sessionScope.utilisateur.prenom}"/>,</h1>
-        <p>Gérez le catalogue des types d'assurance et des garanties, et consultez l'ensemble des contrats. La gestion des utilisateurs et les indicateurs arrivent bientôt.</p>
+        <p>Gérez le catalogue des types d'assurance et des garanties, et consultez l'ensemble des contrats. Créez les comptes des agents et activez ou désactivez les comptes. Les indicateurs arrivent bientôt.</p>
         <div class="banniere-actions">
           <a class="bouton bouton-blanc" href="${pageContext.request.contextPath}/admin/types-assurance">
             <svg class="icone" aria-hidden="true"><use href="#i-couches"/></svg>Types d'assurance
@@ -25,7 +25,7 @@
 
       <div>
         <div class="titre-section"><h2>Gestion</h2></div>
-        <%-- Les tuiles "Bientôt" deviendront des liens quand les pages /admin/... existeront --%>
+        <%-- Les tuiles "Bientôt" deviendront des liens quand les pages existeront --%>
         <div class="grille grille-tuiles">
           <a class="tuile" href="${pageContext.request.contextPath}/admin/types-assurance">
             <span class="pastille ton-violet"><svg class="icone" aria-hidden="true"><use href="#i-couches"/></svg></span>
@@ -35,7 +35,7 @@
             </div>
             <span class="tuile-lien">Gérer <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
           </a>
-          <a class="tuile" href="${pageContext.request.contextPath}/admin/garanties">
+          <a class="tuile" href="${pageContext.request.contextPath}/agent/garanties">
             <span class="pastille ton-succes"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg></span>
             <div>
               <h3>Garanties</h3>
@@ -44,17 +44,37 @@
             <span class="tuile-lien">Gérer <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
           </a>
           <a class="tuile" href="${pageContext.request.contextPath}/agent/contrats">
-            <span class="pastille ton-primaire"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg></span>
+            <span class="pastille ton-orange"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg></span>
             <div>
               <h3>Contrats</h3>
               <p>L'ensemble des contrats, avec leur client et leur statut.</p>
             </div>
             <span class="tuile-lien">Consulter <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
           </a>
-          <div class="tuile tuile-bientot">
-            <span class="badge ton-neutre">Bientôt</span>
-            <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-utilisateurs"/></svg></span>
-            <div><h3>Utilisateurs</h3><p>Créer des agents, activer ou désactiver des comptes.</p></div>
+          <a class="tuile" href="${pageContext.request.contextPath}/admin/utilisateurs">
+            <span class="pastille ton-primaire"><svg class="icone" aria-hidden="true"><use href="#i-utilisateurs"/></svg></span>
+            <div>
+              <h3>Utilisateurs</h3>
+              <p>Lister les comptes par rôle, activer ou désactiver un compte.</p>
+            </div>
+            <span class="tuile-lien">Gérer <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
+          </a>
+          <a class="tuile" href="${pageContext.request.contextPath}/admin/utilisateurs/nouvel-agent">
+            <span class="pastille ton-succes"><svg class="icone" aria-hidden="true"><use href="#i-plus"/></svg></span>
+            <div>
+              <h3>Nouvel agent</h3>
+              <p>Créer le compte d'un agent de l'assurance.</p>
+            </div>
+            <span class="tuile-lien">Créer <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
+          </a>
+          <a class="tuile" href="${pageContext.request.contextPath}/agent/clients">
+            <span class="pastille ton-info"><svg class="icone" aria-hidden="true"><use href="#i-utilisateur"/></svg></span>
+            <div>
+              <h3>Clients</h3>
+              <p>Rechercher un client et consulter ses contrats.</p>
+            </div>
+            <span class="tuile-lien">Consulter <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
+          </a>
           </div>
           <div class="tuile tuile-bientot">
             <span class="badge ton-neutre">Bientôt</span>

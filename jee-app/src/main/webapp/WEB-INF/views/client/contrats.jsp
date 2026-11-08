@@ -25,6 +25,15 @@
         </div>
       </div>
 
+      <%-- Erreur enregistrée avant la redirection (MessageFlash), par exemple un contrat introuvable --%>
+      <c:if test="${not empty sessionScope.messageErreur}">
+        <div class="alerte ton-danger" role="alert">
+          <svg class="icone" aria-hidden="true"><use href="#i-erreur"/></svg>
+          <div class="alerte-texte"><c:out value="${sessionScope.messageErreur}"/></div>
+        </div>
+        <c:remove var="messageErreur" scope="session"/>
+      </c:if>
+
       <c:if test="${empty contrats}">
         <div class="carte vide">
           <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg></span>
@@ -91,6 +100,12 @@
                   </div>
                 </div>
               </c:forEach>
+            </div>
+
+            <div class="carte-pied">
+              <a class="bouton bouton-principal bouton-petit" href="${pageContext.request.contextPath}/client/contrats/detail?id=${ct.id}">
+                Voir le contrat et son paiement<svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg>
+              </a>
             </div>
           </article>
         </c:forEach>

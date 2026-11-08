@@ -1,0 +1,51 @@
+<%--
+  Informations d'un contrat, communes à la fiche de l'agent et à celle du client :
+  client, type, dates, prime, statut, garanties et état du paiement (sans formulaire).
+  Attend les attributs "contrat" (avec client, type et garanties chargés) et "paiement" (peut être vide).
+  À inclure avec : <%@ include file="/WEB-INF/views/common/contrat-infos.jspf" %>
+--%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<p>Client : <c:out value="${contrat.client.utilisateur.prenom} ${contrat.client.utilisateur.nom}"/>
+  (<c:out value="${contrat.client.utilisateur.email}"/>)</p>
+<p>Type d'assurance : <c:out value="${contrat.typeAssurance.nom}"/></p>
+<p>Du <c:out value="${contrat.dateDebut}"/> au <c:out value="${contrat.dateFin}"/></p>
+<p>Prime annuelle : <c:out value="${contrat.prime}"/> €</p>
+<p>Statut : <c:out value="${contrat.statut}"/></p>
+<c:if test="${contrat.statut == 'RESILIE'}">
+  <p>Résilié le <c:out value="${contrat.dateResiliation}"/><c:if test="${not empty contrat.motifResiliation}"> :
+    <c:out value="${contrat.motifResiliation}"/></c:if></p>
+</c:if>
+
+<h2>Garanties</h2>
+<table border="1">
+  <thead>
+    <tr>
+      <th>Garantie</th>
+      <th>Plafond</th>
+      <th>Franchise</th>
+    </tr>
+  </thead>
+  <tbody>
+    <c:forEach var="g" items="${contrat.garanties}">
+      <tr>
+        <td><c:out value="${g.nom}"/></td>
+        <td><c:out value="${g.plafond}"/> €</td>
+        <td><c:out value="${g.franchise}"/> €</td>
+      </tr>
+    </c:forEach>
+  </tbody>
+</table>
+
+<h2>Paiement</h2>
+<c:choose>
+  <c:when test="${empty paiement}">
+    <p>Aucun paiement n'est associé à ce contrat.</p>
+  </c:when>
+  <c:otherwise>
+    <p>Montant : <c:out value="${paiement.montant}"/> €, à régler au plus tard le <c:out value="${paiement.dateEcheance}"/></p>
+    <p>Statut : <c:out value="${paiement.statut}"/></p>
+    <c:if test="${paiement.statut == 'EFFECTUE'}">
+      <p>Payé le <c:out value="${paiement.datePaiement}"/> par <c:out value="${paiement.modePaiement}"/></p>
+    </c:if>
+  </c:otherwise>
+</c:choose>

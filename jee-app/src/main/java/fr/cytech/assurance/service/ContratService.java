@@ -2,12 +2,15 @@ package fr.cytech.assurance.service;
 
 import fr.cytech.assurance.dao.ClientDao;
 import fr.cytech.assurance.dao.ContratDao;
+import fr.cytech.assurance.dao.PaiementDao;
 import fr.cytech.assurance.dao.TypeAssuranceDao;
 import fr.cytech.assurance.exception.ContratInvalideException;
 import fr.cytech.assurance.model.Client;
 import fr.cytech.assurance.model.Contrat;
 import fr.cytech.assurance.model.Garantie;
 import fr.cytech.assurance.model.TypeAssurance;
+import fr.cytech.assurance.model.enums.StatutContrat;
+import fr.cytech.assurance.model.enums.StatutPaiement;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -21,13 +24,29 @@ import java.util.stream.Collectors;
  */
 public class ContratService {
 
+    // Tous les contrats durent un an : la date de fin est calculée, l'agent ne la saisit pas.
+    // Le prix de base d'un type d'assurance et la prime d'un contrat sont donc des montants annuels
+    public static final int DUREE_EN_MOIS = 12;
+
     private final ContratDao contratDao = new ContratDao();
     private final ClientDao clientDao = new ClientDao();
     private final TypeAssuranceDao typeAssuranceDao = new TypeAssuranceDao();
+    private final PaiementDao paiementDao = new PaiementDao();
 
     // Tous les contrats, du plus récent au plus ancien
     public List<Contrat> listerContrats() {
         return contratDao.listerTousAvecDetails();
+    }
+
+    // Contrat avec son client, son type et ses garanties, ou null s'il n'existe pas
+    public Contrat trouverAvecDetails(Long id) {
+        return contratDao.trouverAvecDetails(id);
+    }
+
+    // Contrat avec ses détails s'il appartient à ce client, sinon null (contrat inexistant ou d'un autre client)
+    public Contrat trouverDuClient(Long idContrat, Long idClient) {
+        Contrat contrat = contratDao.trouverAvecDetails(idContrat);
+        return contrat != null && contrat.getClient().getId().equals(idClient) ? contrat : null;
     }
 
     // Contrats d'un client, du plus récent au plus ancien, avec leur type et leurs garanties
@@ -37,10 +56,12 @@ public class ContratService {
 
     /**
      * Crée un contrat en EN_ATTENTE, avec un numéro attribué automatiquement.
+     * Il dure DUREE_EN_MOIS à partir de dateDebut : la date de fin est calculée ici.
+     * Son paiement unique (la prime entière, à régler avant dateDebut) est créé en même temps.
      * Lève ContratInvalideException (message affichable) si une règle n'est pas respectée.
      */
     public Contrat creerContrat(Long idClient, Long idTypeAssurance, Set<Long> idsGaranties,
-                                LocalDate dateDebut, LocalDate dateFin, BigDecimal prime) {
+                                LocalDate dateDebut, BigDecimal prime) {
         Client client = idClient == null ? null : clientDao.trouverParId(idClient);
         if (client == null) {
             throw new ContratInvalideException("Client inconnu.");
@@ -58,6 +79,57 @@ public class ContratService {
             throw new ContratInvalideException("Ce type d'assurance est archivé : il n'est plus proposé.");
         }
 
+        verifierGarantiesDateEtPrime(type, idsGaranties, dateDebut, prime, true);
+
+        Contrat contrat = new Contrat();   // statut EN_ATTENTE par défaut
+        contrat.setDateDebut(dateDebut);
+        contrat.setDateFin(dateFin(dateDebut));
+        contrat.setPrime(prime);
+        return contratDao.creerAvecGaranties(contrat, idClient, idTypeAssurance, idsGaranties);
+    }
+
+    /**
+     * Modifie un contrat pas encore payé (EN_ATTENTE ou SUSPENDU) : garanties, date de début, prime.
+     * Le client et le type ne changent pas (sinon, c'est un autre contrat). La date de fin est recalculée,
+     * et le paiement suit : nouveau montant, nouvelle échéance, de nouveau EN_ATTENTE.
+     * Un contrat payé ne peut plus être modifié : il n'y a qu'un seul paiement, son prix ne peut plus changer.
+     * Lève ContratInvalideException (message affichable) si une règle n'est pas respectée.
+     */
+    public void modifierContrat(Long idContrat, Set<Long> idsGaranties, LocalDate dateDebut, BigDecimal prime) {
+        Contrat contrat = idContrat == null ? null : contratDao.trouverAvecDetails(idContrat);
+        if (contrat == null) {
+            throw new ContratInvalideException("Contrat inconnu.");
+        }
+        if (!estModifiable(contrat)) {
+            throw new ContratInvalideException("Seul un contrat en attente ou suspendu, pas encore payé, peut être modifié.");
+        }
+        if (estPaye(idContrat)) {
+            throw new ContratInvalideException("Ce contrat a été payé : il ne peut plus être modifié.");
+        }
+        TypeAssurance type = typeAssuranceDao.trouverAvecGaranties(contrat.getTypeAssurance().getId());
+        // Prix de base vérifié seulement si la prime change : une hausse du prix de base
+        // ne s'applique qu'aux nouveaux contrats (page de modification d'un type d'assurance)
+        verifierGarantiesDateEtPrime(type, idsGaranties, dateDebut, prime, prime != null
+                && prime.compareTo(contrat.getPrime()) != 0);
+
+        contratDao.modifierAvantPaiement(idContrat, idsGaranties, dateDebut, dateFin(dateDebut), prime);
+        // Un contrat suspendu dont la date de début est repoussée redevient EN_ATTENTE
+        mettreAJourStatuts(LocalDate.now());
+    }
+
+    // Vrai si le statut permet une modification (le paiement est vérifié à part, avec estPaye)
+    public static boolean estModifiable(Contrat contrat) {
+        return contrat.getStatut() == StatutContrat.EN_ATTENTE || contrat.getStatut() == StatutContrat.SUSPENDU;
+    }
+
+    // Vrai si le paiement du contrat a été effectué
+    public boolean estPaye(Long idContrat) {
+        return paiementDao.listerParContrat(idContrat).stream().anyMatch(p -> p.getStatut() == StatutPaiement.EFFECTUE);
+    }
+
+    // Règles communes à la création et à la modification : garanties, date de début, prime
+    private static void verifierGarantiesDateEtPrime(TypeAssurance type, Set<Long> idsGaranties,
+                                                     LocalDate dateDebut, BigDecimal prime, boolean verifierPrixBase) {
         // Le sujet : un contrat contient une ou plusieurs garanties
         if (idsGaranties == null || idsGaranties.isEmpty()) {
             throw new ContratInvalideException("Choisissez au moins une garantie.");
@@ -69,26 +141,99 @@ public class ContratService {
                     + type.getNom().toLowerCase() + ".");
         }
 
-        if (dateDebut == null || dateFin == null) {
-            throw new ContratInvalideException("Les dates de début et de fin sont obligatoires.");
+        if (dateDebut == null) {
+            throw new ContratInvalideException("La date de début est obligatoire.");
         }
-        if (!dateFin.isAfter(dateDebut)) {
-            throw new ContratInvalideException("La date de fin doit être après la date de début.");
+        // Un contrat commencé et pas encore payé serait suspendu dès sa création
+        if (dateDebut.isBefore(LocalDate.now())) {
+            throw new ContratInvalideException("La date de début ne peut pas être dans le passé.");
         }
 
         if (prime == null || prime.signum() <= 0) {
             throw new ContratInvalideException("La prime doit être supérieure à zéro.");
         }
         // Le prix de base du type est un minimum : l'agent peut l'augmenter (garanties, profil), pas le baisser
-        if (prime.compareTo(type.getPrixBase()) < 0) {
+        if (verifierPrixBase && prime.compareTo(type.getPrixBase()) < 0) {
             throw new ContratInvalideException("La prime ne peut pas être inférieure au prix de base de l'"
                     + type.getNom().toLowerCase() + " (" + type.getPrixBase().toPlainString() + " €).");
         }
+    }
 
-        Contrat contrat = new Contrat();   // statut EN_ATTENTE par défaut
-        contrat.setDateDebut(dateDebut);
-        contrat.setDateFin(dateFin);
-        contrat.setPrime(prime);
-        return contratDao.creerAvecGaranties(contrat, idClient, idTypeAssurance, idsGaranties);
+    // Résiliation par un agent, de n'importe quel contrat en cours
+    // Lève ContratInvalideException si le contrat n'existe pas ou est déjà terminé
+    public void resilierParAgent(Long idContrat, String motif) {
+        resilier(idContrat == null ? null : contratDao.trouverParId(idContrat), motif);
+    }
+
+    // Résiliation par le client, seulement de l'un de ses propres contrats
+    // Lève ContratInvalideException si le contrat n'est pas le sien, n'existe pas ou est déjà terminé
+    public void resilierParClient(Long idContrat, Long idClient, String motif) {
+        Contrat contrat = idContrat == null ? null : contratDao.trouverParId(idContrat);
+        // Même message pour un contrat d'un autre client : on ne révèle pas qu'il existe
+        resilier(contrat != null && contrat.getClient().getId().equals(idClient) ? contrat : null, motif);
+    }
+
+    // Un contrat EXPIRE ou RESILIE est terminé : il ne peut plus être résilié
+    private void resilier(Contrat contrat, String motif) {
+        if (contrat == null) {
+            throw new ContratInvalideException("Contrat inconnu.");
+        }
+        if (contrat.getStatut() == StatutContrat.RESILIE) {
+            throw new ContratInvalideException("Ce contrat est déjà résilié.");
+        }
+        if (contrat.getStatut() == StatutContrat.EXPIRE) {
+            throw new ContratInvalideException("Ce contrat est expiré : il ne peut plus être résilié.");
+        }
+        contratDao.resilier(contrat.getId(), LocalDate.now(), motif == null || motif.isBlank() ? null : motif);
+    }
+
+    /**
+     * Statut qu'un contrat doit avoir à la date donnée. Seul endroit où cette règle est écrite :
+     *   - RESILIE reste RESILIE (décision d'un agent, jamais annulée automatiquement)
+     *   - date de fin atteinte : EXPIRE, payé ou non
+     *   - avant la date de début : EN_ATTENTE, payé ou non
+     *   - à partir de la date de début, payé : ACTIF
+     *   - non payé : EN_ATTENTE le jour de la date de début (dernier jour pour payer), SUSPENDU après
+     */
+    static StatutContrat statutAttendu(Contrat contrat, boolean paye, LocalDate aujourdhui) {
+        if (contrat.getStatut() == StatutContrat.RESILIE) {
+            return StatutContrat.RESILIE;
+        }
+        if (!aujourdhui.isBefore(contrat.getDateFin())) {
+            return StatutContrat.EXPIRE;
+        }
+        if (aujourdhui.isBefore(contrat.getDateDebut())) {
+            return StatutContrat.EN_ATTENTE;
+        }
+        if (paye) {
+            return StatutContrat.ACTIF;
+        }
+        return aujourdhui.isAfter(contrat.getDateDebut()) ? StatutContrat.SUSPENDU : StatutContrat.EN_ATTENTE;
+    }
+
+    /**
+     * Met à jour le statut de tous les contrats en cours et passe en retard les paiements dont l'échéance est dépassée.
+     * Appelée au démarrage de l'application puis toutes les heures (DemarrageApplication),
+     * et après l'enregistrement d'un paiement.
+     *
+     * @return le nombre de contrats dont le statut a changé
+     */
+    public int mettreAJourStatuts(LocalDate aujourdhui) {
+        paiementDao.marquerEnRetard(aujourdhui);
+        Set<Long> payes = paiementDao.idsContratsPayes();
+        int changes = 0;
+        for (Contrat contrat : contratDao.listerEnCours()) {
+            StatutContrat attendu = statutAttendu(contrat, payes.contains(contrat.getId()), aujourdhui);
+            if (attendu != contrat.getStatut()
+                    && contratDao.changerStatutSi(contrat.getId(), contrat.getStatut(), attendu)) {
+                changes++;
+            }
+        }
+        return changes;
+    }
+
+    // Fin d'un contrat qui commence à dateDebut : DUREE_EN_MOIS plus tard (le 29 février donne le 28 février)
+    public static LocalDate dateFin(LocalDate dateDebut) {
+        return dateDebut.plusMonths(DUREE_EN_MOIS);
     }
 }

@@ -18,6 +18,13 @@
       </div>
 
       <div class="carte carte-corps">
+        <%-- Redirigé par RoleFiltre : le compte a été désactivé pendant que l'utilisateur était connecté --%>
+        <c:if test="${not empty param.desactive}">
+          <div class="alerte ton-attention" role="status" data-nettoyer-url="desactive">
+            <svg class="icone" aria-hidden="true"><use href="#i-info"/></svg>
+            <div class="alerte-texte">Votre compte a été désactivé : vous avez été déconnecté.</div>
+          </div>
+        </c:if>
         <c:if test="${not empty erreur}">
           <div class="alerte ton-danger" role="alert">
             <svg class="icone" aria-hidden="true"><use href="#i-erreur"/></svg>
