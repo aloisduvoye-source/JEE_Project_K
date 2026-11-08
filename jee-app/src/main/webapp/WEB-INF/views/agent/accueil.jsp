@@ -22,22 +22,9 @@
 
   <section id="clients">
     <h2>Clients</h2>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Nom</th>
-          <th>Prénom</th>
-          <th>Email</th>
-          <th>Téléphone</th>
-          <th>Contrats</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colspan="5">Aucun client à afficher pour l'instant.</td>
-        </tr>
-      </tbody>
-    </table>
+    <ul>
+      <li><a href="${pageContext.request.contextPath}/agent/clients">Voir tous les clients</a></li>
+    </ul>
   </section>
 
   <section id="contrats">

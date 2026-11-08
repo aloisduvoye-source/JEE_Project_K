@@ -1,7 +1,11 @@
 package fr.cytech.assurance.dao;
 
+import fr.cytech.assurance.exception.UtilisateurDejaExistantException;
 import fr.cytech.assurance.model.Utilisateur;
 import fr.cytech.assurance.model.enums.Role;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceException;
+import org.hibernate.exception.ConstraintViolationException;
 
 import java.util.List;
 
@@ -14,6 +18,36 @@ public class UtilisateurDao extends GenericDao<Utilisateur> {
 
     public UtilisateurDao() {
         super(Utilisateur.class);
+    }
+
+    /**
+     * Crée un compte utilisateur seul (agent, administrateur), après avoir vérifié
+     * que son identifiant et son email sont libres.
+     *
+     * @param utilisateur compte à créer, sans id, mot de passe déjà haché
+     * @throws UtilisateurDejaExistantException si l'identifiant ou l'email est déjà pris
+     */
+    public void creerSansDoublon(Utilisateur utilisateur) {
+        try {
+            enTransaction(em -> {
+                verifierDisponible(em, utilisateur);
+                em.persist(utilisateur);
+                return null;
+            });
+        } catch (PersistenceException e) {
+            throw doublonOuErreur(e);
+        }
+    }
+
+    /**
+     * Liste tous les utilisateurs, tous rôles confondus, triés par nom puis prénom.
+     *
+     * @return les utilisateurs triés, liste vide s'il n'y en a aucun
+     */
+    public List<Utilisateur> listerTousTries() {
+        return enLecture(em -> em.createQuery(
+                        "SELECT u FROM Utilisateur u ORDER BY u.nom, u.prenom", Utilisateur.class)
+                .getResultList());
     }
 
     /**
@@ -132,5 +166,79 @@ public class UtilisateurDao extends GenericDao<Utilisateur> {
      */
     public boolean changerEtat(Long id, boolean actif) {
         return mettreAJour(id, u -> u.setActif(actif));
+    }
+
+    /**
+     * Supprime un compte s'il n'a aucun historique, sinon le désactive seulement.
+     * <p>
+     * L'historique, c'est ce que l'assurance doit garder et que la base refuserait de perdre :
+     * les contrats d'un client, les commentaires et les sinistres traités par un agent.
+     * Sans historique, le compte est effacé ; la base efface avec lui la fiche client
+     * et les messages de l'assistant (ON DELETE CASCADE).
+     *
+     * @param id id de l'utilisateur
+     * @return {@code true} si le compte a été effacé, {@code false} s'il a été désactivé ou n'existe pas
+     */
+    public boolean supprimerSiSansHistorique(Long id) {
+        return enTransaction(em -> {
+            Utilisateur utilisateur = em.find(Utilisateur.class, id);
+            if (utilisateur == null) {
+                return false;
+            }
+            if (aUnHistorique(em, id)) {
+                utilisateur.setActif(false);
+                return false;
+            }
+            em.remove(utilisateur);
+            return true;
+        });
+    }
+
+    // Vrai si le compte a des contrats (client), des commentaires ou des sinistres à traiter (agent)
+    private static boolean aUnHistorique(EntityManager em, Long id) {
+        String[] requetes = {
+                "SELECT COUNT(c) FROM Contrat c WHERE c.client.utilisateur.id = :id",
+                "SELECT COUNT(c) FROM CommentaireSinistre c WHERE c.auteur.id = :id",
+                "SELECT COUNT(s) FROM Sinistre s WHERE s.agent.id = :id"
+        };
+        for (String requete : requetes) {
+            if (em.createQuery(requete, Long.class).setParameter("id", id).getSingleResult() > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Vérifie, dans la transaction de création en cours, que l'identifiant et l'email sont libres.
+     * Partagé avec {@link ClientDao#creerAvecUtilisateur}.
+     *
+     * @throws UtilisateurDejaExistantException si l'un des deux est déjà pris
+     */
+    static void verifierDisponible(EntityManager em, Utilisateur utilisateur) {
+        if (existe(em, "identifiant", utilisateur.getIdentifiant())) {
+            throw new UtilisateurDejaExistantException("identifiant");
+        }
+        if (existe(em, "email", utilisateur.getEmail())) {
+            throw new UtilisateurDejaExistantException("email");
+        }
+    }
+
+    /**
+     * Deux créations simultanées peuvent passer {@link #verifierDisponible} : la contrainte UNIQUE
+     * de la base refuse alors la seconde, qu'on signale comme un doublon. Toute autre erreur est rendue telle quelle.
+     */
+    static RuntimeException doublonOuErreur(PersistenceException e) {
+        if (e.getCause() instanceof ConstraintViolationException) {
+            return new UtilisateurDejaExistantException(null);
+        }
+        return e;
+    }
+
+    // Vrai si un utilisateur a déjà cette valeur dans ce champ ("identifiant" ou "email")
+    private static boolean existe(EntityManager em, String champ, String valeur) {
+        return em.createQuery("SELECT COUNT(u) FROM Utilisateur u WHERE u." + champ + " = :valeur", Long.class)
+                .setParameter("valeur", valeur)
+                .getSingleResult() > 0;
     }
 }

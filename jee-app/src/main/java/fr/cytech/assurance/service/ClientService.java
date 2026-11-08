@@ -11,6 +11,17 @@ public class ClientService {
 
     private final ClientDao clientDao = new ClientDao();
 
+    // Tous les clients (comptes actifs ou désactivés), triés par nom puis prénom, avec leur compte déjà chargé
+    public List<Client> lister() {
+        return clientDao.listerAvecUtilisateur();
+    }
+
+    // Clients dont le nom, le prénom ou l'email contient le mot-clé (sans tenir compte des majuscules) ;
+    // tous les clients si le mot-clé est vide
+    public List<Client> rechercher(String motCle) {
+        return motCle.isEmpty() ? lister() : clientDao.rechercher(motCle);
+    }
+
     // Clients dont le compte est actif, triés par nom puis prénom
     public List<Client> listerActifs() {
         return clientDao.listerTous().stream()
