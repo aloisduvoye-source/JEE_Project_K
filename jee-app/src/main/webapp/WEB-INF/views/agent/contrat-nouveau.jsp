@@ -23,7 +23,7 @@
         <option value="">-- Choisir --</option>
         <c:forEach var="t" items="${types}">
           <option value="${t.id}" ${t.id == typeChoisi.id ? 'selected' : ''}>
-            <c:out value="${t.nom}"/> (à partir de <c:out value="${t.prixBase}"/> €)
+            <c:out value="${t.nom}"/> (à partir de <c:out value="${t.prixBase}"/> € par an)
           </option>
         </c:forEach>
       </select>

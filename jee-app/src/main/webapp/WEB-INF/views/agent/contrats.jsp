@@ -28,7 +28,7 @@
         <th>Type d'assurance</th>
         <th>Début</th>
         <th>Fin</th>
-        <th>Prime</th>
+        <th>Prime annuelle</th>
         <th>Statut</th>
       </tr>
     </thead>
