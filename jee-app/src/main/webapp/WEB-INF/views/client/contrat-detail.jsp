@@ -14,6 +14,9 @@
   <c:if test="${not empty param.paye}">
     <p>Votre paiement a été enregistré, merci.</p>
   </c:if>
+  <c:if test="${not empty param.resilie}">
+    <p>Le contrat a été résilié.</p>
+  </c:if>
   <%-- Erreur enregistrée avant la redirection (MessageFlash), affichée une seule fois --%>
   <c:if test="${not empty sessionScope.messageErreur}">
     <p><c:out value="${sessionScope.messageErreur}"/></p>
@@ -43,6 +46,8 @@
       <button type="submit">Payer <c:out value="${paiement.montant}"/> €</button>
     </form>
   </c:if>
+
+  <%@ include file="/WEB-INF/views/common/contrat-resiliation.jspf" %>
 
   <p><a href="${pageContext.request.contextPath}/client/contrats">Retour à mes contrats</a></p>
 </body>

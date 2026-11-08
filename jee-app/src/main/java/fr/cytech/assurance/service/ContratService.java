@@ -113,6 +113,34 @@ public class ContratService {
         return contratDao.creerAvecGaranties(contrat, idClient, idTypeAssurance, idsGaranties);
     }
 
+    // Résiliation par un agent, de n'importe quel contrat en cours
+    // Lève ContratInvalideException si le contrat n'existe pas ou est déjà terminé
+    public void resilierParAgent(Long idContrat, String motif) {
+        resilier(idContrat == null ? null : contratDao.trouverParId(idContrat), motif);
+    }
+
+    // Résiliation par le client, seulement de l'un de ses propres contrats
+    // Lève ContratInvalideException si le contrat n'est pas le sien, n'existe pas ou est déjà terminé
+    public void resilierParClient(Long idContrat, Long idClient, String motif) {
+        Contrat contrat = idContrat == null ? null : contratDao.trouverParId(idContrat);
+        // Même message pour un contrat d'un autre client : on ne révèle pas qu'il existe
+        resilier(contrat != null && contrat.getClient().getId().equals(idClient) ? contrat : null, motif);
+    }
+
+    // Un contrat EXPIRE ou RESILIE est terminé : il ne peut plus être résilié
+    private void resilier(Contrat contrat, String motif) {
+        if (contrat == null) {
+            throw new ContratInvalideException("Contrat inconnu.");
+        }
+        if (contrat.getStatut() == StatutContrat.RESILIE) {
+            throw new ContratInvalideException("Ce contrat est déjà résilié.");
+        }
+        if (contrat.getStatut() == StatutContrat.EXPIRE) {
+            throw new ContratInvalideException("Ce contrat est expiré : il ne peut plus être résilié.");
+        }
+        contratDao.resilier(contrat.getId(), LocalDate.now(), motif == null || motif.isBlank() ? null : motif);
+    }
+
     /**
      * Statut qu'un contrat doit avoir à la date donnée. Seul endroit où cette règle est écrite :
      *   - RESILIE reste RESILIE (décision d'un agent, jamais annulée automatiquement)

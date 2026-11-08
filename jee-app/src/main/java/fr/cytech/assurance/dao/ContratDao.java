@@ -6,6 +6,7 @@ import fr.cytech.assurance.model.Garantie;
 import fr.cytech.assurance.model.Paiement;
 import fr.cytech.assurance.model.TypeAssurance;
 import fr.cytech.assurance.model.enums.StatutContrat;
+import fr.cytech.assurance.model.enums.StatutPaiement;
 
 import java.time.LocalDate;
 import java.util.HashSet;
@@ -186,6 +187,8 @@ public class ContratDao extends GenericDao<Contrat> {
 
     /**
      * Résilie un contrat : statut RESILIE, avec la date et le motif de résiliation.
+     * Son paiement, s'il n'est pas encore réglé (EN_ATTENTE ou EN_RETARD), est annulé dans la même transaction :
+     * un contrat résilié ne doit plus rien. Un paiement déjà effectué est conservé.
      *
      * @param id    id du contrat
      * @param date  date de résiliation (obligatoire en base pour un contrat résilié)
@@ -193,10 +196,21 @@ public class ContratDao extends GenericDao<Contrat> {
      * @return {@code false} si aucun contrat n'a cet id
      */
     public boolean resilier(Long id, LocalDate date, String motif) {
-        return mettreAJour(id, c -> {
-            c.setStatut(StatutContrat.RESILIE);
-            c.setDateResiliation(date);
-            c.setMotifResiliation(motif);
+        return enTransaction(em -> {
+            Contrat contrat = em.find(Contrat.class, id);
+            if (contrat == null) {
+                return false;
+            }
+            contrat.setStatut(StatutContrat.RESILIE);
+            contrat.setDateResiliation(date);
+            contrat.setMotifResiliation(motif);
+            em.createQuery("UPDATE Paiement p SET p.statut = :annule"
+                            + " WHERE p.contrat.id = :id AND p.statut IN :nonRegles")
+                    .setParameter("annule", StatutPaiement.ANNULE)
+                    .setParameter("id", id)
+                    .setParameter("nonRegles", List.of(StatutPaiement.EN_ATTENTE, StatutPaiement.EN_RETARD))
+                    .executeUpdate();
+            return true;
         });
     }
 }

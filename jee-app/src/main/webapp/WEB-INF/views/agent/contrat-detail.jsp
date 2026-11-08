@@ -11,6 +11,9 @@
 
   <h1>Contrat n° <c:out value="${contrat.id}"/></h1>
 
+  <c:if test="${not empty param.resilie}">
+    <p>Le contrat a été résilié.</p>
+  </c:if>
   <%-- Erreur enregistrée avant la redirection (MessageFlash), affichée une seule fois --%>
   <c:if test="${not empty sessionScope.messageErreur}">
     <p><c:out value="${sessionScope.messageErreur}"/></p>
@@ -19,6 +22,7 @@
 
   <%-- Le paiement est affiché sans formulaire : c'est le client qui paie, depuis sa propre fiche --%>
   <%@ include file="/WEB-INF/views/common/contrat-infos.jspf" %>
+  <%@ include file="/WEB-INF/views/common/contrat-resiliation.jspf" %>
 
   <p><a href="${pageContext.request.contextPath}/agent/contrats">Retour à la liste des contrats</a></p>
 </body>
