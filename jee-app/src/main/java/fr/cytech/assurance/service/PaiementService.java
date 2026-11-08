@@ -27,14 +27,16 @@ public class PaiementService {
     }
 
     /**
-     * Enregistre le règlement du contrat, puis met à jour son statut :
+     * Paiement du contrat par son client, à la date du jour, puis mise à jour du statut :
      * il devient ACTIF tout de suite si sa date de début est atteinte (EN_ATTENTE ou SUSPENDU),
      * sinon à sa date de début.
-     * Lève PaiementInvalideException (message affichable) si le paiement ne peut pas être enregistré.
+     * Lève PaiementInvalideException (message affichable) si le paiement ne peut pas être enregistré,
+     * notamment si le contrat n'appartient pas à ce client.
      */
-    public void enregistrer(Long idContrat, ModePaiement mode, LocalDate datePaiement) {
+    public void payer(Long idContrat, Long idClient, ModePaiement mode) {
         Contrat contrat = idContrat == null ? null : contratDao.trouverParId(idContrat);
-        if (contrat == null) {
+        // Même message pour un contrat d'un autre client : on ne révèle pas qu'il existe
+        if (contrat == null || !contrat.getClient().getId().equals(idClient)) {
             throw new PaiementInvalideException("Contrat inconnu.");
         }
         if (contrat.getStatut() == StatutContrat.RESILIE || contrat.getStatut() == StatutContrat.EXPIRE) {
@@ -55,11 +57,7 @@ public class PaiementService {
             throw new PaiementInvalideException("Le mode de paiement est obligatoire.");
         }
         LocalDate aujourdhui = LocalDate.now();
-        if (datePaiement == null || datePaiement.isAfter(aujourdhui)) {
-            throw new PaiementInvalideException("La date de paiement ne peut pas être dans le futur.");
-        }
-
-        paiementDao.enregistrerPaiement(paiement.getId(), datePaiement, mode);
+        paiementDao.enregistrerPaiement(paiement.getId(), aujourdhui, mode);
         // Sans attendre la prochaine mise à jour automatique (toutes les heures)
         contratService.mettreAJourStatuts(aujourdhui);
     }

@@ -1,7 +1,6 @@
 package fr.cytech.assurance.controller;
 
 import fr.cytech.assurance.model.Contrat;
-import fr.cytech.assurance.model.enums.ModePaiement;
 import fr.cytech.assurance.service.ContratService;
 import fr.cytech.assurance.service.PaiementService;
 import fr.cytech.assurance.util.MessageFlash;
@@ -13,7 +12,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.time.LocalDate;
 
 // Fiche d'un contrat pour l'agent (et l'admin) : client, type, garanties, paiement (§2.2, « consulter un contrat »)
 @WebServlet("/agent/contrats/detail")
@@ -36,8 +34,6 @@ public class ContratDetailServlet extends HttpServlet {
         }
         request.setAttribute("contrat", contrat);
         request.setAttribute("paiement", paiementService.trouverParContrat(id));
-        request.setAttribute("modes", ModePaiement.values());
-        request.setAttribute("aujourdhui", LocalDate.now());   // date de paiement proposée, et maximale
         request.getRequestDispatcher(VUE).forward(request, response);
     }
 }

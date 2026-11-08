@@ -42,6 +42,12 @@ public class ContratService {
         return contratDao.trouverAvecDetails(id);
     }
 
+    // Contrat avec ses détails s'il appartient à ce client, sinon null (contrat inexistant ou d'un autre client)
+    public Contrat trouverDuClient(Long idContrat, Long idClient) {
+        Contrat contrat = contratDao.trouverAvecDetails(idContrat);
+        return contrat != null && contrat.getClient().getId().equals(idClient) ? contrat : null;
+    }
+
     // Contrats d'un client, du plus récent au plus ancien, avec leur type et leurs garanties
     public List<Contrat> listerContratsDuClient(Long idClient) {
         return contratDao.listerParClient(idClient);

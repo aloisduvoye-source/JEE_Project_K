@@ -1,9 +1,12 @@
 package fr.cytech.assurance.controller;
 
 import fr.cytech.assurance.exception.PaiementInvalideException;
+import fr.cytech.assurance.model.Client;
 import fr.cytech.assurance.model.enums.ModePaiement;
+import fr.cytech.assurance.service.ClientService;
 import fr.cytech.assurance.service.PaiementService;
 import fr.cytech.assurance.util.MessageFlash;
+import fr.cytech.assurance.util.SessionUtilisateur;
 import fr.cytech.assurance.util.Validateur;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -11,13 +14,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.time.LocalDate;
 
-// Enregistrement du paiement d'un contrat par l'agent, depuis la fiche du contrat (§2.1, « enregistrer les paiements »)
+// Paiement d'un contrat par le client connecté, depuis la fiche du contrat (en une fois, à la date du jour)
 // En POST uniquement : un simple lien (GET) ne doit pas pouvoir modifier des données
-@WebServlet("/agent/contrats/paiement")
+@WebServlet("/client/contrats/paiement")
 public class PaiementContratServlet extends HttpServlet {
 
+    private final ClientService clientService = new ClientService();
     private final PaiementService paiementService = new PaiementService();
 
     @Override
@@ -26,30 +29,22 @@ public class PaiementContratServlet extends HttpServlet {
         Long id = v.identifiant("id", Validateur.nettoyer(request.getParameter("id")), "Le contrat");
         if (!v.estValide()) {
             MessageFlash.erreur(request, v.getErreurs().get("id"));
-            response.sendRedirect(request.getContextPath() + "/agent/contrats");
+            response.sendRedirect(request.getContextPath() + "/client/contrats");
             return;
         }
-        String fiche = request.getContextPath() + "/agent/contrats/detail?id=" + id;
+        String fiche = request.getContextPath() + "/client/contrats/detail?id=" + id;
 
         ModePaiement mode = modeOuNull(request.getParameter("mode"));
         if (mode == null) {
-            v.erreur("mode", "Choisissez un mode de paiement.");
-        }
-        String dateSaisie = Validateur.nettoyer(request.getParameter("datePaiement"));
-        if (dateSaisie.isEmpty()) {
-            v.erreur("datePaiement", "La date de paiement est obligatoire.");
-        }
-        LocalDate datePaiement = v.datePassee("datePaiement", dateSaisie, "La date de paiement");
-
-        if (!v.estValide()) {
-            // Une seule erreur affichée, au-dessus du formulaire de la fiche
-            MessageFlash.erreur(request, v.getErreurs().values().iterator().next());
+            MessageFlash.erreur(request, "Choisissez un mode de paiement.");
             response.sendRedirect(fiche);
             return;
         }
 
+        // Le client vient de la session : le service vérifie que le contrat est bien le sien
+        Client client = clientService.trouverParUtilisateur(SessionUtilisateur.connecte(request).getId());
         try {
-            paiementService.enregistrer(id, mode, datePaiement);
+            paiementService.payer(id, client == null ? null : client.getId(), mode);
             response.sendRedirect(fiche + "&paye=1");
         } catch (PaiementInvalideException e) {
             MessageFlash.erreur(request, e.getMessage());
