@@ -1,0 +1,28 @@
+<%--
+  Paiement d'un contrat (sans formulaire), commun à la fiche de l'agent et à celle du client.
+  Attend l'attribut "paiement" (peut être vide).
+  À inclure avec : <%@ include file="/WEB-INF/views/common/contrat-paiement.jspf" %>
+--%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="app" tagdir="/WEB-INF/tags" %>
+<section class="carte">
+  <div class="carte-entete">
+    <div><h2>Paiement</h2><p>La prime se paie en une fois.</p></div>
+    <c:if test="${not empty paiement}"><app:statutPaiement valeur="${paiement.statut}"/></c:if>
+  </div>
+  <c:choose>
+    <c:when test="${empty paiement}">
+      <div class="carte-corps"><p class="texte-doux">Aucun paiement n'est associé à ce contrat.</p></div>
+    </c:when>
+    <c:otherwise>
+      <ul class="liste-lignes">
+        <li><span class="texte-doux">Montant</span><strong class="nombre"><app:euros valeur="${paiement.montant}"/></strong></li>
+        <li><span class="texte-doux">Échéance</span><span class="nombre"><app:date valeur="${paiement.dateEcheance}"/></span></li>
+        <c:if test="${paiement.statut == 'EFFECTUE'}">
+          <li><span class="texte-doux">Payé le</span><span class="nombre"><app:date valeur="${paiement.datePaiement}"/></span></li>
+          <li><span class="texte-doux">Mode</span><span><app:modePaiement valeur="${paiement.modePaiement}"/></span></li>
+        </c:if>
+      </ul>
+    </c:otherwise>
+  </c:choose>
+</section>

@@ -832,8 +832,9 @@ select.saisie {
   cursor: pointer;
   transition: background .15s, color .15s, border-color .15s;
 }
+a.puce { display: inline-flex; align-items: center; text-decoration: none; }
 .puce:hover { background: var(--survol); color: var(--texte); }
-.puce[aria-pressed="true"] { border-color: var(--texte); background: var(--texte); color: var(--surface); }
+.puce[aria-pressed="true"], .puce[aria-current="page"] { border-color: var(--texte); background: var(--texte); color: var(--surface); }
 .compteur { margin-left: auto; color: var(--texte-doux); font-size: .85rem; }
 
 /* Étapes de la création d'un contrat */

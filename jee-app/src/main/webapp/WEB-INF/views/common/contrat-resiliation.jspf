@@ -7,15 +7,25 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <c:if test="${sessionScope.utilisateur.role != 'ADMIN'
               and contrat.statut != 'RESILIE' and contrat.statut != 'EXPIRE'}">
-  <h2>Résilier le contrat</h2>
-  <p>La résiliation est définitive. Un paiement pas encore réglé est annulé.</p>
-  <form method="post" action="${pageContext.request.contextPath}/${sessionScope.utilisateur.role == 'CLIENT' ? 'client' : 'agent'}/contrats/resilier"
-        onsubmit="return confirm('Résilier ce contrat ? Cette action est définitive.');">
-    <input type="hidden" name="id" value="${contrat.id}">
-    <p>
-      <label for="motif">Motif (facultatif)</label>
-      <input type="text" id="motif" name="motif" maxlength="255">
-    </p>
-    <button type="submit">Résilier le contrat</button>
-  </form>
+  <section class="carte">
+    <div class="carte-entete">
+      <div><h2>Résilier le contrat</h2><p>La résiliation est définitive. Un paiement pas encore réglé est annulé.</p></div>
+    </div>
+    <form class="carte-corps formulaire" method="post"
+          action="${pageContext.request.contextPath}/${sessionScope.utilisateur.role == 'CLIENT' ? 'client' : 'agent'}/contrats/resilier"
+          data-confirmer="Résilier ce contrat ?"
+          data-confirmer-texte="Cette action est définitive : le contrat ne pourra plus être réactivé."
+          data-confirmer-bouton="Résilier">
+      <input type="hidden" name="id" value="${contrat.id}">
+      <div class="champ">
+        <label for="motif">Motif <span class="texte-doux">(facultatif)</span></label>
+        <input class="saisie" type="text" id="motif" name="motif" maxlength="255" placeholder="Déménagement, changement d'assureur…">
+      </div>
+      <div class="actions-formulaire">
+        <button type="submit" class="bouton bouton-danger-doux bouton-bloc">
+          <svg class="icone" aria-hidden="true"><use href="#i-archive"/></svg>Résilier le contrat
+        </button>
+      </div>
+    </form>
+  </section>
 </c:if>

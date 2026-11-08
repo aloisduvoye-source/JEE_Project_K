@@ -20,7 +20,7 @@
         <div class="entete-page">
           <div>
             <h1>Nouveau contrat</h1>
-            <p class="sous-titre">Le contrat est créé en attente d'activation.</p>
+            <p class="sous-titre">Le contrat deviendra actif à sa date de début si le client l'a payé.</p>
           </div>
         </div>
         <ol class="etapes">
@@ -81,7 +81,7 @@
 
       <%-- Étape 2 : affichée une fois le type choisi --%>
       <c:if test="${not empty typeChoisi}">
-        <form id="formulaire-contrat" class="disposition-laterale espace-haut" method="post"
+        <form id="formulaire-contrat" class="disposition-laterale espace-haut" method="post" data-duree="${dureeEnMois}"
               action="${pageContext.request.contextPath}/agent/contrats/nouveau" novalidate>
           <input type="hidden" name="type" value="${typeChoisi.id}">
 
@@ -128,19 +128,13 @@
             </section>
 
             <section class="carte">
-              <div class="carte-entete"><div><h2>Période et prime</h2><p>Par défaut, le contrat dure un an.</p></div></div>
+              <div class="carte-entete"><div><h2>Période et prime</h2><p>Le contrat dure ${dureeEnMois} mois : la date de fin est calculée à partir de la date de début.</p></div></div>
               <div class="carte-corps formulaire">
-                <div class="champs-2">
-                  <div class="champ ${not empty erreurs.dateDebut ? 'a-erreur' : ''}">
-                    <label for="dateDebut">Date de début</label>
-                    <input class="saisie" type="date" id="dateDebut" name="dateDebut" value="<c:out value='${dateDebut}'/>">
-                    <c:if test="${not empty erreurs.dateDebut}"><span class="message-erreur"><c:out value="${erreurs.dateDebut}"/></span></c:if>
-                  </div>
-                  <div class="champ ${not empty erreurs.dateFin ? 'a-erreur' : ''}">
-                    <label for="dateFin">Date de fin</label>
-                    <input class="saisie" type="date" id="dateFin" name="dateFin" value="<c:out value='${dateFin}'/>">
-                    <c:if test="${not empty erreurs.dateFin}"><span class="message-erreur"><c:out value="${erreurs.dateFin}"/></span></c:if>
-                  </div>
+                <div class="champ ${not empty erreurs.dateDebut ? 'a-erreur' : ''}">
+                  <label for="dateDebut">Date de début</label>
+                  <input class="saisie" type="date" id="dateDebut" name="dateDebut" value="<c:out value='${dateDebut}'/>" min="${aujourdhui}">
+                  <span class="aide" data-fin-calculee>Fin du contrat ${dureeEnMois} mois après la date de début.</span>
+                  <c:if test="${not empty erreurs.dateDebut}"><span class="message-erreur"><c:out value="${erreurs.dateDebut}"/></span></c:if>
                 </div>
                 <div class="champ ${not empty erreurs.prime ? 'a-erreur' : ''}">
                   <label for="prime">Prime annuelle</label>
@@ -154,6 +148,10 @@
                     <svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg>Prime inférieure au prix de base : le contrat sera refusé.
                   </span>
                   <c:if test="${not empty erreurs.prime}"><span class="message-erreur"><c:out value="${erreurs.prime}"/></span></c:if>
+                </div>
+                <div class="alerte ton-info" style="margin-bottom:0" data-permanente>
+                  <svg class="icone" aria-hidden="true"><use href="#i-carte"/></svg>
+                  <div class="alerte-texte">La prime se paie en une fois, au plus tard à la date de début : le contrat devient actif à cette date s'il est payé, et suspendu sinon.</div>
                 </div>
               </div>
             </section>

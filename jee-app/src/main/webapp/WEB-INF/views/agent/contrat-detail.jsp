@@ -3,38 +3,51 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Contrat n° <c:out value="${contrat.id}"/></title>
+  <%@ include file="/WEB-INF/views/common/head.jspf" %>
+  <title>Contrat n° <c:out value="${contrat.id}"/> · Billy Assurance</title>
 </head>
 <body>
   <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
-  <h1>Contrat n° <c:out value="${contrat.id}"/></h1>
+  <main id="contenu" class="page">
+    <div class="conteneur apparition">
+      <div>
+        <a class="retour" href="${pageContext.request.contextPath}/agent/contrats">
+          <svg class="icone" aria-hidden="true"><use href="#i-fleche-gauche"/></svg>Contrats
+        </a>
+        <div class="entete-page">
+          <div>
+            <h1>Contrat n° <c:out value="${contrat.id}"/></h1>
+            <p class="sous-titre"><c:out value="${contrat.typeAssurance.nom}"/> · <c:out value="${contrat.client.utilisateur.prenom} ${contrat.client.utilisateur.nom}"/></p>
+          </div>
+          <%-- Modification par l'agent seulement, tant que le contrat n'est pas payé (ModifierContratServlet le vérifie aussi) --%>
+          <c:if test="${sessionScope.utilisateur.role == 'AGENT'
+                        and (contrat.statut == 'EN_ATTENTE' or contrat.statut == 'SUSPENDU')
+                        and (empty paiement or paiement.statut != 'EFFECTUE')}">
+            <div class="actions">
+              <a class="bouton bouton-principal" href="${pageContext.request.contextPath}/agent/contrats/modifier?id=${contrat.id}">
+                <svg class="icone" aria-hidden="true"><use href="#i-crayon"/></svg>Modifier le contrat
+              </a>
+            </div>
+          </c:if>
+        </div>
+      </div>
 
-  <c:if test="${not empty param.modifie}">
-    <p>Le contrat a été modifié.</p>
-  </c:if>
-  <c:if test="${not empty param.resilie}">
-    <p>Le contrat a été résilié.</p>
-  </c:if>
-  <%-- Erreur enregistrée avant la redirection (MessageFlash), affichée une seule fois --%>
-  <c:if test="${not empty sessionScope.messageErreur}">
-    <p><c:out value="${sessionScope.messageErreur}"/></p>
-    <c:remove var="messageErreur" scope="session"/>
-  </c:if>
+      <%@ include file="/WEB-INF/views/common/messages-contrat.jspf" %>
 
-  <%-- Le paiement est affiché sans formulaire : c'est le client qui paie, depuis sa propre fiche --%>
-  <%@ include file="/WEB-INF/views/common/contrat-infos.jspf" %>
+      <div class="disposition-laterale">
+        <div class="pile">
+          <%@ include file="/WEB-INF/views/common/contrat-infos.jspf" %>
+        </div>
+        <aside class="pile">
+          <%-- Le paiement est affiché sans formulaire : c'est le client qui paie, depuis sa propre fiche --%>
+          <%@ include file="/WEB-INF/views/common/contrat-paiement.jspf" %>
+          <%@ include file="/WEB-INF/views/common/contrat-resiliation.jspf" %>
+        </aside>
+      </div>
+    </div>
+  </main>
 
-  <%-- Modification par l'agent seulement, tant que le contrat n'est pas payé (ModifierContratServlet le vérifie aussi) --%>
-  <c:if test="${sessionScope.utilisateur.role == 'AGENT'
-                and (contrat.statut == 'EN_ATTENTE' or contrat.statut == 'SUSPENDU')
-                and (empty paiement or paiement.statut != 'EFFECTUE')}">
-    <p><a href="${pageContext.request.contextPath}/agent/contrats/modifier?id=${contrat.id}">Modifier le contrat</a></p>
-  </c:if>
-
-  <%@ include file="/WEB-INF/views/common/contrat-resiliation.jspf" %>
-
-  <p><a href="${pageContext.request.contextPath}/agent/contrats">Retour à la liste des contrats</a></p>
+  <%@ include file="/WEB-INF/views/common/footer.jspf" %>
 </body>
 </html>

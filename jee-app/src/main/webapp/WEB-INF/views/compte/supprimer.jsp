@@ -3,29 +3,58 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Supprimer mon compte</title>
+  <%@ include file="/WEB-INF/views/common/head.jspf" %>
+  <title>Supprimer mon compte · Billy Assurance</title>
 </head>
 <body>
   <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
-  <h1>Supprimer mon compte</h1>
+  <main id="contenu" class="page">
+    <div class="conteneur conteneur-etroit apparition">
+      <div>
+        <a class="retour" href="${pageContext.request.contextPath}/compte">
+          <svg class="icone" aria-hidden="true"><use href="#i-fleche-gauche"/></svg>Mon compte
+        </a>
+        <div class="entete-page">
+          <div>
+            <h1>Supprimer mon compte</h1>
+            <p class="sous-titre">Vous serez déconnecté et ne pourrez plus vous connecter avec ce compte.</p>
+          </div>
+        </div>
+      </div>
 
-  <p>Vous serez déconnecté et ne pourrez plus vous connecter avec ce compte.</p>
-  <p>
-    Si votre compte est lié à des contrats ou à des sinistres, l'assurance doit les conserver :
-    il sera alors désactivé au lieu d'être effacé. Sinon, il sera effacé définitivement.
-  </p>
+      <div class="alerte ton-attention" role="note" data-permanente>
+        <svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg>
+        <div class="alerte-texte">
+          <strong>Que deviennent vos données ?</strong>
+          Si votre compte est lié à des contrats ou à des sinistres, l'assurance doit les conserver :
+          il sera alors désactivé au lieu d'être effacé. Sinon, il sera effacé définitivement.
+        </div>
+      </div>
 
-  <form method="post" action="${pageContext.request.contextPath}/compte/supprimer">
-    <p>
-      <label for="motDePasse">Mot de passe, pour confirmer</label>
-      <input type="password" id="motDePasse" name="motDePasse" autocomplete="current-password">
-      <c:out value="${erreur}"/>
-    </p>
-    <button type="submit">Supprimer définitivement mon compte</button>
-  </form>
+      <form class="carte" method="post" action="${pageContext.request.contextPath}/compte/supprimer" novalidate>
+        <div class="carte-corps formulaire">
+          <div class="champ ${not empty erreur ? 'a-erreur' : ''}">
+            <label for="motDePasse">Mot de passe, pour confirmer</label>
+            <div class="saisie-groupe">
+              <input class="saisie" type="password" id="motDePasse" name="motDePasse" autocomplete="current-password" autofocus>
+              <button type="button" class="saisie-bouton" data-voir-mdp aria-label="Afficher le mot de passe">
+                <svg class="icone" aria-hidden="true"><use href="#i-oeil"/></svg>
+              </button>
+            </div>
+            <c:if test="${not empty erreur}"><span class="message-erreur"><c:out value="${erreur}"/></span></c:if>
+          </div>
+        </div>
+        <div class="carte-pied">
+          <a class="bouton bouton-fantome" href="${pageContext.request.contextPath}/compte">Annuler</a>
+          <button type="submit" class="bouton bouton-danger">
+            <svg class="icone" aria-hidden="true"><use href="#i-poubelle"/></svg>Supprimer définitivement mon compte
+          </button>
+        </div>
+      </form>
+    </div>
+  </main>
 
-  <p><a href="${pageContext.request.contextPath}/compte">Annuler</a></p>
+  <%@ include file="/WEB-INF/views/common/footer.jspf" %>
 </body>
 </html>

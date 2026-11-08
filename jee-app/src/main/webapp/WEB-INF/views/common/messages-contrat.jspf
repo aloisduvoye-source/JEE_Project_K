@@ -1,0 +1,23 @@
+<%--
+  Messages de la fiche d'un contrat : confirmations (?modifie, ?resilie, ?paye ajoutés par la servlet
+  après la redirection) et erreur enregistrée avant la redirection (MessageFlash), affichée une seule fois.
+--%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<c:choose>
+  <c:when test="${not empty param.paye}"><c:set var="confirmation" value="Votre paiement a été enregistré, merci."/><c:set var="parametre" value="paye"/></c:when>
+  <c:when test="${not empty param.modifie}"><c:set var="confirmation" value="Le contrat a été modifié."/><c:set var="parametre" value="modifie"/></c:when>
+  <c:when test="${not empty param.resilie}"><c:set var="confirmation" value="Le contrat a été résilié."/><c:set var="parametre" value="resilie"/></c:when>
+</c:choose>
+<c:if test="${not empty confirmation}">
+  <div class="alerte ton-succes" role="status" data-nettoyer-url="${parametre}">
+    <svg class="icone" aria-hidden="true"><use href="#i-succes"/></svg>
+    <div class="alerte-texte"><c:out value="${confirmation}"/></div>
+  </div>
+</c:if>
+<c:if test="${not empty sessionScope.messageErreur}">
+  <div class="alerte ton-danger" role="alert">
+    <svg class="icone" aria-hidden="true"><use href="#i-erreur"/></svg>
+    <div class="alerte-texte"><c:out value="${sessionScope.messageErreur}"/></div>
+  </div>
+  <c:remove var="messageErreur" scope="session"/>
+</c:if>

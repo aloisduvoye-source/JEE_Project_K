@@ -75,7 +75,6 @@
             </div>
             <span class="tuile-lien">Consulter <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
           </a>
-          </div>
           <div class="tuile tuile-bientot">
             <span class="badge ton-neutre">Bientôt</span>
             <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg></span>

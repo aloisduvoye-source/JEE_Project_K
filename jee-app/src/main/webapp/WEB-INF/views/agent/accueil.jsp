@@ -51,7 +51,14 @@
             </div>
             <span class="tuile-lien">Ouvrir <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
           </a>
-          </div>
+          <a class="tuile" href="${pageContext.request.contextPath}/agent/garanties">
+            <span class="pastille ton-violet"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg></span>
+            <div>
+              <h3>Garanties</h3>
+              <p>Créer, modifier et supprimer les garanties proposées.</p>
+            </div>
+            <span class="tuile-lien">Gérer <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
+          </a>
           <div class="tuile tuile-bientot">
             <span class="badge ton-neutre">Bientôt</span>
             <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg></span>
@@ -61,15 +68,6 @@
             <span class="badge ton-neutre">Bientôt</span>
             <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-carte"/></svg></span>
             <div><h3>Paiements</h3><p>Suivre les paiements et les retards de tous les contrats.</p></div>
-          </div>
-          <a class="tuile" href="${pageContext.request.contextPath}/agent/garanties">
-            <span class="pastille ton-violet"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg></span>
-            <div>
-              <h3>Garanties</h3>
-              <p>Créer, modifier et supprimer les garanties proposées.</p>
-            </div>
-            <span class="tuile-lien">Gérer <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
-          </a>
           </div>
         </div>
       </div>

@@ -1,51 +1,88 @@
 <%--
   Informations d'un contrat, communes à la fiche de l'agent et à celle du client :
-  client, type, dates, prime, statut, garanties et état du paiement (sans formulaire).
-  Attend les attributs "contrat" (avec client, type et garanties chargés) et "paiement" (peut être vide).
+  client, type, dates, prime, statut, garanties (colonne principale de la fiche).
+  Attend l'attribut "contrat" (avec client, type et garanties chargés).
   À inclure avec : <%@ include file="/WEB-INF/views/common/contrat-infos.jspf" %>
+  Le paiement est affiché à part par contrat-paiement.jspf.
 --%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<p>Client : <c:out value="${contrat.client.utilisateur.prenom} ${contrat.client.utilisateur.nom}"/>
-  (<c:out value="${contrat.client.utilisateur.email}"/>)</p>
-<p>Type d'assurance : <c:out value="${contrat.typeAssurance.nom}"/></p>
-<p>Du <c:out value="${contrat.dateDebut}"/> au <c:out value="${contrat.dateFin}"/></p>
-<p>Prime annuelle : <c:out value="${contrat.prime}"/> €</p>
-<p>Statut : <c:out value="${contrat.statut}"/></p>
-<c:if test="${contrat.statut == 'RESILIE'}">
-  <p>Résilié le <c:out value="${contrat.dateResiliation}"/><c:if test="${not empty contrat.motifResiliation}"> :
-    <c:out value="${contrat.motifResiliation}"/></c:if></p>
-</c:if>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
+<%@ taglib prefix="app" tagdir="/WEB-INF/tags" %>
+<c:set var="titulaire" value="${contrat.client.utilisateur}"/>
+<section class="carte contrat">
+  <div class="contrat-entete">
+    <div class="contrat-titre">
+      <span class="pastille ton-primaire"><svg class="icone" aria-hidden="true"><use href="#i-bouclier"/></svg></span>
+      <div>
+        <h2><c:out value="${contrat.typeAssurance.nom}"/></h2>
+        <p>Contrat n° <c:out value="${contrat.id}"/></p>
+      </div>
+    </div>
+    <app:statutContrat valeur="${contrat.statut}"/>
+  </div>
 
-<h2>Garanties</h2>
-<table border="1">
-  <thead>
-    <tr>
-      <th>Garantie</th>
-      <th>Plafond</th>
-      <th>Franchise</th>
-    </tr>
-  </thead>
-  <tbody>
-    <c:forEach var="g" items="${contrat.garanties}">
-      <tr>
-        <td><c:out value="${g.nom}"/></td>
-        <td><c:out value="${g.plafond}"/> €</td>
-        <td><c:out value="${g.franchise}"/> €</td>
-      </tr>
-    </c:forEach>
-  </tbody>
-</table>
+  <div class="contrat-infos">
+    <span>
+      <svg class="icone" aria-hidden="true"><use href="#i-calendrier"/></svg>
+      Du <strong><app:date valeur="${contrat.dateDebut}"/></strong> au <strong><app:date valeur="${contrat.dateFin}"/></strong>
+    </span>
+    <span>
+      <svg class="icone" aria-hidden="true"><use href="#i-euro"/></svg>
+      Prime annuelle <strong class="nombre"><app:euros valeur="${contrat.prime}"/></strong>
+    </span>
+  </div>
 
-<h2>Paiement</h2>
-<c:choose>
-  <c:when test="${empty paiement}">
-    <p>Aucun paiement n'est associé à ce contrat.</p>
-  </c:when>
-  <c:otherwise>
-    <p>Montant : <c:out value="${paiement.montant}"/> €, à régler au plus tard le <c:out value="${paiement.dateEcheance}"/></p>
-    <p>Statut : <c:out value="${paiement.statut}"/></p>
-    <c:if test="${paiement.statut == 'EFFECTUE'}">
-      <p>Payé le <c:out value="${paiement.datePaiement}"/> par <c:out value="${paiement.modePaiement}"/></p>
+  <%-- Part de la période déjà écoulée : calculée par app.js à partir des deux dates --%>
+  <c:if test="${contrat.statut == 'ACTIF'}">
+    <div class="progression-zone avec-js" data-periode data-debut="${contrat.dateDebut}" data-fin="${contrat.dateFin}">
+      <div class="progression-libelle"><span data-periode-texte></span><span data-periode-part></span></div>
+      <div class="progression"><span></span></div>
+    </div>
+  </c:if>
+
+  <dl class="liste-infos">
+    <div>
+      <dt>Client</dt>
+      <dd>
+        <div class="cellule-personne">
+          <span class="avatar"><c:out value="${fn:toUpperCase(fn:substring(titulaire.prenom, 0, 1))}${fn:toUpperCase(fn:substring(titulaire.nom, 0, 1))}"/></span>
+          <div>
+            <div class="cellule-principale"><c:out value="${titulaire.prenom} ${titulaire.nom}"/></div>
+            <div class="cellule-secondaire"><c:out value="${titulaire.email}"/></div>
+          </div>
+        </div>
+      </dd>
+    </div>
+    <div><dt>Type d'assurance</dt><dd><c:out value="${contrat.typeAssurance.nom}"/></dd></div>
+    <c:if test="${contrat.statut == 'RESILIE'}">
+      <div>
+        <dt>Résiliation</dt>
+        <dd>
+          Le <app:date valeur="${contrat.dateResiliation}"/>
+          <c:if test="${not empty contrat.motifResiliation}"><div class="cellule-secondaire"><c:out value="${contrat.motifResiliation}"/></div></c:if>
+        </dd>
+      </div>
     </c:if>
-  </c:otherwise>
-</c:choose>
+  </dl>
+</section>
+
+<section class="carte">
+  <div class="carte-entete">
+    <div>
+      <h2>Garanties</h2>
+      <p>${fn:length(contrat.garanties)} garantie${fn:length(contrat.garanties) > 1 ? 's' : ''} souscrite${fn:length(contrat.garanties) > 1 ? 's' : ''}.</p>
+    </div>
+  </div>
+  <div class="garanties">
+    <c:forEach var="g" items="${contrat.garanties}">
+      <div class="garantie">
+        <span class="garantie-nom"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg><c:out value="${g.nom}"/></span>
+        <c:if test="${not empty g.description}"><p><c:out value="${g.description}"/></p></c:if>
+        <div class="garantie-chiffres">
+          <span>Plafond<b class="nombre"><app:euros valeur="${g.plafond}" vide="Aucun"/></b></span>
+          <span>Franchise<b class="nombre"><app:euros valeur="${g.franchise}" vide="Aucune"/></b></span>
+        </div>
+      </div>
+    </c:forEach>
+  </div>
+</section>

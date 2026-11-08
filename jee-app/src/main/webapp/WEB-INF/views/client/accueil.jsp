@@ -14,7 +14,7 @@
       <section class="banniere">
         <p class="banniere-sur-titre">Espace client</p>
         <h1>Bonjour <c:out value="${sessionScope.utilisateur.prenom}"/>,</h1>
-        <p>Retrouvez vos contrats et vos garanties. La déclaration de sinistre, les paiements et l'assistant arrivent bientôt dans votre espace.</p>
+        <p>Retrouvez vos contrats et vos garanties, et payez vos contrats en ligne. La déclaration de sinistre et l'assistant arrivent bientôt dans votre espace.</p>
         <div class="banniere-actions">
           <a class="bouton bouton-blanc" href="${pageContext.request.contextPath}/client/contrats">
             <svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg>Voir mes contrats
@@ -31,7 +31,7 @@
             <span class="pastille ton-primaire"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg></span>
             <div>
               <h3>Mes contrats</h3>
-              <p>Période, prime et statut de chacun de vos contrats.</p>
+              <p>Période, prime, statut et paiement de chacun de vos contrats.</p>
             </div>
             <span class="tuile-lien">Consulter <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
           </a>
@@ -56,7 +56,7 @@
             <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-carte"/></svg></span>
             <div>
               <h3>Mes paiements</h3>
-              <p>Échéances à venir, paiements effectués et historique.</p>
+              <p>L'historique de tous vos paiements. En attendant, chaque contrat se paie depuis sa fiche.</p>
             </div>
           </div>
         </div>

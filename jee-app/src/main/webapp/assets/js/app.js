@@ -9,7 +9,7 @@
  *   data-basculer-theme      bouton thème clair / sombre
  *   data-menu-bouton         bouton ☰ du menu sur mobile
  *   data-nav                 navigation : le lien de la page courante est mis en évidence
- *   .alerte                  bouton de fermeture ; data-nettoyer-url="p1 p2" retire ces paramètres de l'adresse
+ *   .alerte                  bouton de fermeture (sauf data-permanente) ; data-nettoyer-url="p1 p2" retire ces paramètres de l'adresse
  *   data-confirmer           formulaire à confirmer dans une fenêtre avant l'envoi
  *   data-filtres="#cible"    recherche et filtres d'une liste (éléments data-filtre-element)
  *   data-voir-mdp            bouton afficher / masquer un mot de passe
@@ -17,7 +17,7 @@
  *   data-identique="#id"     vérifie que la confirmation correspond au mot de passe
  *   data-compteur            compteur de caractères d'un textarea (maxlength)
  *   data-periode             barre de progression de la période d'un contrat
- *   #formulaire-contrat      dates, prime minimale et récapitulatif du nouveau contrat
+ *   #formulaire-contrat      date de fin calculée, prime minimale et récapitulatif (création / modification)
  */
 (function () {
   'use strict';
@@ -111,7 +111,7 @@
     setTimeout(function () { alerte.remove(); }, 300);
   }
 
-  tous('.alerte').forEach(function (alerte) {
+  tous('.alerte:not([data-permanente])').forEach(function (alerte) {
     var bouton = document.createElement('button');
     bouton.type = 'button';
     bouton.className = 'alerte-fermer';
@@ -320,20 +320,23 @@
   var formContrat = document.getElementById('formulaire-contrat');
   if (formContrat) {
     var champDebut = formContrat.querySelector('#dateDebut');
-    var champFin = formContrat.querySelector('#dateFin');
     var champPrime = formContrat.querySelector('#prime');
-    var champClient = formContrat.querySelector('#client');
+    var champClient = formContrat.querySelector('#client');   // absent sur la modification
     var cases = tous('input[name="garanties"]', formContrat);
     var primeMinimum = lireMontant(champPrime.dataset.minimum);
     var alertePrime = formContrat.querySelector('[data-alerte-prime]');
-    var finSaisieALaMain = Boolean(champFin.value);
+    var finCalculee = formContrat.querySelector('[data-fin-calculee]');
+    var dureeEnMois = parseInt(formContrat.dataset.duree, 10) || 12;
 
-    // Un an moins un jour après la date de début : du 05/11/2026 au 04/11/2027
-    function finParDefaut() {
+    // Même calcul que ContratService : début + durée (le 29 février donne le 28 février)
+    function dateDeFin() {
       var debut = lireDate(champDebut.value);
-      if (!debut || finSaisieALaMain) { return; }
-      var fin = new Date(debut.getFullYear() + 1, debut.getMonth(), debut.getDate() - 1);
-      champFin.value = ecrireDate(fin);
+      if (!debut) { return null; }
+      var fin = new Date(debut.getFullYear(), debut.getMonth() + dureeEnMois, debut.getDate());
+      if (fin.getDate() !== debut.getDate()) {
+        fin = new Date(fin.getFullYear(), fin.getMonth(), 0);
+      }
+      return fin;
     }
 
     function majRecap() {
@@ -346,13 +349,17 @@
       if (recapGaranties) {
         recapGaranties.textContent = cochees === 0 ? 'Aucune' : cochees + ' sur ' + cases.length;
       }
-      if (recapClient) {
+      if (recapClient && champClient) {
         recapClient.textContent = champClient.value ? champClient.options[champClient.selectedIndex].text.trim() : 'À choisir';
       }
       if (recapPeriode) {
         var debut = lireDate(champDebut.value);
-        var fin = lireDate(champFin.value);
+        var fin = dateDeFin();
         recapPeriode.textContent = debut && fin ? dateLongue.format(debut) + ' → ' + dateLongue.format(fin) : 'À définir';
+      }
+      if (finCalculee) {
+        var finContrat = dateDeFin();
+        finCalculee.textContent = finContrat ? 'Fin du contrat le ' + dateLongue.format(finContrat) + '.' : '';
       }
       var prime = lireMontant(champPrime.value);
       if (recapPrime) {
@@ -361,18 +368,17 @@
       // Avertissement seulement : le serveur refuse de toute façon une prime trop basse
       var tropBasse = !isNaN(prime) && !isNaN(primeMinimum) && prime < primeMinimum;
       champPrime.closest('.champ').classList.toggle('a-avertissement', tropBasse);
-      alertePrime.hidden = !tropBasse;
+      if (alertePrime) { alertePrime.hidden = !tropBasse; }
     }
 
     if (!champDebut.value) {
       champDebut.value = ecrireDate(new Date());
     }
-    finParDefaut();
 
-    champDebut.addEventListener('change', function () { finParDefaut(); majRecap(); });
-    champFin.addEventListener('change', function () { finSaisieALaMain = Boolean(champFin.value); majRecap(); });
+    champDebut.addEventListener('change', majRecap);
+    champDebut.addEventListener('input', majRecap);
     champPrime.addEventListener('input', majRecap);
-    champClient.addEventListener('change', majRecap);
+    if (champClient) { champClient.addEventListener('change', majRecap); }
     cases.forEach(function (c) { c.addEventListener('change', majRecap); });
 
     var toutCocher = formContrat.querySelector('[data-tout-cocher]');
