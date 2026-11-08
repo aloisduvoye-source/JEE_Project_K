@@ -5,6 +5,7 @@ import fr.cytech.assurance.dao.UtilisateurDao;
 import fr.cytech.assurance.exception.AuthentificationException;
 import fr.cytech.assurance.exception.MotDePasseIncorrectException;
 import fr.cytech.assurance.exception.UtilisateurDejaExistantException;
+import fr.cytech.assurance.exception.UtilisateurInvalideException;
 import fr.cytech.assurance.model.Client;
 import fr.cytech.assurance.model.Utilisateur;
 import fr.cytech.assurance.model.enums.Role;
@@ -67,6 +68,20 @@ public class UtilisateurService {
         utilisateur.setRole(Role.AGENT);
         utilisateur.setMotDePasseHash(hacher(motDePasse));
         utilisateurDao.creerSansDoublon(utilisateur);
+    }
+
+    // Désactivation ou réactivation d'un compte par l'administrateur.
+    // Le compte administrateur ne peut pas être désactivé : sinon plus personne ne pourrait gérer l'application
+    // Lève UtilisateurInvalideException si le compte n'existe pas ou est celui de l'administrateur
+    public void changerEtat(Long id, boolean actif) {
+        Utilisateur utilisateur = utilisateurDao.trouverParId(id);
+        if (utilisateur == null) {
+            throw new UtilisateurInvalideException("Ce compte n'existe pas.");
+        }
+        if (utilisateur.getRole() == Role.ADMIN) {
+            throw new UtilisateurInvalideException("Le compte administrateur ne peut pas être désactivé.");
+        }
+        utilisateurDao.changerEtat(id, actif);
     }
 
     // Utilisateurs triés par nom puis prénom : tous si role est null, sinon ceux de ce rôle

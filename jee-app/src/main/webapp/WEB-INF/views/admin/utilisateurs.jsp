@@ -14,6 +14,17 @@
   <c:if test="${not empty param.agentCree}">
     <p>Le compte agent a été créé.</p>
   </c:if>
+  <c:if test="${not empty param.desactive}">
+    <p>Le compte a été désactivé : il ne peut plus se connecter, son historique est conservé.</p>
+  </c:if>
+  <c:if test="${not empty param.reactive}">
+    <p>Le compte a été réactivé.</p>
+  </c:if>
+  <%-- Erreur enregistrée avant la redirection (MessageFlash), affichée une seule fois --%>
+  <c:if test="${not empty sessionScope.messageErreur}">
+    <p><c:out value="${sessionScope.messageErreur}"/></p>
+    <c:remove var="messageErreur" scope="session"/>
+  </c:if>
 
   <p><a href="${pageContext.request.contextPath}/admin/utilisateurs/nouvel-agent">Nouvel agent</a></p>
 
@@ -38,6 +49,7 @@
         <th>Rôle</th>
         <th>Compte</th>
         <th>Inscription</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -51,11 +63,22 @@
           <td>${u.actif ? 'Actif' : 'Désactivé'}</td>
           <%-- Date seule (AAAA-MM-JJ), sans l'heure --%>
           <td>${u.dateCreation.toLocalDate()}</td>
+          <td>
+            <%-- Pas de bouton pour l'administrateur : le service refuse de toute façon de le désactiver --%>
+            <c:if test="${u.role != 'ADMIN'}">
+              <form method="post" action="${pageContext.request.contextPath}/admin/utilisateurs/${u.actif ? 'desactiver' : 'reactiver'}"
+                    <c:if test="${u.actif}">onsubmit="return confirm('Désactiver ce compte ? Il ne pourra plus se connecter.');"</c:if>>
+                <input type="hidden" name="id" value="${u.id}">
+                <input type="hidden" name="role" value="${role}">
+                <button type="submit">${u.actif ? 'Désactiver' : 'Réactiver'}</button>
+              </form>
+            </c:if>
+          </td>
         </tr>
       </c:forEach>
       <c:if test="${empty utilisateurs}">
         <tr>
-          <td colspan="7">Aucun utilisateur à afficher.</td>
+          <td colspan="8">Aucun utilisateur à afficher.</td>
         </tr>
       </c:if>
     </tbody>

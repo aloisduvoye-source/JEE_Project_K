@@ -29,7 +29,8 @@ public class UtilisateursServlet extends HttpServlet {
         request.getRequestDispatcher(VUE).forward(request, response);
     }
 
-    private static Role roleOuNull(String valeur) {
+    // Aussi utilisé par ActionUtilisateurServlet pour revenir à la liste avec le même filtre
+    static Role roleOuNull(String valeur) {
         if (valeur == null || valeur.isBlank()) {
             return null;
         }
