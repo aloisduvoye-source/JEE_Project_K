@@ -23,24 +23,10 @@
 
   <section id="utilisateurs">
     <h2>Utilisateurs</h2>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Nom</th>
-          <th>Prénom</th>
-          <th>Email</th>
-          <th>Identifiant</th>
-          <th>Rôle</th>
-          <th>Actif</th>
-          <th>Inscription</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colspan="7">Aucun utilisateur à afficher pour l'instant.</td>
-        </tr>
-      </tbody>
-    </table>
+    <ul>
+      <li><a href="${pageContext.request.contextPath}/admin/utilisateurs">Voir tous les utilisateurs</a></li>
+      <li><a href="${pageContext.request.contextPath}/agent/clients">Voir les clients</a></li>
+    </ul>
   </section>
 
   <section id="types">

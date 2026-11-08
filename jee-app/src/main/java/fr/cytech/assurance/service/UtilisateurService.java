@@ -10,6 +10,8 @@ import fr.cytech.assurance.model.Utilisateur;
 import fr.cytech.assurance.model.enums.Role;
 import org.mindrot.jbcrypt.BCrypt;
 
+import java.util.List;
+
 /**
  * Règles métier des comptes utilisateurs : connexion, inscription, profil, mot de passe.
  * Les servlets vérifient le format des saisies (Validateur), puis appellent ce service ;
@@ -57,6 +59,11 @@ public class UtilisateurService {
         utilisateur.setRole(Role.CLIENT);
         utilisateur.setMotDePasseHash(BCrypt.hashpw(motDePasse, BCrypt.gensalt()));
         clientDao.creerAvecUtilisateur(client, utilisateur);
+    }
+
+    // Utilisateurs triés par nom puis prénom : tous si role est null, sinon ceux de ce rôle
+    public List<Utilisateur> lister(Role role) {
+        return role == null ? utilisateurDao.listerTousTries() : utilisateurDao.listerParRole(role);
     }
 
     // Lève UtilisateurDejaExistantException si l'email appartient à un autre compte

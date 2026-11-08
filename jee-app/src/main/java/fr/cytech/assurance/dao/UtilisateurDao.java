@@ -21,6 +21,17 @@ public class UtilisateurDao extends GenericDao<Utilisateur> {
     }
 
     /**
+     * Liste tous les utilisateurs, tous rôles confondus, triés par nom puis prénom.
+     *
+     * @return les utilisateurs triés, liste vide s'il n'y en a aucun
+     */
+    public List<Utilisateur> listerTousTries() {
+        return enLecture(em -> em.createQuery(
+                        "SELECT u FROM Utilisateur u ORDER BY u.nom, u.prenom", Utilisateur.class)
+                .getResultList());
+    }
+
+    /**
      * Recherche un utilisateur par son identifiant de connexion.
      *
      * @param identifiant identifiant de connexion
