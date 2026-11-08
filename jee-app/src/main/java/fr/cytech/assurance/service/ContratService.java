@@ -42,6 +42,7 @@ public class ContratService {
     /**
      * Crée un contrat en EN_ATTENTE, avec un numéro attribué automatiquement.
      * Il dure DUREE_EN_MOIS à partir de dateDebut : la date de fin est calculée ici.
+     * Son paiement unique (la prime entière, à régler avant dateDebut) est créé en même temps.
      * Lève ContratInvalideException (message affichable) si une règle n'est pas respectée.
      */
     public Contrat creerContrat(Long idClient, Long idTypeAssurance, Set<Long> idsGaranties,
@@ -76,6 +77,10 @@ public class ContratService {
 
         if (dateDebut == null) {
             throw new ContratInvalideException("La date de début est obligatoire.");
+        }
+        // Un contrat commencé et pas encore payé serait suspendu dès sa création
+        if (dateDebut.isBefore(LocalDate.now())) {
+            throw new ContratInvalideException("La date de début ne peut pas être dans le passé.");
         }
 
         if (prime == null || prime.signum() <= 0) {

@@ -3,6 +3,7 @@ package fr.cytech.assurance.dao;
 import fr.cytech.assurance.model.Client;
 import fr.cytech.assurance.model.Contrat;
 import fr.cytech.assurance.model.Garantie;
+import fr.cytech.assurance.model.Paiement;
 import fr.cytech.assurance.model.TypeAssurance;
 import fr.cytech.assurance.model.enums.StatutContrat;
 
@@ -23,9 +24,11 @@ public class ContratDao extends GenericDao<Contrat> {
     }
 
     /**
-     * Crée un contrat relié à un client, un type d'assurance et des garanties désignés par leur id.
+     * Crée un contrat relié à un client, un type d'assurance et des garanties désignés par leur id,
+     * avec son paiement unique : la prime entière, à régler au plus tard à la date de début (statut EN_ATTENTE).
      * <p>
-     * Tout se fait dans une seule transaction : si l'un d'eux n'existe pas, rien n'est enregistré.
+     * Tout se fait dans une seule transaction : si l'un d'eux n'existe pas, rien n'est enregistré
+     * (pas de contrat sans paiement, ni de paiement sans contrat).
      * Les règles métier (garanties proposées par le type, dates, prime...) sont vérifiées par le service.
      *
      * @param contrat         contrat à créer, sans client, type ni garanties
@@ -56,6 +59,12 @@ public class ContratDao extends GenericDao<Contrat> {
             contrat.setTypeAssurance(type);
             contrat.setGaranties(new HashSet<>(garanties));
             em.persist(contrat);
+
+            Paiement paiement = new Paiement();   // statut EN_ATTENTE par défaut
+            paiement.setContrat(contrat);
+            paiement.setMontant(contrat.getPrime());
+            paiement.setDateEcheance(contrat.getDateDebut());
+            em.persist(paiement);
             return contrat;
         });
     }

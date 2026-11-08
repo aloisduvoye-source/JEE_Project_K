@@ -67,11 +67,15 @@
 
       <p>
         <label for="dateDebut">Date de début</label>
-        <input type="date" id="dateDebut" name="dateDebut" value="<c:out value='${dateDebut}'/>">
+        <input type="date" id="dateDebut" name="dateDebut" value="<c:out value='${dateDebut}'/>" min="${aujourdhui}">
         <c:out value="${erreurs.dateDebut}"/>
       </p>
       <%-- Pas de date de fin à saisir : ContratService la calcule (même durée pour tous les contrats) --%>
       <p>Durée : ${dureeEnMois} mois à partir de la date de début.</p>
+      <p>
+        La prime se paie en une fois, au plus tard à la date de début :
+        le contrat devient actif à cette date s'il est payé, et suspendu sinon.
+      </p>
       <p>
         <label for="prime">Prime annuelle (€)</label>
         <input type="text" id="prime" name="prime" value="<c:out value='${prime}'/>">

@@ -89,6 +89,7 @@ public class NouveauContratServlet extends HttpServlet {
         request.setAttribute("types", typeAssuranceService.listerActifs());
         request.setAttribute("typeChoisi", type);
         request.setAttribute("dureeEnMois", ContratService.DUREE_EN_MOIS);
+        request.setAttribute("aujourdhui", LocalDate.now());   // date de début minimale
         if (type != null) {
             request.setAttribute("clients", clientService.listerActifs());
             request.setAttribute("garantiesDisponibles", type.getGaranties().stream()
