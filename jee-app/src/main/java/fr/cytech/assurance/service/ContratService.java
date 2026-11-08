@@ -2,12 +2,14 @@ package fr.cytech.assurance.service;
 
 import fr.cytech.assurance.dao.ClientDao;
 import fr.cytech.assurance.dao.ContratDao;
+import fr.cytech.assurance.dao.PaiementDao;
 import fr.cytech.assurance.dao.TypeAssuranceDao;
 import fr.cytech.assurance.exception.ContratInvalideException;
 import fr.cytech.assurance.model.Client;
 import fr.cytech.assurance.model.Contrat;
 import fr.cytech.assurance.model.Garantie;
 import fr.cytech.assurance.model.TypeAssurance;
+import fr.cytech.assurance.model.enums.StatutContrat;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -28,6 +30,7 @@ public class ContratService {
     private final ContratDao contratDao = new ContratDao();
     private final ClientDao clientDao = new ClientDao();
     private final TypeAssuranceDao typeAssuranceDao = new TypeAssuranceDao();
+    private final PaiementDao paiementDao = new PaiementDao();
 
     // Tous les contrats, du plus récent au plus ancien
     public List<Contrat> listerContrats() {
@@ -97,6 +100,51 @@ public class ContratService {
         contrat.setDateFin(dateFin(dateDebut));
         contrat.setPrime(prime);
         return contratDao.creerAvecGaranties(contrat, idClient, idTypeAssurance, idsGaranties);
+    }
+
+    /**
+     * Statut qu'un contrat doit avoir à la date donnée. Seul endroit où cette règle est écrite :
+     *   - RESILIE reste RESILIE (décision d'un agent, jamais annulée automatiquement)
+     *   - date de fin atteinte : EXPIRE, payé ou non
+     *   - avant la date de début : EN_ATTENTE, payé ou non
+     *   - à partir de la date de début, payé : ACTIF
+     *   - non payé : EN_ATTENTE le jour de la date de début (dernier jour pour payer), SUSPENDU après
+     */
+    static StatutContrat statutAttendu(Contrat contrat, boolean paye, LocalDate aujourdhui) {
+        if (contrat.getStatut() == StatutContrat.RESILIE) {
+            return StatutContrat.RESILIE;
+        }
+        if (!aujourdhui.isBefore(contrat.getDateFin())) {
+            return StatutContrat.EXPIRE;
+        }
+        if (aujourdhui.isBefore(contrat.getDateDebut())) {
+            return StatutContrat.EN_ATTENTE;
+        }
+        if (paye) {
+            return StatutContrat.ACTIF;
+        }
+        return aujourdhui.isAfter(contrat.getDateDebut()) ? StatutContrat.SUSPENDU : StatutContrat.EN_ATTENTE;
+    }
+
+    /**
+     * Met à jour le statut de tous les contrats en cours et passe en retard les paiements dont l'échéance est dépassée.
+     * Appelée au démarrage de l'application puis toutes les heures (DemarrageApplication),
+     * et après l'enregistrement d'un paiement.
+     *
+     * @return le nombre de contrats dont le statut a changé
+     */
+    public int mettreAJourStatuts(LocalDate aujourdhui) {
+        paiementDao.marquerEnRetard(aujourdhui);
+        Set<Long> payes = paiementDao.idsContratsPayes();
+        int changes = 0;
+        for (Contrat contrat : contratDao.listerEnCours()) {
+            StatutContrat attendu = statutAttendu(contrat, payes.contains(contrat.getId()), aujourdhui);
+            if (attendu != contrat.getStatut()
+                    && contratDao.changerStatutSi(contrat.getId(), contrat.getStatut(), attendu)) {
+                changes++;
+            }
+        }
+        return changes;
     }
 
     // Fin d'un contrat qui commence à dateDebut : DUREE_EN_MOIS plus tard (le 29 février donne le 28 février)

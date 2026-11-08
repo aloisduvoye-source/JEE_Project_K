@@ -137,6 +137,40 @@ public class ContratDao extends GenericDao<Contrat> {
     }
 
     /**
+     * Liste les contrats dont le statut peut encore changer avec le temps : EN_ATTENTE, ACTIF et SUSPENDU.
+     * <p>
+     * Les contrats EXPIRE et RESILIE sont terminés : leur statut ne change plus.
+     *
+     * @return les contrats en cours, sans leurs détails (seuls les dates et le statut servent)
+     */
+    public List<Contrat> listerEnCours() {
+        return enLecture(em -> em.createQuery(
+                        "SELECT c FROM Contrat c WHERE c.statut IN :statuts", Contrat.class)
+                .setParameter("statuts", List.of(StatutContrat.EN_ATTENTE, StatutContrat.ACTIF, StatutContrat.SUSPENDU))
+                .getResultList());
+    }
+
+    /**
+     * Change le statut d'un contrat seulement s'il a toujours le statut {@code ancien}.
+     * <p>
+     * Utilisé par la mise à jour automatique : si un agent a résilié le contrat entre-temps,
+     * la résiliation n'est pas écrasée.
+     *
+     * @param id      id du contrat
+     * @param ancien  statut lu avant le calcul
+     * @param nouveau statut calculé
+     * @return {@code true} si le statut a été changé
+     */
+    public boolean changerStatutSi(Long id, StatutContrat ancien, StatutContrat nouveau) {
+        return enTransaction(em -> em.createQuery(
+                        "UPDATE Contrat c SET c.statut = :nouveau WHERE c.id = :id AND c.statut = :ancien")
+                .setParameter("nouveau", nouveau)
+                .setParameter("id", id)
+                .setParameter("ancien", ancien)
+                .executeUpdate() == 1);
+    }
+
+    /**
      * Change le statut d'un contrat (activation, suspension, expiration).
      * <p>
      * Pour une résiliation, utiliser {@link #resilier}, qui enregistre aussi la date et le motif.
