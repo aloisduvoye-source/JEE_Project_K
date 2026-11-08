@@ -57,8 +57,16 @@ public class UtilisateurService {
     // Lève UtilisateurDejaExistantException si l'identifiant ou l'email est déjà pris
     public void inscrireClient(Utilisateur utilisateur, Client client, String motDePasse) {
         utilisateur.setRole(Role.CLIENT);
-        utilisateur.setMotDePasseHash(BCrypt.hashpw(motDePasse, BCrypt.gensalt()));
+        utilisateur.setMotDePasseHash(hacher(motDePasse));
         clientDao.creerAvecUtilisateur(client, utilisateur);
+    }
+
+    // Crée un compte agent (par l'administrateur) : rôle toujours AGENT, mot de passe haché, pas de fiche client
+    // Lève UtilisateurDejaExistantException si l'identifiant ou l'email est déjà pris
+    public void creerAgent(Utilisateur utilisateur, String motDePasse) {
+        utilisateur.setRole(Role.AGENT);
+        utilisateur.setMotDePasseHash(hacher(motDePasse));
+        utilisateurDao.creerSansDoublon(utilisateur);
     }
 
     // Utilisateurs triés par nom puis prénom : tous si role est null, sinon ceux de ce rôle
@@ -81,6 +89,10 @@ public class UtilisateurService {
         if (actuel == null || !BCrypt.checkpw(actuel, utilisateur.getMotDePasseHash())) {
             throw new MotDePasseIncorrectException();
         }
-        utilisateurDao.changerMotDePasse(id, BCrypt.hashpw(nouveau, BCrypt.gensalt()));
+        utilisateurDao.changerMotDePasse(id, hacher(nouveau));
+    }
+
+    private static String hacher(String motDePasse) {
+        return BCrypt.hashpw(motDePasse, BCrypt.gensalt());
     }
 }

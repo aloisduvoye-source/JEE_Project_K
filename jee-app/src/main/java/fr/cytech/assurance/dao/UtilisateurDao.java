@@ -21,6 +21,25 @@ public class UtilisateurDao extends GenericDao<Utilisateur> {
     }
 
     /**
+     * Crée un compte utilisateur seul (agent, administrateur), après avoir vérifié
+     * que son identifiant et son email sont libres.
+     *
+     * @param utilisateur compte à créer, sans id, mot de passe déjà haché
+     * @throws UtilisateurDejaExistantException si l'identifiant ou l'email est déjà pris
+     */
+    public void creerSansDoublon(Utilisateur utilisateur) {
+        try {
+            enTransaction(em -> {
+                verifierDisponible(em, utilisateur);
+                em.persist(utilisateur);
+                return null;
+            });
+        } catch (PersistenceException e) {
+            throw doublonOuErreur(e);
+        }
+    }
+
+    /**
      * Liste tous les utilisateurs, tous rôles confondus, triés par nom puis prénom.
      *
      * @return les utilisateurs triés, liste vide s'il n'y en a aucun

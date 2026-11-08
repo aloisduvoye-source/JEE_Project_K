@@ -11,6 +11,12 @@
 
   <h1>Utilisateurs</h1>
 
+  <c:if test="${not empty param.agentCree}">
+    <p>Le compte agent a été créé.</p>
+  </c:if>
+
+  <p><a href="${pageContext.request.contextPath}/admin/utilisateurs/nouvel-agent">Nouvel agent</a></p>
+
   <form method="get" action="${pageContext.request.contextPath}/admin/utilisateurs">
     <label for="role">Rôle</label>
     <select id="role" name="role">

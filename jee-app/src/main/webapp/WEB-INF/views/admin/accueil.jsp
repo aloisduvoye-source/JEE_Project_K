@@ -25,6 +25,7 @@
     <h2>Utilisateurs</h2>
     <ul>
       <li><a href="${pageContext.request.contextPath}/admin/utilisateurs">Voir tous les utilisateurs</a></li>
+      <li><a href="${pageContext.request.contextPath}/admin/utilisateurs/nouvel-agent">Nouvel agent</a></li>
       <li><a href="${pageContext.request.contextPath}/agent/clients">Voir les clients</a></li>
     </ul>
   </section>
