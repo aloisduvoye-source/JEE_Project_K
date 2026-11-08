@@ -1,6 +1,7 @@
 package fr.cytech.assurance.controller;
 
 import fr.cytech.assurance.service.ClientService;
+import fr.cytech.assurance.util.Validateur;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -20,7 +21,16 @@ public class ClientsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        request.setAttribute("clients", clientService.lister());
+        // Recherche facultative (?q=...) sur le nom, le prénom ou l'email
+        String motCle = Validateur.nettoyer(request.getParameter("q"));
+        Validateur v = new Validateur();
+        v.longueur("q", motCle, "La recherche", 100);
+        if (!v.estValide()) {
+            request.setAttribute("erreurs", v.getErreurs());
+            motCle = "";
+        }
+        request.setAttribute("q", motCle);
+        request.setAttribute("clients", clientService.rechercher(motCle));
         request.getRequestDispatcher(VUE).forward(request, response);
     }
 }

@@ -11,6 +11,16 @@
 
   <h1>Clients</h1>
 
+  <form method="get" action="${pageContext.request.contextPath}/agent/clients">
+    <label for="q">Rechercher (nom, prénom ou email)</label>
+    <input type="search" id="q" name="q" value="<c:out value='${q}'/>">
+    <button type="submit">Rechercher</button>
+    <c:if test="${not empty q}">
+      <a href="${pageContext.request.contextPath}/agent/clients">Afficher tous les clients</a>
+    </c:if>
+    <c:out value="${erreurs.q}"/>
+  </form>
+
   <table border="1">
     <thead>
       <tr>
@@ -35,7 +45,12 @@
       </c:forEach>
       <c:if test="${empty clients}">
         <tr>
-          <td colspan="6">Aucun client pour l'instant.</td>
+          <td colspan="6">
+            <c:choose>
+              <c:when test="${not empty q}">Aucun client ne correspond à « <c:out value="${q}"/> ».</c:when>
+              <c:otherwise>Aucun client pour l'instant.</c:otherwise>
+            </c:choose>
+          </td>
         </tr>
       </c:if>
     </tbody>
