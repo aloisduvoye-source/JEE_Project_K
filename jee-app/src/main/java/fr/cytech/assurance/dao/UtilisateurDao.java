@@ -169,6 +169,47 @@ public class UtilisateurDao extends GenericDao<Utilisateur> {
     }
 
     /**
+     * Supprime un compte s'il n'a aucun historique, sinon le désactive seulement.
+     * <p>
+     * L'historique, c'est ce que l'assurance doit garder et que la base refuserait de perdre :
+     * les contrats d'un client, les commentaires et les sinistres traités par un agent.
+     * Sans historique, le compte est effacé ; la base efface avec lui la fiche client
+     * et les messages de l'assistant (ON DELETE CASCADE).
+     *
+     * @param id id de l'utilisateur
+     * @return {@code true} si le compte a été effacé, {@code false} s'il a été désactivé ou n'existe pas
+     */
+    public boolean supprimerSiSansHistorique(Long id) {
+        return enTransaction(em -> {
+            Utilisateur utilisateur = em.find(Utilisateur.class, id);
+            if (utilisateur == null) {
+                return false;
+            }
+            if (aUnHistorique(em, id)) {
+                utilisateur.setActif(false);
+                return false;
+            }
+            em.remove(utilisateur);
+            return true;
+        });
+    }
+
+    // Vrai si le compte a des contrats (client), des commentaires ou des sinistres à traiter (agent)
+    private static boolean aUnHistorique(EntityManager em, Long id) {
+        String[] requetes = {
+                "SELECT COUNT(c) FROM Contrat c WHERE c.client.utilisateur.id = :id",
+                "SELECT COUNT(c) FROM CommentaireSinistre c WHERE c.auteur.id = :id",
+                "SELECT COUNT(s) FROM Sinistre s WHERE s.agent.id = :id"
+        };
+        for (String requete : requetes) {
+            if (em.createQuery(requete, Long.class).setParameter("id", id).getSingleResult() > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Vérifie, dans la transaction de création en cours, que l'identifiant et l'email sont libres.
      * Partagé avec {@link ClientDao#creerAvecUtilisateur}.
      *

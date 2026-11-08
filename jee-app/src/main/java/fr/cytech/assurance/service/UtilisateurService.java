@@ -84,6 +84,24 @@ public class UtilisateurService {
         utilisateurDao.changerEtat(id, actif);
     }
 
+    // Suppression de son propre compte (client ou agent), depuis « Mon compte ».
+    // Le mot de passe est exigé : une session laissée ouverte ne suffit pas pour supprimer le compte.
+    // Compte sans historique : effacé (renvoie true). Avec contrats ou sinistres : désactivé (renvoie false)
+    // Lève UtilisateurInvalideException pour l'administrateur, MotDePasseIncorrectException si le mot de passe est faux
+    public boolean supprimerCompte(Long id, String motDePasse) {
+        Utilisateur utilisateur = utilisateurDao.trouverParId(id);   // hash relu en base
+        if (utilisateur == null) {
+            throw new UtilisateurInvalideException("Ce compte n'existe pas.");
+        }
+        if (utilisateur.getRole() == Role.ADMIN) {
+            throw new UtilisateurInvalideException("Le compte administrateur ne peut pas être supprimé.");
+        }
+        if (motDePasse == null || !BCrypt.checkpw(motDePasse, utilisateur.getMotDePasseHash())) {
+            throw new MotDePasseIncorrectException();
+        }
+        return utilisateurDao.supprimerSiSansHistorique(id);
+    }
+
     // Utilisateurs triés par nom puis prénom : tous si role est null, sinon ceux de ce rôle
     public List<Utilisateur> lister(Role role) {
         return role == null ? utilisateurDao.listerTousTries() : utilisateurDao.listerParRole(role);

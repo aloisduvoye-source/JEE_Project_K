@@ -30,6 +30,12 @@
   <form method="get" action="${pageContext.request.contextPath}/compte/mot-de-passe">
     <button type="submit">Changer mon mot de passe</button>
   </form>
+  <%-- L'administrateur ne peut pas supprimer son compte : il est le seul à gérer l'application --%>
+  <c:if test="${compte.role != 'ADMIN'}">
+    <form method="get" action="${pageContext.request.contextPath}/compte/supprimer">
+      <button type="submit">Supprimer mon compte</button>
+    </form>
+  </c:if>
 
   <p><a href="${pageContext.request.contextPath}/">Retour à l'accueil</a></p>
 </body>
