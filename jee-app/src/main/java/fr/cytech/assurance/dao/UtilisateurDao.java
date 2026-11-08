@@ -1,7 +1,11 @@
 package fr.cytech.assurance.dao;
 
+import fr.cytech.assurance.exception.UtilisateurDejaExistantException;
 import fr.cytech.assurance.model.Utilisateur;
 import fr.cytech.assurance.model.enums.Role;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceException;
+import org.hibernate.exception.ConstraintViolationException;
 
 import java.util.List;
 
@@ -132,5 +136,38 @@ public class UtilisateurDao extends GenericDao<Utilisateur> {
      */
     public boolean changerEtat(Long id, boolean actif) {
         return mettreAJour(id, u -> u.setActif(actif));
+    }
+
+    /**
+     * Vérifie, dans la transaction de création en cours, que l'identifiant et l'email sont libres.
+     * Partagé avec {@link ClientDao#creerAvecUtilisateur}.
+     *
+     * @throws UtilisateurDejaExistantException si l'un des deux est déjà pris
+     */
+    static void verifierDisponible(EntityManager em, Utilisateur utilisateur) {
+        if (existe(em, "identifiant", utilisateur.getIdentifiant())) {
+            throw new UtilisateurDejaExistantException("identifiant");
+        }
+        if (existe(em, "email", utilisateur.getEmail())) {
+            throw new UtilisateurDejaExistantException("email");
+        }
+    }
+
+    /**
+     * Deux créations simultanées peuvent passer {@link #verifierDisponible} : la contrainte UNIQUE
+     * de la base refuse alors la seconde, qu'on signale comme un doublon. Toute autre erreur est rendue telle quelle.
+     */
+    static RuntimeException doublonOuErreur(PersistenceException e) {
+        if (e.getCause() instanceof ConstraintViolationException) {
+            return new UtilisateurDejaExistantException(null);
+        }
+        return e;
+    }
+
+    // Vrai si un utilisateur a déjà cette valeur dans ce champ ("identifiant" ou "email")
+    private static boolean existe(EntityManager em, String champ, String valeur) {
+        return em.createQuery("SELECT COUNT(u) FROM Utilisateur u WHERE u." + champ + " = :valeur", Long.class)
+                .setParameter("valeur", valeur)
+                .getSingleResult() > 0;
     }
 }
