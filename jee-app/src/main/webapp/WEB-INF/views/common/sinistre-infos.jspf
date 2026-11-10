@@ -30,8 +30,7 @@
           <%-- Détail du calcul, avec la franchise et le plafond en vigueur au moment du versement --%>
           <br>Garantie <c:out value="${indemnisation.garantie.nom}"/> :
           dommage retenu <c:out value="${indemnisation.montantDommage}"/> €
-          − franchise <c:out value="${indemnisation.franchiseAppliquee}"/> €
-          <c:if test="${indemnisation.plafonne}">, limité au plafond de <c:out value="${indemnisation.plafondApplique}"/> €</c:if>
+          − franchise <c:out value="${indemnisation.franchiseAppliquee}"/> €<c:if test="${indemnisation.plafonne}">, limité au plafond de <c:out value="${indemnisation.plafondApplique}"/> €</c:if>
           <c:if test="${not empty sinistre.montantEstime and indemnisation.montantDommage.compareTo(sinistre.montantEstime) != 0}">
             (montant estimé à la déclaration : <c:out value="${sinistre.montantEstime}"/> €)</c:if>
         </c:when>
