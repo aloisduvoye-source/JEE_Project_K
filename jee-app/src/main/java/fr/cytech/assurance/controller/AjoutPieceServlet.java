@@ -24,7 +24,9 @@ import java.util.List;
 
 /**
  * Ajout de pièces justificatives depuis la fiche d'un sinistre (formulaire multipart, champ "pieces",
- * plusieurs fichiers possibles). L'adresse appelée dit qui envoie :
+ * plusieurs fichiers possibles). L'id du sinistre est dans l'adresse (?id=...) et non dans le formulaire :
+ * si un fichier est trop gros, Tomcat ne lit aucun champ du formulaire, mais l'adresse reste lisible,
+ * ce qui permet de revenir à la bonne fiche avec le message. L'adresse appelée dit qui envoie :
  *   /client/sinistres/pieces : le client connecté, seulement sur l'un de ses sinistres
  *   /agent/sinistres/pieces  : un agent, sur n'importe quel sinistre (l'admin est refusé par le service)
  * En POST uniquement. Après l'envoi, retour à la fiche, sur la liste des pièces.

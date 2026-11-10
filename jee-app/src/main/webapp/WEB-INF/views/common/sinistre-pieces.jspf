@@ -25,8 +25,8 @@
 
 <c:if test="${not clos and sessionScope.utilisateur.role != 'ADMIN'}">
   <form method="post" enctype="multipart/form-data" class="form-pieces"
-        action="${pageContext.request.contextPath}/${espacePieces}/sinistres/pieces">
-    <input type="hidden" name="id" value="${sinistre.id}">
+        action="${pageContext.request.contextPath}/${espacePieces}/sinistres/pieces?id=${sinistre.id}">
+    <%-- id dans l'adresse et non en champ caché : voir AjoutPieceServlet --%>
     <p>
       <label for="pieces">Ajouter des pièces (PDF, JPG ou PNG, 5 Mo maximum chacune)</label><br>
       <input type="file" id="pieces" name="pieces" multiple required
