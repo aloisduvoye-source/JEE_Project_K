@@ -11,6 +11,9 @@
 
   <h1>Mes sinistres</h1>
 
+  <c:if test="${not empty param.declare}">
+    <p>Votre sinistre n° <c:out value="${param.declare}"/> a été déclaré. Un agent va l'analyser.</p>
+  </c:if>
   <%-- Erreur enregistrée avant la redirection (MessageFlash), par exemple un sinistre introuvable --%>
   <c:if test="${not empty sessionScope.messageErreur}">
     <p><c:out value="${sessionScope.messageErreur}"/></p>
