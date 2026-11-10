@@ -246,19 +246,34 @@ public class SinistreService {
      * @param contenu  message déjà nettoyé, non vide et de longueur vérifiée
      */
     public CommentaireSinistre commenter(Long idSinistre, Utilisateur auteur, Long idClient, String contenu) {
+        Sinistre sinistre = ouvertEnEcriture(idSinistre, auteur, idClient, "la discussion est fermée");
+        return commentaireDao.ajouter(sinistre.getId(), auteur.getId(), contenu);
+    }
+
+    /**
+     * Sinistre que cet utilisateur peut compléter (message, pièce justificative) : règle commune à la discussion
+     * et aux pièces. Le client ne complète que ses propres sinistres, un agent tous ; l'admin ne fait que lire.
+     *
+     * @param idClient  client connecté si l'utilisateur est un client (vient de la session), sinon ignoré
+     * @param siClos    fin du message d'erreur si le dossier est clos ("la discussion est fermée"...)
+     * @return le sinistre avec ses détails
+     * @throws SinistreInvalideException si le sinistre est inconnu, n'est pas accessible ou est clos
+     */
+    public Sinistre ouvertEnEcriture(Long idSinistre, Utilisateur utilisateur, Long idClient, String siClos) {
         Sinistre sinistre = idSinistre == null ? null : sinistreDao.trouverAvecDetails(idSinistre);
-        boolean autorise = sinistre != null && switch (auteur.getRole()) {
+        boolean autorise = sinistre != null && switch (utilisateur.getRole()) {
             case CLIENT -> sinistre.getContrat().getClient().getId().equals(idClient);
             case AGENT -> true;
             case ADMIN -> false;
         };
+        // Même message pour un sinistre d'un autre client : on ne révèle pas qu'il existe
         if (!autorise) {
             throw new SinistreInvalideException("Sinistre inconnu.");
         }
         if (estClos(sinistre)) {
-            throw new SinistreInvalideException("Ce dossier est clos : la discussion est fermée.");
+            throw new SinistreInvalideException("Ce dossier est clos : " + siClos + ".");
         }
-        return commentaireDao.ajouter(sinistre.getId(), auteur.getId(), contenu);
+        return sinistre;
     }
 
     // Indemnisation suggérée pour une garantie (classe et non record : lisible par l'EL des JSP de Tomcat 10)
