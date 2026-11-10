@@ -2,6 +2,7 @@ package fr.cytech.assurance.dao;
 
 import fr.cytech.assurance.model.CommentaireSinistre;
 import fr.cytech.assurance.model.Contrat;
+import fr.cytech.assurance.model.Garantie;
 import fr.cytech.assurance.model.Sinistre;
 import fr.cytech.assurance.model.Utilisateur;
 import fr.cytech.assurance.model.Versement;
@@ -218,32 +219,34 @@ public class SinistreDao extends GenericDao<Sinistre> {
     }
 
     /**
-     * Indemnise un sinistre : crée le versement et passe le sinistre au statut INDEMNISE, dans une seule transaction.
+     * Indemnise un sinistre : enregistre le versement et passe le sinistre au statut INDEMNISE, dans une seule transaction.
      * <p>
-     * Le montant (positif) est vérifié par le service. Le statut ACCEPTE est relu dans la transaction :
-     * un sinistre ne peut pas être indemnisé deux fois.
+     * Le montant est calculé par le service (dommage, franchise, plafond). Le statut ACCEPTE est relu
+     * dans la transaction : un sinistre ne peut pas être indemnisé deux fois.
      *
-     * @param id      id du sinistre
-     * @param montant montant versé au client
-     * @param date    date du versement
-     * @param idAgent agent qui enregistre l'indemnisation
-     * @return le versement créé, ou {@code null} si le sinistre ou l'agent n'existe pas,
+     * @param id         id du sinistre
+     * @param versement  versement à enregistrer : montant, dommage, franchise, plafond et date déjà remplis
+     * @param idGarantie garantie appliquée
+     * @param idAgent    agent qui enregistre l'indemnisation
+     * @return le versement enregistré, ou {@code null} si le sinistre, la garantie ou l'agent n'existe pas,
      *         ou si le sinistre n'est pas (ou plus) au statut ACCEPTE
      */
-    public Versement indemniser(Long id, BigDecimal montant, LocalDate date, Long idAgent) {
+    public Versement indemniser(Long id, Versement versement, Long idGarantie, Long idAgent) {
         return enTransaction(em -> {
             Sinistre sinistre = em.find(Sinistre.class, id);
+            Garantie garantie = em.find(Garantie.class, idGarantie);
             Utilisateur agent = em.find(Utilisateur.class, idAgent);
-            if (sinistre == null || agent == null || sinistre.getStatut() != StatutSinistre.ACCEPTE) {return null;}
+            if (sinistre == null || garantie == null || agent == null
+                    || sinistre.getStatut() != StatutSinistre.ACCEPTE) {
+                return null;
+            }
             sinistre.setStatut(StatutSinistre.INDEMNISE);
             dater(sinistre, LocalDateTime.now());
 
-            Versement versement = new Versement();
             versement.setType(TypeVersement.INDEMNISATION);
-            versement.setMontant(montant);
-            versement.setDateVersement(date);
             versement.setContrat(sinistre.getContrat());
             versement.setSinistre(sinistre);
+            versement.setGarantie(garantie);
             versement.setAgent(agent);
             em.persist(versement);
             return versement;

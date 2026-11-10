@@ -181,27 +181,57 @@ public class SinistreService {
     }
 
     /**
-     * ACCEPTE → INDEMNISE, définitif : enregistre le versement au client, daté du jour.
+     * ACCEPTE → INDEMNISE, définitif : calcule l'indemnisation et enregistre le versement au client, daté du jour.
+     * <p>
+     * L'agent ne choisit pas le montant : il choisit la garantie qui s'applique (parmi celles du contrat)
+     * et le dommage retenu (après examen des pièces). Le montant en découle :
+     * <pre>indemnisation = min(dommage retenu - franchise, plafond)</pre>
+     * On ne rembourse jamais plus que le dommage (principe indemnitaire) ni plus que le plafond.
+     * Un dommage qui ne dépasse pas la franchise ne donne rien à verser : le sinistre doit alors être refusé.
      *
-     * @param montant montant versé, strictement positif (vérifié par le Validateur)
+     * @param idGarantie garantie appliquée, qui doit faire partie du contrat du sinistre
+     * @param dommage    dommage retenu par l'agent, strictement positif (vérifié par le Validateur)
      */
-    public Versement indemniser(Long idSinistre, Utilisateur agent, BigDecimal montant) {
+    public Versement indemniser(Long idSinistre, Utilisateur agent, Long idGarantie, BigDecimal dommage) {
         verifierAgent(agent);
-        if (montant == null || montant.signum() <= 0) {
-            throw new SinistreInvalideException("Le montant de l'indemnisation doit être supérieur à 0.");
+        if (dommage == null || dommage.signum() <= 0) {
+            throw new SinistreInvalideException("Le dommage retenu doit être supérieur à 0.");
         }
-        Versement versement = idSinistre == null ? null
-                : sinistreDao.indemniser(idSinistre, montant, LocalDate.now(), agent.getId());
-        if (versement == null) {
+        Sinistre sinistre = idSinistre == null ? null : sinistreDao.trouverAvecDetails(idSinistre);
+        if (sinistre == null || sinistre.getStatut() != StatutSinistre.ACCEPTE) {
             throw new SinistreInvalideException("Seul un sinistre accepté peut être indemnisé.");
         }
-        return versement;
+        Garantie garantie = contratDao.trouverAvecDetails(sinistre.getContrat().getId()).getGaranties().stream()
+                .filter(g -> g.getId().equals(idGarantie))
+                .findFirst()
+                .orElseThrow(() -> new SinistreInvalideException("Cette garantie ne fait pas partie du contrat."));
+
+        BigDecimal franchise = garantie.getFranchise() == null ? BigDecimal.ZERO : garantie.getFranchise();
+        BigDecimal montant = calculer(dommage, garantie);
+        if (montant.signum() <= 0) {
+            throw new SinistreInvalideException("Le dommage retenu (" + dommage.toPlainString()
+                    + " €) ne dépasse pas la franchise de la garantie " + garantie.getNom() + " ("
+                    + franchise.toPlainString() + " €) : il n'y a rien à verser. "
+                    + "Ce sinistre ne peut pas être indemnisé : refusez-le avec ce motif.");
+        }
+
+        Versement versement = new Versement();
+        versement.setMontant(montant);
+        versement.setMontantDommage(dommage);
+        versement.setFranchiseAppliquee(franchise);
+        versement.setPlafondApplique(garantie.getPlafond());
+        versement.setDateVersement(LocalDate.now());
+        Versement enregistre = sinistreDao.indemniser(sinistre.getId(), versement, garantie.getId(), agent.getId());
+        if (enregistre == null) {
+            // Un autre agent l'a indemnisé entre la vérification et l'enregistrement
+            throw new SinistreInvalideException("Seul un sinistre accepté peut être indemnisé.");
+        }
+        return enregistre;
     }
 
     /**
-     * Garanties du contrat du sinistre, chacune avec l'indemnisation suggérée à l'agent :
-     * montant estimé moins la franchise, dans la limite du plafond (null si le client n'a pas estimé ses dommages).
-     * C'est une aide : l'agent choisit la garantie qui s'applique et décide du montant.
+     * Garanties du contrat du sinistre, chacune avec l'indemnisation que donnerait le montant estimé par le client
+     * (null s'il n'a rien estimé). Sert à l'agent pour choisir la garantie à appliquer.
      */
     public List<Proposition> propositions(Sinistre sinistre) {
         BigDecimal estime = sinistre.getMontantEstime();
@@ -212,8 +242,9 @@ public class SinistreService {
                 .toList();
     }
 
-    static BigDecimal calculer(BigDecimal estime, Garantie garantie) {
-        BigDecimal montant = garantie.getFranchise() == null ? estime : estime.subtract(garantie.getFranchise());
+    // min(dommage - franchise, plafond), jamais négatif : seule règle de calcul d'une indemnisation
+    static BigDecimal calculer(BigDecimal dommage, Garantie garantie) {
+        BigDecimal montant = garantie.getFranchise() == null ? dommage : dommage.subtract(garantie.getFranchise());
         if (garantie.getPlafond() != null && montant.compareTo(garantie.getPlafond()) > 0) {
             montant = garantie.getPlafond();
         }

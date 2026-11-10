@@ -20,7 +20,7 @@ import java.math.BigDecimal;
  *   prendre    : DECLARE → EN_ANALYSE, l'agent devient responsable du dossier
  *   accepter   : EN_ANALYSE → ACCEPTE
  *   refuser    : EN_ANALYSE → REFUSE, avec un motif obligatoire (ajouté à la discussion)
- *   indemniser : ACCEPTE → INDEMNISE, avec le montant versé
+ *   indemniser : ACCEPTE → INDEMNISE, avec la garantie appliquée et le dommage retenu (le montant est calculé)
  * L'admin consulte seulement : RoleFiltre le laisse entrer dans /agent, cette servlet le refuse.
  */
 @WebServlet("/agent/sinistres/action")
@@ -59,10 +59,12 @@ public class ActionSinistreServlet extends HttpServlet {
                     }
                 }
                 case "indemniser" -> {
-                    BigDecimal montant = v.montantPositif("montant",
-                            Validateur.nettoyer(request.getParameter("montant")), "Le montant de l'indemnisation");
+                    Long idGarantie = v.identifiant("garantie",
+                            Validateur.nettoyer(request.getParameter("garantie")), "La garantie appliquée");
+                    BigDecimal dommage = v.montantPositif("dommage",
+                            Validateur.nettoyer(request.getParameter("dommage")), "Le dommage retenu");
                     if (v.estValide()) {
-                        sinistreService.indemniser(id, agent, montant);
+                        sinistreService.indemniser(id, agent, idGarantie, dommage);
                     }
                 }
                 default -> v.erreur("action", "Action inconnue.");
