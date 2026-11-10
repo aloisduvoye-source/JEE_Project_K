@@ -49,6 +49,57 @@
     </tbody>
   </table>
 
+  <%-- Actions selon le statut, pour un agent seulement : l'admin consulte.
+       ActionSinistreServlet et SinistreService vérifient de toute façon le rôle et le statut. --%>
+  <c:if test="${sessionScope.utilisateur.role == 'AGENT'}">
+    <c:set var="actionUrl" value="${pageContext.request.contextPath}/agent/sinistres/action"/>
+    <c:choose>
+      <c:when test="${sinistre.statut == 'DECLARE'}">
+        <h2>Traitement</h2>
+        <form method="post" action="${actionUrl}">
+          <input type="hidden" name="id" value="${sinistre.id}">
+          <input type="hidden" name="action" value="prendre">
+          <button type="submit">Prendre en charge ce dossier</button>
+        </form>
+      </c:when>
+
+      <c:when test="${sinistre.statut == 'EN_ANALYSE'}">
+        <h2>Décision</h2>
+        <form method="post" action="${actionUrl}"
+              onsubmit="return confirm('Accepter ce sinistre ? Il pourra ensuite être indemnisé.');">
+          <input type="hidden" name="id" value="${sinistre.id}">
+          <input type="hidden" name="action" value="accepter">
+          <button type="submit">Accepter le sinistre</button>
+        </form>
+        <form method="post" action="${actionUrl}"
+              onsubmit="return confirm('Refuser ce sinistre ? Cette décision est définitive.');">
+          <input type="hidden" name="id" value="${sinistre.id}">
+          <input type="hidden" name="action" value="refuser">
+          <p>
+            <label for="motif">Motif du refus (visible par le client)</label><br>
+            <textarea id="motif" name="motif" rows="3" cols="70" maxlength="1000" required></textarea>
+          </p>
+          <button type="submit">Refuser le sinistre</button>
+        </form>
+      </c:when>
+
+      <c:when test="${sinistre.statut == 'ACCEPTE'}">
+        <h2>Indemnisation</h2>
+        <p>Le versement est enregistré à la date du jour. Le dossier est ensuite clos.</p>
+        <form method="post" action="${actionUrl}"
+              onsubmit="return confirm('Enregistrer cette indemnisation ? Cette action est définitive.');">
+          <input type="hidden" name="id" value="${sinistre.id}">
+          <input type="hidden" name="action" value="indemniser">
+          <p>
+            <label for="montant">Montant versé, en €</label>
+            <input type="text" id="montant" name="montant" inputmode="decimal" required>
+          </p>
+          <button type="submit">Indemniser le client</button>
+        </form>
+      </c:when>
+    </c:choose>
+  </c:if>
+
   <p><a href="${pageContext.request.contextPath}/agent/sinistres">Retour aux sinistres</a></p>
 </body>
 </html>
