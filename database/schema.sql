@@ -165,11 +165,20 @@ CREATE TABLE IF NOT EXISTS versement(
     id_contrat              BIGINT UNSIGNED NOT NULL,
     id_sinistre             BIGINT UNSIGNED NULL UNIQUE,    -- une seule indemnisation par sinistre
     id_agent                BIGINT UNSIGNED NULL,           -- qui l'a enregistré (NULL : calcul automatique)
+    -- Calcul d'une indemnisation : montant = MIN(montant_dommage - franchise_appliquee, plafond_applique).
+    -- Franchise et plafond sont copiés : le calcul reste juste si la garantie est modifiée ensuite
+    id_garantie             BIGINT UNSIGNED NULL,           -- garantie appliquée
+    montant_dommage         DECIMAL(12,2) NULL,             -- dommage retenu par l'agent
+    franchise_appliquee     DECIMAL(12,2) NULL,
+    plafond_applique        DECIMAL(12,2) NULL,             -- NULL : garantie sans plafond
     CONSTRAINT chk_versement_montant CHECK (montant > 0),
     CONSTRAINT chk_versement_type CHECK (
         (type = 'INDEMNISATION' AND id_sinistre IS NOT NULL) OR (type = 'REMBOURSEMENT' AND id_sinistre IS NULL)),
+    CONSTRAINT chk_versement_calcul CHECK (
+        type <> 'INDEMNISATION' OR (id_garantie IS NOT NULL AND montant_dommage > 0 AND franchise_appliquee >= 0)),
     FOREIGN KEY (id_contrat) REFERENCES contrat(id),
     FOREIGN KEY (id_sinistre) REFERENCES sinistre(id),
+    FOREIGN KEY (id_garantie) REFERENCES garantie(id),
     FOREIGN KEY (id_agent) REFERENCES utilisateur(id) ON DELETE SET NULL
 );
 
