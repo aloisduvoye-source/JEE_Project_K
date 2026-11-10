@@ -38,7 +38,6 @@
           <a href="${pageContext.request.contextPath}/admin/types-assurance"><svg class="icone" aria-hidden="true"><use href="#i-couches"/></svg>Types d'assurance</a>
           <a href="${pageContext.request.contextPath}/agent/garanties"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg>Garanties</a>
           <a href="${pageContext.request.contextPath}/agent/contrats"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg>Contrats</a>
-          <a href="${pageContext.request.contextPath}/agent/sinistres"><svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg>Sinistres</a>
         </c:when>
         <c:otherwise>
           <a href="${pageContext.request.contextPath}/"><svg class="icone" aria-hidden="true"><use href="#i-maison"/></svg>Accueil</a>
