@@ -113,7 +113,7 @@
       <li>Comment déclarer un sinistre ?</li>
       <li>Où en est mon dernier sinistre ?</li>
     </ul>
-    <p>L'assistant sera bientôt disponible.</p>
+    <p><a href="${pageContext.request.contextPath}/client/assistant">Discuter avec l'assistant</a></p>
   </section>
 </body>
 </html>

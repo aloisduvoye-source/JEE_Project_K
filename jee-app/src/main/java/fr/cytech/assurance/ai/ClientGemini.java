@@ -40,13 +40,17 @@ public final class ClientGemini {
     private static final Logger LOG = Logger.getLogger(ClientGemini.class.getName());
 
     private static final String URL_API = "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent";
-    private static final String MODELE_PAR_DEFAUT = "gemini-flash-latest";
-    private static final String MODELE_SECOURS_PAR_DEFAUT = "gemini-flash-lite-latest";
+    // Version « lite » en principal : quelques secondes par réponse et rarement surchargée,
+    // ce qui suffit pour répondre à partir des données fournies. La version complète sert de secours.
+    private static final String MODELE_PAR_DEFAUT = "gemini-flash-lite-latest";
+    private static final String MODELE_SECOURS_PAR_DEFAUT = "gemini-flash-latest";
 
     // Le modèle principal est réessayé une fois avant de passer au modèle de secours
     private static final int TENTATIVES_PAR_MODELE = 2;
     private static final Duration ATTENTE_ENTRE_TENTATIVES = Duration.ofSeconds(1);
-    private static final Duration DELAI_REPONSE = Duration.ofSeconds(30);
+    // Un modèle surchargé peut mettre très longtemps avant de répondre (ou d'échouer) :
+    // mieux vaut abandonner vite et essayer le suivant que faire attendre le client
+    private static final Duration DELAI_REPONSE = Duration.ofSeconds(15);
 
     // Réponses courtes et factuelles : un assistant d'assurance ne doit pas inventer
     private static final double TEMPERATURE = 0.3;
