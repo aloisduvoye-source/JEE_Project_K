@@ -32,6 +32,8 @@ public class SinistreDetailServlet extends HttpServlet {
         }
         request.setAttribute("sinistre", sinistre);
         request.setAttribute("indemnisation", sinistreService.indemnisation(id));
+        request.setAttribute("commentaires", sinistreService.discussion(id));
+        request.setAttribute("clos", SinistreService.estClos(sinistre));
         request.setAttribute("propositions", sinistreService.propositions(sinistre));
         request.getRequestDispatcher(VUE).forward(request, response);
     }

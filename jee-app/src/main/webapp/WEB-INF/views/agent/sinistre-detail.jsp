@@ -49,6 +49,8 @@
     </tbody>
   </table>
 
+  <%@ include file="/WEB-INF/views/common/sinistre-discussion.jspf" %>
+
   <%-- Actions selon le statut, pour un agent seulement : l'admin consulte.
        ActionSinistreServlet et SinistreService vérifient de toute façon le rôle et le statut. --%>
   <c:if test="${sessionScope.utilisateur.role == 'AGENT'}">
