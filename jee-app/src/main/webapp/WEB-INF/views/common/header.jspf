@@ -22,10 +22,13 @@
         <c:when test="${utilisateurConnecte.role == 'CLIENT'}">
           <a href="${pageContext.request.contextPath}/client/accueil"><svg class="icone" aria-hidden="true"><use href="#i-grille"/></svg>Tableau de bord</a>
           <a href="${pageContext.request.contextPath}/client/contrats"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg>Mes contrats</a>
+          <a href="${pageContext.request.contextPath}/client/sinistres"><svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg>Mes sinistres</a>
+          <a href="${pageContext.request.contextPath}/client/assistant"><svg class="icone" aria-hidden="true"><use href="#i-etincelles"/></svg>Assistant</a>
         </c:when>
         <c:when test="${utilisateurConnecte.role == 'AGENT'}">
           <a href="${pageContext.request.contextPath}/agent/accueil"><svg class="icone" aria-hidden="true"><use href="#i-grille"/></svg>Tableau de bord</a>
           <a href="${pageContext.request.contextPath}/agent/contrats"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg>Contrats</a>
+          <a href="${pageContext.request.contextPath}/agent/sinistres"><svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg>Sinistres</a>
           <a href="${pageContext.request.contextPath}/agent/clients"><svg class="icone" aria-hidden="true"><use href="#i-utilisateurs"/></svg>Clients</a>
           <a href="${pageContext.request.contextPath}/agent/garanties"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg>Garanties</a>
         </c:when>
@@ -35,6 +38,7 @@
           <a href="${pageContext.request.contextPath}/admin/types-assurance"><svg class="icone" aria-hidden="true"><use href="#i-couches"/></svg>Types d'assurance</a>
           <a href="${pageContext.request.contextPath}/agent/garanties"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg>Garanties</a>
           <a href="${pageContext.request.contextPath}/agent/contrats"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg>Contrats</a>
+          <a href="${pageContext.request.contextPath}/agent/sinistres"><svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg>Sinistres</a>
         </c:when>
         <c:otherwise>
           <a href="${pageContext.request.contextPath}/"><svg class="icone" aria-hidden="true"><use href="#i-maison"/></svg>Accueil</a>
