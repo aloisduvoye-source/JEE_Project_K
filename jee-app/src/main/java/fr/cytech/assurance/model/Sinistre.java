@@ -55,12 +55,13 @@ public class Sinistre {
     @Column(name = "statut", nullable = false)
     private StatutSinistre statut = StatutSinistre.DECLARE;
 
-    // Renseignés par l'agent quand le sinistre est indemnisé
-    @Column(name = "montant_indemnisation", precision = 12, scale = 2)
-    private BigDecimal montantIndemnisation;
+    // Étapes du traitement, remplies par SinistreDao.changerStatut (null tant que l'étape n'est pas atteinte).
+    // L'indemnisation (montant, date) est un Versement.
+    @Column(name = "date_prise_en_charge")
+    private LocalDateTime datePriseEnCharge;
 
-    @Column(name = "date_indemnisation")
-    private LocalDate dateIndemnisation;
+    @Column(name = "date_decision")
+    private LocalDateTime dateDecision;
 
     // Agent qui traite le dossier (null tant qu'il n'est pas attribué)
     @ManyToOne
@@ -86,10 +87,10 @@ public class Sinistre {
     public void setMontantEstime(BigDecimal montantEstime) {this.montantEstime = montantEstime;}
     public StatutSinistre getStatut() {return statut;}
     public void setStatut(StatutSinistre statut) {this.statut = statut;}
-    public BigDecimal getMontantIndemnisation() {return montantIndemnisation;}
-    public void setMontantIndemnisation(BigDecimal montantIndemnisation) {this.montantIndemnisation = montantIndemnisation;}
-    public LocalDate getDateIndemnisation() {return dateIndemnisation;}
-    public void setDateIndemnisation(LocalDate dateIndemnisation) {this.dateIndemnisation = dateIndemnisation;}
+    public LocalDateTime getDatePriseEnCharge() {return datePriseEnCharge;}
+    public void setDatePriseEnCharge(LocalDateTime datePriseEnCharge) {this.datePriseEnCharge = datePriseEnCharge;}
+    public LocalDateTime getDateDecision() {return dateDecision;}
+    public void setDateDecision(LocalDateTime dateDecision) {this.dateDecision = dateDecision;}
     public Utilisateur getAgent() {return agent;}
     public void setAgent(Utilisateur agent) {this.agent = agent;}
 }

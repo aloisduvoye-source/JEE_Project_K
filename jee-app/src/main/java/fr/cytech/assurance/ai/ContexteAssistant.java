@@ -5,6 +5,7 @@ import fr.cytech.assurance.model.Garantie;
 import fr.cytech.assurance.model.Paiement;
 import fr.cytech.assurance.model.Sinistre;
 import fr.cytech.assurance.model.Utilisateur;
+import fr.cytech.assurance.model.Versement;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,6 +68,7 @@ public final class ContexteAssistant {
      * @param contrats    ses contrats, avec leur type et leurs garanties chargés
      * @param paiements   ses paiements, avec leur contrat chargé
      * @param sinistres   ses sinistres, avec leur contrat et son type chargés
+     * @param versements  les versements qu'il a reçus (indemnisations, remboursements), avec leur contrat chargé
      * @param catalogue   toutes les garanties proposées par la compagnie (pour comparer deux garanties,
      *                    même si le client ne les a pas souscrites)
      * @param aujourdhui  date du jour (pour que le modèle sache si une date est passée)
@@ -74,7 +76,8 @@ public final class ContexteAssistant {
      */
     public static String instructions(Utilisateur utilisateur, List<Contrat> contrats,
                                       List<Paiement> paiements, List<Sinistre> sinistres,
-                                      List<Garantie> catalogue, LocalDate aujourdhui) {
+                                      List<Versement> versements, List<Garantie> catalogue,
+                                      LocalDate aujourdhui) {
         StringBuilder texte = new StringBuilder(ROLE_ET_REGLES);
 
         texte.append("\n=== Connaissances générales ===\n\n").append(CONNAISSANCES);
@@ -87,6 +90,7 @@ public final class ContexteAssistant {
         decrireContrats(texte, contrats);
         decrirePaiements(texte, paiements);
         decrireSinistres(texte, sinistres);
+        decrireVersements(texte, versements);
         return texte.toString();
     }
 
@@ -183,14 +187,33 @@ public final class ContexteAssistant {
             if (sinistre.getMontantEstime() != null) {
                 texte.append(", montant estimé ").append(montant(sinistre.getMontantEstime()));
             }
-            if (sinistre.getMontantIndemnisation() != null) {
-                texte.append(", indemnisé de ").append(montant(sinistre.getMontantIndemnisation()));
-                if (sinistre.getDateIndemnisation() != null) {
-                    texte.append(" le ").append(date(sinistre.getDateIndemnisation()));
-                }
+            if (sinistre.getDatePriseEnCharge() != null) {
+                texte.append(", pris en charge le ").append(date(sinistre.getDatePriseEnCharge().toLocalDate()));
+            }
+            if (sinistre.getDateDecision() != null) {
+                texte.append(", décision le ").append(date(sinistre.getDateDecision().toLocalDate()));
             }
             texte.append(sinistre.getAgent() != null ? ", dossier suivi par un agent" : ", pas encore attribué à un agent");
             texte.append(". Description : ").append(surUneLigne(sinistre.getDescription())).append('\n');
+        }
+    }
+
+    private static void decrireVersements(StringBuilder texte, List<Versement> versements) {
+        texte.append("\nVersements reçus de l'assurance, indemnisations et remboursements (")
+                .append(versements.size()).append(") :\n");
+        if (versements.isEmpty()) {
+            texte.append("Aucun versement.\n");
+            return;
+        }
+        for (Versement versement : versements) {
+            texte.append("- ").append(montant(versement.getMontant()))
+                    .append(" le ").append(date(versement.getDateVersement())).append(" : ");
+            if (versement.getSinistre() != null) {
+                texte.append("indemnisation du sinistre n° ").append(versement.getSinistre().getId());
+            } else {
+                texte.append("remboursement de prime à la résiliation");
+            }
+            texte.append(" (contrat n° ").append(versement.getContrat().getId()).append(")\n");
         }
     }
 

@@ -2,10 +2,13 @@ package fr.cytech.assurance.dao;
 
 import fr.cytech.assurance.model.Sinistre;
 import fr.cytech.assurance.model.Utilisateur;
+import fr.cytech.assurance.model.Versement;
 import fr.cytech.assurance.model.enums.StatutSinistre;
+import fr.cytech.assurance.model.enums.TypeVersement;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -93,16 +96,33 @@ public class SinistreDao extends GenericDao<Sinistre> {
     }
 
     /**
-     * Change le statut d'un sinistre.
+     * Change le statut d'un sinistre et date l'étape atteinte :
+     * prise en charge (EN_ANALYSE) ou décision (ACCEPTE, REFUSE).
      * <p>
      * Les transitions autorisées (par exemple DECLARE vers EN_ANALYSE) sont vérifiées par le service.
+     * Pour passer à INDEMNISE, utiliser {@link #indemniser}, qui enregistre aussi le versement.
      *
      * @param id     id du sinistre
      * @param statut nouveau statut
      * @return {@code false} si aucun sinistre n'a cet id
      */
     public boolean changerStatut(Long id, StatutSinistre statut) {
-        return mettreAJour(id, s -> s.setStatut(statut));
+        return mettreAJour(id, s -> {
+            s.setStatut(statut);
+            dater(s, LocalDateTime.now());
+        });
+    }
+
+    // Une étape déjà datée garde sa date. Une décision sans prise en charge explicite date aussi celle-ci
+    // (exigé par la base : un sinistre décidé a forcément été pris en charge).
+    private static void dater(Sinistre s, LocalDateTime maintenant) {
+        if (s.getStatut() != StatutSinistre.DECLARE && s.getDatePriseEnCharge() == null) {
+            s.setDatePriseEnCharge(maintenant);
+        }
+        if (s.getStatut() != StatutSinistre.DECLARE && s.getStatut() != StatutSinistre.EN_ANALYSE
+                && s.getDateDecision() == null) {
+            s.setDateDecision(maintenant);
+        }
     }
 
     /**
@@ -125,18 +145,33 @@ public class SinistreDao extends GenericDao<Sinistre> {
     }
 
     /**
-     * Enregistre l'indemnisation d'un sinistre et le passe au statut INDEMNISE.
+     * Indemnise un sinistre : crée le versement et passe le sinistre au statut INDEMNISE, dans une seule transaction.
+     * <p>
+     * Le statut de départ (ACCEPTE) et le montant (positif) sont vérifiés par le service.
      *
      * @param id      id du sinistre
      * @param montant montant versé au client
      * @param date    date du versement
-     * @return {@code false} si aucun sinistre n'a cet id
+     * @param idAgent agent qui enregistre l'indemnisation
+     * @return le versement créé, ou {@code null} si le sinistre ou l'agent n'existe pas
      */
-    public boolean indemniser(Long id, BigDecimal montant, LocalDate date) {
-        return mettreAJour(id, s -> {
-            s.setMontantIndemnisation(montant);
-            s.setDateIndemnisation(date);
-            s.setStatut(StatutSinistre.INDEMNISE);
+    public Versement indemniser(Long id, BigDecimal montant, LocalDate date, Long idAgent) {
+        return enTransaction(em -> {
+            Sinistre sinistre = em.find(Sinistre.class, id);
+            Utilisateur agent = em.find(Utilisateur.class, idAgent);
+            if (sinistre == null || agent == null) {return null;}
+            sinistre.setStatut(StatutSinistre.INDEMNISE);
+            dater(sinistre, LocalDateTime.now());
+
+            Versement versement = new Versement();
+            versement.setType(TypeVersement.INDEMNISATION);
+            versement.setMontant(montant);
+            versement.setDateVersement(date);
+            versement.setContrat(sinistre.getContrat());
+            versement.setSinistre(sinistre);
+            versement.setAgent(agent);
+            em.persist(versement);
+            return versement;
         });
     }
 }

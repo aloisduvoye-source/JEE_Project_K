@@ -9,6 +9,7 @@ import fr.cytech.assurance.dao.GarantieDao;
 import fr.cytech.assurance.dao.MessageAssistantDao;
 import fr.cytech.assurance.dao.PaiementDao;
 import fr.cytech.assurance.dao.SinistreDao;
+import fr.cytech.assurance.dao.VersementDao;
 import fr.cytech.assurance.exception.AssistantIndisponibleException;
 import fr.cytech.assurance.model.Client;
 import fr.cytech.assurance.model.Garantie;
@@ -42,6 +43,7 @@ public class AssistantService {
     private final ContratDao contratDao = new ContratDao();
     private final PaiementDao paiementDao = new PaiementDao();
     private final SinistreDao sinistreDao = new SinistreDao();
+    private final VersementDao versementDao = new VersementDao();
     private final GarantieDao garantieDao = new GarantieDao();
 
     // Toute la conversation de l'utilisateur, du plus ancien message au plus récent
@@ -89,13 +91,14 @@ public class AssistantService {
         Client client = clientDao.trouverParUtilisateur(utilisateur.getId());
         if (client == null) {
             // Compte CLIENT sans fiche client : l'assistant répond sans données personnelles
-            return ContexteAssistant.instructions(utilisateur, List.of(), List.of(), List.of(), catalogue,
+            return ContexteAssistant.instructions(utilisateur, List.of(), List.of(), List.of(), List.of(), catalogue,
                     LocalDate.now());
         }
         return ContexteAssistant.instructions(utilisateur,
                 contratDao.listerParClient(client.getId()),
                 paiementDao.listerParClient(client.getId()),
                 sinistreDao.listerParClient(client.getId()),
+                versementDao.listerParClient(client.getId()),
                 catalogue,
                 LocalDate.now());
     }
