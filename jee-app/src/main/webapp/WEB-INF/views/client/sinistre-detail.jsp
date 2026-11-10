@@ -22,6 +22,8 @@
 
   <%@ include file="/WEB-INF/views/common/sinistre-infos.jspf" %>
 
+  <%@ include file="/WEB-INF/views/common/sinistre-pieces.jspf" %>
+
   <%@ include file="/WEB-INF/views/common/sinistre-discussion.jspf" %>
 
   <p><a href="${pageContext.request.contextPath}/client/sinistres">Retour à mes sinistres</a></p>

@@ -1,6 +1,7 @@
 package fr.cytech.assurance.controller;
 
 import fr.cytech.assurance.model.Sinistre;
+import fr.cytech.assurance.service.PieceJustificativeService;
 import fr.cytech.assurance.service.SinistreService;
 import fr.cytech.assurance.util.MessageFlash;
 import fr.cytech.assurance.util.Validateur;
@@ -19,6 +20,7 @@ public class SinistreDetailServlet extends HttpServlet {
     private static final String VUE = "/WEB-INF/views/agent/sinistre-detail.jsp";
 
     private final SinistreService sinistreService = new SinistreService();
+    private final PieceJustificativeService pieceService = new PieceJustificativeService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -32,6 +34,7 @@ public class SinistreDetailServlet extends HttpServlet {
         }
         request.setAttribute("sinistre", sinistre);
         request.setAttribute("indemnisation", sinistreService.indemnisation(id));
+        request.setAttribute("pieces", pieceService.lister(id));
         request.setAttribute("commentaires", sinistreService.discussion(id));
         request.setAttribute("clos", SinistreService.estClos(sinistre));
         request.setAttribute("propositions", sinistreService.propositions(sinistre));

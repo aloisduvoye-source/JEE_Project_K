@@ -49,6 +49,8 @@
     </tbody>
   </table>
 
+  <%@ include file="/WEB-INF/views/common/sinistre-pieces.jspf" %>
+
   <%@ include file="/WEB-INF/views/common/sinistre-discussion.jspf" %>
 
   <%-- Actions selon le statut, pour un agent seulement : l'admin consulte.

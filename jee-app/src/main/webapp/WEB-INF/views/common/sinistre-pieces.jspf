@@ -1,0 +1,38 @@
+<%--
+  Pièces justificatives d'un sinistre, communes à la fiche du client et à celle de l'agent.
+  Formulaire d'ajout affiché au client et aux agents tant que le dossier n'est pas clos ; l'admin consulte.
+  Chaque lien passe par TelechargementPieceServlet, qui vérifie le droit de voir la pièce.
+  Attend les attributs "sinistre", "pieces" (de la plus ancienne à la plus récente) et "clos".
+  À inclure avec : <%@ include file="/WEB-INF/views/common/sinistre-pieces.jspf" %>
+--%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<c:set var="espacePieces" value="${sessionScope.utilisateur.role == 'CLIENT' ? 'client' : 'agent'}"/>
+<h2 id="pieces">Pièces justificatives</h2>
+
+<c:if test="${empty pieces}">
+  <p>Aucune pièce pour l'instant.</p>
+</c:if>
+<c:if test="${not empty pieces}">
+  <ul>
+    <c:forEach var="pj" items="${pieces}">
+      <li>
+        <a href="${pageContext.request.contextPath}/${espacePieces}/sinistres/piece?id=${pj.id}" target="_blank"><c:out value="${pj.nomFichier}"/></a>
+        (ajoutée le <c:out value="${pj.dateAjout.toLocalDate()}"/>)
+      </li>
+    </c:forEach>
+  </ul>
+</c:if>
+
+<c:if test="${not clos and sessionScope.utilisateur.role != 'ADMIN'}">
+  <form method="post" enctype="multipart/form-data" class="form-pieces"
+        action="${pageContext.request.contextPath}/${espacePieces}/sinistres/pieces">
+    <input type="hidden" name="id" value="${sinistre.id}">
+    <p>
+      <label for="pieces">Ajouter des pièces (PDF, JPG ou PNG, 5 Mo maximum chacune)</label><br>
+      <input type="file" id="pieces" name="pieces" multiple required
+             accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+    </p>
+    <button type="submit">Envoyer</button>
+  </form>
+</c:if>
+<%@ include file="/WEB-INF/views/common/pieces-taille.jspf" %>
