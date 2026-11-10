@@ -14,7 +14,7 @@
       <section class="banniere">
         <p class="banniere-sur-titre">Administration</p>
         <h1>Bonjour <c:out value="${sessionScope.utilisateur.prenom}"/>,</h1>
-        <p>Gérez le catalogue des types d'assurance et des garanties, et consultez l'ensemble des contrats. Créez les comptes des agents et activez ou désactivez les comptes. Les indicateurs arrivent bientôt.</p>
+        <p>Gérez le catalogue des types d'assurance et des garanties, et consultez l'ensemble des contrats et des sinistres. Créez les comptes des agents et activez ou désactivez les comptes. Les indicateurs arrivent bientôt.</p>
         <div class="banniere-actions">
           <a class="bouton bouton-blanc" href="${pageContext.request.contextPath}/admin/types-assurance">
             <svg class="icone" aria-hidden="true"><use href="#i-couches"/></svg>Types d'assurance
@@ -75,11 +75,14 @@
             </div>
             <span class="tuile-lien">Consulter <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
           </a>
-          <div class="tuile tuile-bientot">
-            <span class="badge ton-neutre">Bientôt</span>
-            <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg></span>
-            <div><h3>Sinistres</h3><p>Tous les sinistres et leur traitement.</p></div>
-          </div>
+          <a class="tuile" href="${pageContext.request.contextPath}/agent/sinistres">
+            <span class="pastille ton-attention"><svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg></span>
+            <div>
+              <h3>Sinistres</h3>
+              <p>Tous les sinistres et leur traitement.</p>
+            </div>
+            <span class="tuile-lien">Consulter <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
+          </a>
         </div>
       </div>
 

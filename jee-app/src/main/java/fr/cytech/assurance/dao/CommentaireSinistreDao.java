@@ -7,7 +7,7 @@ import fr.cytech.assurance.model.Utilisateur;
 import java.util.List;
 
 /**
- * Accès en base aux commentaires ajoutés par les agents lors de l'analyse d'un sinistre.
+ * Accès en base à la discussion d'un sinistre : messages du client et des agents.
  * <p>
  * Le CRUD (trouverParId, listerTous, creer, modifier, supprimer) est hérité de {@link GenericDao}.
  */
@@ -36,7 +36,7 @@ public class CommentaireSinistreDao extends GenericDao<CommentaireSinistre> {
      * Ajoute un commentaire à un sinistre, dans une seule transaction.
      *
      * @param idSinistre id du sinistre commenté
-     * @param idAuteur   id de l'utilisateur (agent) qui écrit le commentaire
+     * @param idAuteur   id de l'utilisateur (client ou agent) qui écrit le commentaire
      * @param contenu    texte du commentaire
      * @return le commentaire enregistré
      * @throws IllegalArgumentException si le sinistre ou l'auteur n'existe pas

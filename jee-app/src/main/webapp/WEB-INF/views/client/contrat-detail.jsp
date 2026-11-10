@@ -64,11 +64,27 @@
             </section>
           </c:if>
 
+          <%-- Un contrat payé et commencé peut couvrir un sinistre (SinistreService vérifie la date du sinistre) --%>
+          <c:if test="${paiement.statut == 'EFFECTUE' and contrat.statut != 'EN_ATTENTE'}">
+            <section class="carte">
+              <div class="carte-entete">
+                <div><h2>Un sinistre ?</h2><p>Déclarez-le sur ce contrat et suivez son traitement en ligne.</p></div>
+              </div>
+              <div class="carte-corps">
+                <a class="bouton bouton-principal bouton-bloc" href="${pageContext.request.contextPath}/client/sinistres/nouveau?contrat=${contrat.id}">
+                  <svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg>Déclarer un sinistre
+                </a>
+              </div>
+            </section>
+          </c:if>
+
           <%@ include file="/WEB-INF/views/common/contrat-resiliation.jspf" %>
         </aside>
       </div>
     </div>
   </main>
+
+  <%@ include file="/WEB-INF/views/common/footer.jspf" %>
 
   <%@ include file="/WEB-INF/views/common/footer.jspf" %>
 </body>

@@ -14,12 +14,12 @@
       <section class="banniere">
         <p class="banniere-sur-titre">Espace agent</p>
         <h1>Bonjour <c:out value="${sessionScope.utilisateur.prenom}"/>,</h1>
-        <p>Créez et suivez les contrats de vos clients et gérez les garanties. Les sinistres et les statistiques arrivent bientôt.</p>
+        <p>Créez et suivez les contrats de vos clients, traitez leurs sinistres et gérez les garanties. Les statistiques arrivent bientôt.</p>
         <div class="banniere-actions">
           <a class="bouton bouton-blanc" href="${pageContext.request.contextPath}/agent/contrats/nouveau">
             <svg class="icone" aria-hidden="true"><use href="#i-plus"/></svg>Nouveau contrat
           </a>
-          <a class="bouton bouton-fantome" href="${pageContext.request.contextPath}/agent/contrats">Voir les contrats</a>
+          <a class="bouton bouton-fantome" href="${pageContext.request.contextPath}/agent/sinistres?statut=DECLARE">Sinistres à prendre en charge</a>
         </div>
       </section>
 
@@ -59,11 +59,14 @@
             </div>
             <span class="tuile-lien">Gérer <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
           </a>
-          <div class="tuile tuile-bientot">
-            <span class="badge ton-neutre">Bientôt</span>
-            <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg></span>
-            <div><h3>Sinistres</h3><p>Analyser, accepter ou refuser les sinistres déclarés.</p></div>
-          </div>
+          <a class="tuile" href="${pageContext.request.contextPath}/agent/sinistres">
+            <span class="pastille ton-orange"><svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg></span>
+            <div>
+              <h3>Sinistres</h3>
+              <p>Prendre en charge, analyser, accepter ou refuser les sinistres, et indemniser.</p>
+            </div>
+            <span class="tuile-lien">Traiter <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
+          </a>
           <div class="tuile tuile-bientot">
             <span class="badge ton-neutre">Bientôt</span>
             <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-carte"/></svg></span>

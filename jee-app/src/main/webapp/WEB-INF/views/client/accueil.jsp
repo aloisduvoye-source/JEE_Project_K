@@ -14,12 +14,12 @@
       <section class="banniere">
         <p class="banniere-sur-titre">Espace client</p>
         <h1>Bonjour <c:out value="${sessionScope.utilisateur.prenom}"/>,</h1>
-        <p>Retrouvez vos contrats et vos garanties, et payez vos contrats en ligne. La déclaration de sinistre et l'assistant arrivent bientôt dans votre espace.</p>
+        <p>Retrouvez vos contrats et vos garanties, payez vos contrats, déclarez et suivez vos sinistres, ou posez vos questions à l'assistant.</p>
         <div class="banniere-actions">
           <a class="bouton bouton-blanc" href="${pageContext.request.contextPath}/client/contrats">
             <svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg>Voir mes contrats
           </a>
-          <a class="bouton bouton-fantome" href="${pageContext.request.contextPath}/compte">Mon compte</a>
+          <a class="bouton bouton-fantome" href="${pageContext.request.contextPath}/client/sinistres/nouveau">Déclarer un sinistre</a>
         </div>
       </section>
 
@@ -43,14 +43,14 @@
             </div>
             <span class="tuile-lien">Consulter <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
           </a>
-          <div class="tuile tuile-bientot">
-            <span class="badge ton-neutre">Bientôt</span>
-            <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg></span>
+          <a class="tuile" href="${pageContext.request.contextPath}/client/sinistres">
+            <span class="pastille ton-orange"><svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg></span>
             <div>
               <h3>Mes sinistres</h3>
               <p>Déclarer un sinistre, envoyer vos justificatifs et suivre son traitement.</p>
             </div>
-          </div>
+            <span class="tuile-lien">Suivre <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
+          </a>
           <div class="tuile tuile-bientot">
             <span class="badge ton-neutre">Bientôt</span>
             <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-carte"/></svg></span>
@@ -71,7 +71,9 @@
               <p>Posez vos questions sur vos contrats, vos garanties ou vos sinistres.</p>
             </div>
           </div>
-          <span class="badge ton-neutre">Bientôt</span>
+          <a class="bouton bouton-principal bouton-petit" href="${pageContext.request.contextPath}/client/assistant">
+            Discuter<svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg>
+          </a>
         </div>
         <div class="carte-corps">
           <p class="aide" style="margin-bottom:12px">Par exemple :</p>
