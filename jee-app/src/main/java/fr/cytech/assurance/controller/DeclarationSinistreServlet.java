@@ -57,7 +57,7 @@ public class DeclarationSinistreServlet extends HttpServlet {
             try {
                 Sinistre sinistre = sinistreService.declarer(client == null ? null : client.getId(),
                         idContrat, date, type, description, montant);
-                response.sendRedirect(request.getContextPath() + "/client/sinistres?declare=" + sinistre.getId());
+                response.sendRedirect(request.getContextPath() + "/client/sinistres/detail?id=" + sinistre.getId() + "&declare=1");
                 return;
             } catch (SinistreInvalideException e) {
                 v.erreur("global", e.getMessage());
