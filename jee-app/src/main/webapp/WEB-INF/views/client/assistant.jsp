@@ -1,88 +1,112 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="app" tagdir="/WEB-INF/tags" %>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Assistant</title>
-  <style>
-    .conversation { max-width: 800px; }
-    .message { margin: 0.5em 0; padding: 0.5em 0.8em; border-radius: 6px; }
-    .message.client { background: #e3edff; margin-left: 15%; }
-    .message.assistant { background: #f0f0f0; margin-right: 15%; }
-    /* Les retours à la ligne de la réponse sont conservés ; c:out empêche toute injection de HTML */
-    .message p { margin: 0.3em 0 0; white-space: pre-wrap; }
-    .message small { color: #666; }
-    textarea { width: 100%; max-width: 800px; box-sizing: border-box; }
-  </style>
+  <%@ include file="/WEB-INF/views/common/head.jspf" %>
+  <title>Assistant · Billy Assurance</title>
 </head>
 <body>
   <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
-  <h1>Assistant</h1>
-  <p>
-    Posez vos questions sur vos contrats, vos garanties, vos paiements ou vos sinistres.
-    L'assistant répond à partir des informations de votre espace ; il ne peut effectuer aucune opération à votre place.
-  </p>
-
-  <div class="conversation">
-    <c:if test="${empty messages}">
-      <p>Aucune question pour l'instant. Quelques exemples :</p>
-      <%-- Un clic envoie directement la question (formulaire en POST, comme le champ ci-dessous) --%>
-      <c:forEach var="exemple" items="${[
-          'Quels sont mes contrats actifs ?',
-          'Quelles garanties possède mon assurance automobile ?',
-          'Comment déclarer un sinistre ?',
-          'Quels documents dois-je fournir pour mon sinistre ?',
-          'Quelle est la différence entre la garantie vol et la garantie accident ?',
-          'Où en est mon dernier sinistre ?']}">
-        <form method="post" action="${pageContext.request.contextPath}/client/assistant" class="form-question">
-          <input type="hidden" name="question" value="${exemple}">
-          <button type="submit"><c:out value="${exemple}"/></button>
-        </form>
-      </c:forEach>
-    </c:if>
-
-    <c:forEach var="m" items="${messages}">
-      <div class="message ${m.auteur == 'CLIENT' ? 'client' : 'assistant'}">
-        <small>
-          <c:out value="${m.auteur == 'CLIENT' ? 'Vous' : 'Assistant'}"/>,
-          <c:out value="${m.dateMessage.toLocalDate()} à ${m.dateMessage.toLocalTime().withNano(0).withSecond(0)}"/>
-        </small>
-        <p><c:out value="${m.contenu}"/></p>
+  <main id="contenu" class="page">
+    <div class="conteneur conteneur-etroit apparition">
+      <div class="entete-page">
+        <div>
+          <h1>Assistant</h1>
+          <p class="sous-titre">
+            Vos questions sur vos contrats, garanties, paiements et sinistres. L'assistant répond à partir
+            des informations de votre espace ; il ne peut effectuer aucune opération à votre place.
+          </p>
+        </div>
+        <c:if test="${not empty messages}">
+          <form class="actions" method="post" action="${pageContext.request.contextPath}/client/assistant"
+                data-confirmer="Effacer la conversation ?"
+                data-confirmer-texte="Tous les messages seront supprimés : l'assistant repartira de zéro."
+                data-confirmer-bouton="Effacer">
+            <input type="hidden" name="action" value="effacer">
+            <button type="submit" class="bouton bouton-fantome">
+              <svg class="icone" aria-hidden="true"><use href="#i-poubelle"/></svg>Effacer la conversation
+            </button>
+          </form>
+        </c:if>
       </div>
-    </c:forEach>
-  </div>
 
-  <div id="bas"></div>
+      <section class="carte">
+        <c:choose>
+          <c:when test="${empty messages}">
+            <div class="vide">
+              <span class="pastille ton-violet"><svg class="icone" aria-hidden="true"><use href="#i-etincelles"/></svg></span>
+              <h2>Comment puis-je vous aider ?</h2>
+              <p>Choisissez une question ou écrivez la vôtre ci-dessous.</p>
+              <%-- Un clic envoie directement la question (formulaire en POST, comme le champ ci-dessous) --%>
+              <div class="suggestions" style="justify-content:center;margin-top:8px">
+                <c:forEach var="exemple" items="${[
+                    'Quels sont mes contrats actifs ?',
+                    'Quelles garanties possède mon assurance automobile ?',
+                    'Comment déclarer un sinistre ?',
+                    'Quels documents dois-je fournir pour mon sinistre ?',
+                    'Quelle est la différence entre la garantie vol et la garantie accident ?',
+                    'Où en est mon dernier sinistre ?']}">
+                  <form method="post" action="${pageContext.request.contextPath}/client/assistant" class="form-question">
+                    <input type="hidden" name="question" value="${exemple}">
+                    <button type="submit" class="suggestion" style="cursor:pointer">
+                      <svg class="icone" aria-hidden="true"><use href="#i-message"/></svg><c:out value="${exemple}"/>
+                    </button>
+                  </form>
+                </c:forEach>
+              </div>
+            </div>
+          </c:when>
+          <c:otherwise>
+            <div class="fil">
+              <c:forEach var="m" items="${messages}">
+                <div class="bulle ${m.auteur == 'CLIENT' ? 'bulle-moi' : ''}">
+                  <div class="bulle-auteur">
+                    <strong>${m.auteur == 'CLIENT' ? 'Vous' : 'Assistant'}</strong>
+                    <span><app:dateHeure valeur="${m.dateMessage}"/></span>
+                  </div>
+                  <%-- c:out empêche toute injection de HTML ; bulle-texte garde les retours à la ligne --%>
+                  <p class="bulle-texte"><c:out value="${m.contenu}"/></p>
+                </div>
+              </c:forEach>
+            </div>
+          </c:otherwise>
+        </c:choose>
 
-  <%-- Erreur enregistrée avant la redirection (MessageFlash) : question vide, assistant indisponible... --%>
-  <c:if test="${not empty sessionScope.messageErreur}">
-    <p><strong><c:out value="${sessionScope.messageErreur}"/></strong></p>
-    <c:remove var="messageErreur" scope="session"/>
-  </c:if>
+        <div id="bas"></div>
 
-  <form method="post" action="${pageContext.request.contextPath}/client/assistant" class="form-question">
-    <p>
-      <label for="question">Votre question</label><br>
-      <%-- Question remise dans le champ si l'assistant n'a pas pu répondre --%>
-      <textarea id="question" name="question" rows="3" maxlength="${longueurMax}" required
-                autofocus><c:out value="${sessionScope.questionNonEnvoyee}"/></textarea>
-      <c:remove var="questionNonEnvoyee" scope="session"/>
-    </p>
-    <button type="submit">Envoyer</button>
-    <span class="attente" hidden>L'assistant réfléchit, cela peut prendre quelques secondes…</span>
-  </form>
+        <form class="fil-saisie form-question" method="post" action="${pageContext.request.contextPath}/client/assistant">
+          <%-- Erreur enregistrée avant la redirection (MessageFlash) : question vide, assistant indisponible... --%>
+          <c:if test="${not empty sessionScope.messageErreur}">
+            <div class="alerte ton-danger" role="alert">
+              <svg class="icone" aria-hidden="true"><use href="#i-erreur"/></svg>
+              <div class="alerte-texte"><c:out value="${sessionScope.messageErreur}"/></div>
+            </div>
+            <c:remove var="messageErreur" scope="session"/>
+          </c:if>
+          <div class="champ">
+            <label class="visuellement-cache" for="question">Votre question</label>
+            <%-- Question remise dans le champ si l'assistant n'a pas pu répondre --%>
+            <textarea class="saisie" id="question" name="question" rows="2" maxlength="${longueurMax}" required autofocus
+                      data-compteur placeholder="Posez votre question… (Entrée pour envoyer, Maj + Entrée pour aller à la ligne)"><c:out value="${sessionScope.questionNonEnvoyee}"/></textarea>
+            <c:remove var="questionNonEnvoyee" scope="session"/>
+          </div>
+          <div class="actions-formulaire">
+            <span class="fil-attente" hidden>
+              <svg class="icone" aria-hidden="true"><use href="#i-horloge"/></svg>L'assistant réfléchit, cela peut prendre quelques secondes…
+            </span>
+            <button type="submit" class="bouton bouton-principal">
+              <svg class="icone" aria-hidden="true"><use href="#i-message"/></svg>Envoyer
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  </main>
 
-  <c:if test="${not empty messages}">
-    <form method="post" action="${pageContext.request.contextPath}/client/assistant"
-          onsubmit="return confirm('Effacer toute la conversation ?');">
-      <input type="hidden" name="action" value="effacer">
-      <p><button type="submit">Effacer la conversation</button></p>
-    </form>
-  </c:if>
-
-  <p><a href="${pageContext.request.contextPath}/client/accueil">Retour à mon espace</a></p>
+  <%@ include file="/WEB-INF/views/common/footer.jspf" %>
 
   <script>
     // La réponse prend quelques secondes : on empêche un double envoi et on prévient le client
@@ -91,7 +115,7 @@
         document.querySelectorAll('.form-question button').forEach(function (bouton) {
           bouton.disabled = true;
         });
-        document.querySelector('.attente').hidden = false;
+        document.querySelector('.fil-attente').hidden = false;
       });
     });
 
