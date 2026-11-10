@@ -89,8 +89,11 @@ Puis renseigner dans `.env` :
 ```
 DB_USER=assurance_user
 DB_PASSWORD=un_mot_de_passe
+AI_API_KEY=votre_cle_gemini
 ```
 Ces valeurs servent à créer l'utilisateur MySQL du conteneur et à connecter l'application. `DB_USER` ne doit **pas** être `root`.
+
+`AI_API_KEY` est la clé de l'API Google Gemini, utilisée par l'assistant IA. Pour la récupérer, se connecter avec un compte Google sur **https://aistudio.google.com/api-keys** et créer une clé. Sans clé, l'application fonctionne mais l'assistant affiche qu'il n'est pas configuré.
 Le fichier `.env` n'est pas versionné : il contient les mots de passe et la clé de l'API d'IA (`AI_API_KEY`).
 
 ## Lancer l'application
