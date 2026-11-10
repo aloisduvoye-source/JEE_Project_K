@@ -22,7 +22,8 @@
       <p>Vous n'avez aucun contrat payé et commencé : vous ne pouvez pas encore déclarer de sinistre.</p>
     </c:when>
     <c:otherwise>
-      <form method="post" action="${pageContext.request.contextPath}/client/sinistres/nouveau">
+      <form method="post" action="${pageContext.request.contextPath}/client/sinistres/nouveau"
+            enctype="multipart/form-data" class="form-pieces">
         <p>
           <label for="contrat">Contrat concerné</label>
           <select id="contrat" name="contrat" required>
@@ -69,11 +70,19 @@
           <c:out value="${erreurs.montantEstime}"/>
         </p>
 
+        <p>
+          <label for="pieces">Pièces justificatives (facultatif : PDF, JPG ou PNG, 5 Mo maximum chacune)</label><br>
+          <input type="file" id="pieces" name="pieces" multiple
+                 accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+          <c:if test="${not empty erreurs}"><br>Si vous aviez choisi des fichiers, choisissez-les à nouveau.</c:if>
+        </p>
+
         <button type="submit">Déclarer le sinistre</button>
       </form>
+      <%@ include file="/WEB-INF/views/common/pieces-taille.jspf" %>
 
       <h2>Documents à préparer</h2>
-      <p>Un agent pourra vous les demander pendant l'analyse de votre dossier.</p>
+      <p>Vous pouvez les joindre maintenant ou plus tard, depuis la fiche du sinistre.</p>
       <ul>
         <li>Pour tous les sinistres : photos des dommages, factures ou devis de réparation.</li>
         <li>Accident : constat amiable, permis de conduire, carte grise, coordonnées des témoins.</li>
