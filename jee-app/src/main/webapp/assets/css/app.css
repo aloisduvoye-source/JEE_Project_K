@@ -610,7 +610,10 @@ a.tuile:hover .tuile-lien .icone { transform: translateX(3px); }
   -webkit-box-orient: vertical;
 }
 .cellule-personne { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
-.cellule-actions { display: flex; flex-wrap: nowrap; justify-content: flex-end; align-items: center; gap: 4px; }
+/* Pas de display: flex sur la cellule elle-même : un <td> en flex n'est plus une cellule de tableau
+   et la colonne sort du tableau. Les boutons restent sur une ligne, alignés à droite */
+.cellule-actions { text-align: right; white-space: nowrap; }
+.cellule-actions > * + * { margin-left: 4px; }
 .cellule-actions form { display: contents; }
 .ligne-attenuee .cellule-principale, .ligne-attenuee .nombre { color: var(--texte-doux); }
 .ligne-message td { padding: 40px 16px; color: var(--texte-doux); text-align: center; }
@@ -1038,6 +1041,65 @@ a.puce { display: inline-flex; align-items: center; text-decoration: none; }
   background-clip: text;
   color: transparent;
 }
+
+/* Sinistres : étapes du traitement (frise verticale) */
+.frise { position: relative; display: grid; gap: 18px; margin: 0; padding: 20px 24px 22px; list-style: none; }
+.frise::before { content: ""; position: absolute; top: 30px; bottom: 34px; left: 35px; width: 2px; border-radius: 1px; background: var(--bordure); }
+.frise li { position: relative; display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 14px; align-items: start; color: var(--texte-doux); }
+.frise-point {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid var(--bordure-forte);
+  border-radius: 50%;
+  background: var(--surface);
+}
+.frise-point .icone { width: 13px; height: 13px; stroke-width: 3; }
+.frise strong { display: block; color: var(--texte); font-weight: 600; }
+.frise .detail { font-size: .84rem; }
+.frise li.faite .frise-point { border-color: var(--succes); background: var(--succes-doux); color: var(--succes); }
+.frise li.active .frise-point { border-color: var(--primaire); background: var(--primaire); color: var(--primaire-texte); }
+.frise li.refusee .frise-point { border-color: var(--danger); background: var(--danger-doux); color: var(--danger); }
+.frise li.a-venir strong { color: var(--texte-faible); }
+
+/* Fil de messages : discussion d'un sinistre, assistant */
+.fil { display: grid; gap: 12px; padding: 20px 24px; }
+.bulle { max-width: min(85%, 620px); padding: 10px 14px; border: 1px solid var(--bordure); border-radius: 14px; border-bottom-left-radius: 4px; background: var(--surface-douce); }
+.bulle-moi { justify-self: end; border-color: transparent; border-radius: 14px; border-bottom-right-radius: 4px; background: var(--primaire-doux); }
+.bulle-auteur { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-bottom: 4px; color: var(--texte-doux); font-size: .78rem; }
+.bulle-auteur strong { color: var(--texte); font-weight: 650; }
+.bulle-texte { margin: 0; white-space: pre-wrap; word-break: break-word; line-height: 1.55; }
+.fil-saisie { display: grid; gap: 10px; padding: 16px 24px 20px; border-top: 1px solid var(--bordure); }
+.fil-saisie .actions-formulaire { justify-content: flex-end; }
+.fil-attente { display: inline-flex; align-items: center; gap: 8px; color: var(--texte-doux); font-size: .88rem; }
+
+/* Pièces justificatives */
+.fichier { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.fichier > div { min-width: 0; }
+.fichier a { display: block; overflow: hidden; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.saisie-fichier { padding: 9px 10px; height: auto; cursor: pointer; }
+.saisie-fichier::file-selector-button {
+  margin-right: 12px;
+  padding: 6px 12px;
+  border: 1px solid var(--bordure-forte);
+  border-radius: var(--rayon-petit);
+  background: var(--surface-douce);
+  color: var(--texte);
+  font: inherit;
+  font-size: .85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+/* Détail du calcul d'une indemnisation */
+.calcul { display: grid; gap: 6px; margin: 0; padding: 14px 16px; border-radius: var(--rayon-petit); background: var(--surface-douce); font-size: .9rem; }
+.calcul > div { display: flex; justify-content: space-between; gap: 12px; }
+.calcul dt { color: var(--texte-doux); }
+.calcul dd { margin: 0; font-weight: 600; }
+.calcul .recap-total { margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--bordure); }
 
 /* 13. Animations ---------------------------------------------------------- */
 
