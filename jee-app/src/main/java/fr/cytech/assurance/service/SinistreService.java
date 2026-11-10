@@ -199,18 +199,16 @@ public class SinistreService {
     }
 
     /**
-     * Indemnisation suggérée à l'agent pour chaque garantie du contrat : montant estimé moins la franchise,
-     * dans la limite du plafond. Liste vide si le client n'a pas estimé ses dommages.
+     * Garanties du contrat du sinistre, chacune avec l'indemnisation suggérée à l'agent :
+     * montant estimé moins la franchise, dans la limite du plafond (null si le client n'a pas estimé ses dommages).
      * C'est une aide : l'agent choisit la garantie qui s'applique et décide du montant.
      */
     public List<Proposition> propositions(Sinistre sinistre) {
         BigDecimal estime = sinistre.getMontantEstime();
-        if (estime == null) {
-            return List.of();
-        }
+        // Les garanties ne sont pas chargées avec le sinistre : on relit le contrat avec ses garanties
         return contratDao.trouverAvecDetails(sinistre.getContrat().getId()).getGaranties().stream()
                 .sorted(Comparator.comparing(Garantie::getNom))
-                .map(g -> new Proposition(g, calculer(estime, g)))
+                .map(g -> new Proposition(g, estime == null ? null : calculer(estime, g)))
                 .toList();
     }
 
