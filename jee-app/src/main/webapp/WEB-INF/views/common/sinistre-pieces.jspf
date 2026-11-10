@@ -6,33 +6,60 @@
   À inclure avec : <%@ include file="/WEB-INF/views/common/sinistre-pieces.jspf" %>
 --%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
+<%@ taglib prefix="app" tagdir="/WEB-INF/tags" %>
 <c:set var="espacePieces" value="${sessionScope.utilisateur.role == 'CLIENT' ? 'client' : 'agent'}"/>
-<h2 id="pieces">Pièces justificatives</h2>
+<section class="carte" id="pieces">
+  <div class="carte-entete">
+    <div>
+      <h2>Pièces justificatives</h2>
+      <p>
+        <c:choose>
+          <c:when test="${empty pieces}">Aucune pièce pour l'instant.</c:when>
+          <c:otherwise>${fn:length(pieces)} pièce${fn:length(pieces) > 1 ? 's' : ''} jointe${fn:length(pieces) > 1 ? 's' : ''} au dossier.</c:otherwise>
+        </c:choose>
+      </p>
+    </div>
+  </div>
 
-<c:if test="${empty pieces}">
-  <p>Aucune pièce pour l'instant.</p>
-</c:if>
-<c:if test="${not empty pieces}">
-  <ul>
-    <c:forEach var="pj" items="${pieces}">
-      <li>
-        <a href="${pageContext.request.contextPath}/${espacePieces}/sinistres/piece?id=${pj.id}" target="_blank"><c:out value="${pj.nomFichier}"/></a>
-        (ajoutée le <c:out value="${pj.dateAjout.toLocalDate()}"/>)
-      </li>
-    </c:forEach>
-  </ul>
-</c:if>
+  <c:if test="${not empty pieces}">
+    <ul class="liste-lignes">
+      <c:forEach var="pj" items="${pieces}">
+        <li>
+          <div class="fichier">
+            <span class="pastille pastille-petite ${pj.typeMime == 'application/pdf' ? 'ton-danger' : 'ton-info'}">
+              <svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg>
+            </span>
+            <div>
+              <a href="${pageContext.request.contextPath}/${espacePieces}/sinistres/piece?id=${pj.id}" target="_blank" rel="noopener"><c:out value="${pj.nomFichier}"/></a>
+              <span class="detail">${pj.typeMime == 'application/pdf' ? 'PDF' : 'Image'} · ajoutée le <app:dateHeure valeur="${pj.dateAjout}"/></span>
+            </div>
+          </div>
+          <a class="bouton bouton-petit bouton-fantome" href="${pageContext.request.contextPath}/${espacePieces}/sinistres/piece?id=${pj.id}" target="_blank" rel="noopener">
+            <svg class="icone" aria-hidden="true"><use href="#i-oeil"/></svg>Ouvrir
+          </a>
+        </li>
+      </c:forEach>
+    </ul>
+  </c:if>
 
-<c:if test="${not clos and sessionScope.utilisateur.role != 'ADMIN'}">
-  <form method="post" enctype="multipart/form-data" class="form-pieces"
-        action="${pageContext.request.contextPath}/${espacePieces}/sinistres/pieces?id=${sinistre.id}">
+  <c:if test="${not clos and sessionScope.utilisateur.role != 'ADMIN'}">
     <%-- id dans l'adresse et non en champ caché : voir AjoutPieceServlet --%>
-    <p>
-      <label for="pieces">Ajouter des pièces (PDF, JPG ou PNG, 5 Mo maximum chacune)</label><br>
-      <input type="file" id="pieces" name="pieces" multiple required
-             accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
-    </p>
-    <button type="submit">Envoyer</button>
-  </form>
-</c:if>
+    <form class="carte-corps formulaire form-pieces" method="post" enctype="multipart/form-data"
+          action="${pageContext.request.contextPath}/${espacePieces}/sinistres/pieces?id=${sinistre.id}"
+          style="${empty pieces ? '' : 'border-top:1px solid var(--bordure)'}">
+      <div class="champ">
+        <label for="pieces-fichiers">Ajouter des pièces</label>
+        <input class="saisie saisie-fichier" type="file" id="pieces-fichiers" name="pieces" multiple required
+               accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png">
+        <span class="aide">PDF, JPG ou PNG, 5 Mo maximum par fichier. Photos, constat, dépôt de plainte, factures…</span>
+      </div>
+      <div class="actions-formulaire">
+        <button type="submit" class="bouton bouton-principal">
+          <svg class="icone" aria-hidden="true"><use href="#i-plus"/></svg>Envoyer
+        </button>
+      </div>
+    </form>
+  </c:if>
+</section>
 <%@ include file="/WEB-INF/views/common/pieces-taille.jspf" %>

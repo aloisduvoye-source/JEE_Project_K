@@ -1,0 +1,21 @@
+<%--
+  Messages de la fiche d'un sinistre : confirmation de la déclaration (?declare, ajouté par la servlet
+  après la redirection) et erreur enregistrée avant la redirection (MessageFlash), affichée une seule fois.
+--%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<c:if test="${not empty param.declare}">
+  <div class="alerte ton-succes" role="status" data-nettoyer-url="declare">
+    <svg class="icone" aria-hidden="true"><use href="#i-succes"/></svg>
+    <div class="alerte-texte">
+      <strong>Votre sinistre a été déclaré.</strong>
+      Un agent va l'analyser : suivez son avancement et échangez avec lui sur cette page.
+    </div>
+  </div>
+</c:if>
+<c:if test="${not empty sessionScope.messageErreur}">
+  <div class="alerte ton-danger" role="alert">
+    <svg class="icone" aria-hidden="true"><use href="#i-erreur"/></svg>
+    <div class="alerte-texte"><c:out value="${sessionScope.messageErreur}"/></div>
+  </div>
+  <c:remove var="messageErreur" scope="session"/>
+</c:if>

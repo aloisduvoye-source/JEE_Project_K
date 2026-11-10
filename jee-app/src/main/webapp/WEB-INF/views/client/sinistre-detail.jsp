@@ -1,31 +1,44 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="app" tagdir="/WEB-INF/tags" %>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8">
-  <title>Sinistre n° <c:out value="${sinistre.id}"/></title>
+  <%@ include file="/WEB-INF/views/common/head.jspf" %>
+  <title>Sinistre n° <c:out value="${sinistre.id}"/> · Billy Assurance</title>
 </head>
 <body>
   <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
-  <h1>Sinistre n° <c:out value="${sinistre.id}"/></h1>
+  <main id="contenu" class="page">
+    <div class="conteneur apparition">
+      <div>
+        <a class="retour" href="${pageContext.request.contextPath}/client/sinistres">
+          <svg class="icone" aria-hidden="true"><use href="#i-fleche-gauche"/></svg>Mes sinistres
+        </a>
+        <div class="entete-page">
+          <div>
+            <h1>Sinistre n° <c:out value="${sinistre.id}"/></h1>
+            <p class="sous-titre"><app:typeSinistre valeur="${sinistre.typeSinistre}"/> · <c:out value="${sinistre.contrat.typeAssurance.nom}"/></p>
+          </div>
+        </div>
+      </div>
 
-  <c:if test="${not empty param.declare}">
-    <p>Votre sinistre a été déclaré. Un agent va l'analyser : vous pouvez suivre son avancement sur cette page.</p>
-  </c:if>
-  <%-- Erreur enregistrée avant la redirection (MessageFlash), affichée une seule fois --%>
-  <c:if test="${not empty sessionScope.messageErreur}">
-    <p><c:out value="${sessionScope.messageErreur}"/></p>
-    <c:remove var="messageErreur" scope="session"/>
-  </c:if>
+      <%@ include file="/WEB-INF/views/common/messages-sinistre.jspf" %>
 
-  <%@ include file="/WEB-INF/views/common/sinistre-infos.jspf" %>
+      <div class="disposition-laterale">
+        <div class="pile">
+          <%@ include file="/WEB-INF/views/common/sinistre-infos.jspf" %>
+          <%@ include file="/WEB-INF/views/common/sinistre-pieces.jspf" %>
+          <%@ include file="/WEB-INF/views/common/sinistre-discussion.jspf" %>
+        </div>
+        <aside class="pile">
+          <%@ include file="/WEB-INF/views/common/sinistre-suivi.jspf" %>
+        </aside>
+      </div>
+    </div>
+  </main>
 
-  <%@ include file="/WEB-INF/views/common/sinistre-pieces.jspf" %>
-
-  <%@ include file="/WEB-INF/views/common/sinistre-discussion.jspf" %>
-
-  <p><a href="${pageContext.request.contextPath}/client/sinistres">Retour à mes sinistres</a></p>
+  <%@ include file="/WEB-INF/views/common/footer.jspf" %>
 </body>
 </html>
