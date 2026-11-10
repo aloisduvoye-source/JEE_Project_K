@@ -210,6 +210,15 @@ public final class ContexteAssistant {
                     .append(" le ").append(date(versement.getDateVersement())).append(" : ");
             if (versement.getSinistre() != null) {
                 texte.append("indemnisation du sinistre n° ").append(versement.getSinistre().getId());
+                // Détail du calcul, pour que l'assistant puisse expliquer le montant au client
+                if (versement.getGarantie() != null) {
+                    texte.append(", garantie ").append(versement.getGarantie().getNom())
+                            .append(" : dommage retenu ").append(montant(versement.getMontantDommage()))
+                            .append(" moins la franchise de ").append(montantOuNonPrecise(versement.getFranchiseAppliquee()));
+                    if (versement.isPlafonne()) {
+                        texte.append(", limité au plafond de ").append(montant(versement.getPlafondApplique()));
+                    }
+                }
             } else {
                 texte.append("remboursement de prime à la résiliation");
             }
