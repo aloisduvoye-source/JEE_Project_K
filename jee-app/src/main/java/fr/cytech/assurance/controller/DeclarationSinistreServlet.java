@@ -53,7 +53,9 @@ public class DeclarationSinistreServlet extends HttpServlet {
         Validateur v = new Validateur();
         // Fichiers trop gros : Tomcat refuse de lire le formulaire, aucun champ n'est disponible
         try {
-            request.getParts();
+            if (AjoutPieceServlet.estMultipart(request)) {
+                request.getParts();
+            }
         } catch (IllegalStateException e) {
             v.erreur("global", "Un fichier dépasse 5 Mo, ou l'ensemble dépasse 25 Mo : rien n'a été enregistré.");
             request.setAttribute("erreurs", v.getErreurs());

@@ -67,6 +67,10 @@ public class AjoutPieceServlet extends HttpServlet {
     static List<String> enregistrer(HttpServletRequest request, Long idSinistre, Utilisateur utilisateur,
                                     PieceJustificativeService pieceService, ClientService clientService) {
         List<String> erreurs = new ArrayList<>();
+        if (!estMultipart(request)) {
+            // Formulaire envoyé sans fichier possible : getParts() lèverait une exception
+            return erreurs;
+        }
         List<Part> fichiers;
         try {
             fichiers = request.getParts().stream()
@@ -96,5 +100,11 @@ public class AjoutPieceServlet extends HttpServlet {
             }
         }
         return erreurs;
+    }
+
+    // true si la requête est un formulaire multipart (le seul qui puisse contenir des fichiers)
+    static boolean estMultipart(HttpServletRequest request) {
+        String type = request.getContentType();
+        return type != null && type.toLowerCase().startsWith("multipart/");
     }
 }
