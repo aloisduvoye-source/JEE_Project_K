@@ -22,14 +22,14 @@
     (<a href="${pageContext.request.contextPath}/agent/contrats/detail?id=${sinistre.contrat.id}">voir le contrat</a>)</p>
 
   <h2>Garanties du contrat</h2>
-  <%-- Indemnisation suggérée : montant estimé moins la franchise, dans la limite du plafond --%>
+  <%-- Ce que donnerait l'estimation du client avec chaque garantie : min(estimation - franchise, plafond) --%>
   <table border="1">
     <thead>
       <tr>
         <th>Garantie</th>
         <th>Plafond</th>
         <th>Franchise</th>
-        <th>Indemnisation suggérée</th>
+        <th>Avec l'estimation du client</th>
       </tr>
     </thead>
     <tbody>
@@ -89,17 +89,90 @@
 
       <c:when test="${sinistre.statut == 'ACCEPTE'}">
         <h2>Indemnisation</h2>
-        <p>Le versement est enregistré à la date du jour. Le dossier est ensuite clos.</p>
-        <form method="post" action="${actionUrl}"
-              onsubmit="return confirm('Enregistrer cette indemnisation ? Cette action est définitive.');">
+        <p>
+          Choisissez la garantie qui s'applique et le dommage retenu après examen des pièces.
+          Le montant versé est calculé : dommage retenu moins la franchise, dans la limite du plafond.
+          Le versement est daté du jour et le dossier est ensuite clos.
+        </p>
+        <%-- data-estime : montant estimé par le client, pour prévenir l'agent si le dommage retenu le dépasse --%>
+        <form method="post" action="${actionUrl}" id="formIndemnisation" data-estime="${sinistre.montantEstime}">
           <input type="hidden" name="id" value="${sinistre.id}">
           <input type="hidden" name="action" value="indemniser">
           <p>
-            <label for="montant">Montant versé, en €</label>
-            <input type="text" id="montant" name="montant" inputmode="decimal" required>
+            <label for="garantie">Garantie appliquée</label>
+            <select id="garantie" name="garantie" required>
+              <option value="">-- Choisir --</option>
+              <c:forEach var="p" items="${propositions}">
+                <option value="${p.garantie.id}" data-franchise="${p.garantie.franchise}" data-plafond="${p.garantie.plafond}">
+                  <c:out value="${p.garantie.nom}"/>
+                </option>
+              </c:forEach>
+            </select>
           </p>
+          <p>
+            <label for="dommage">Dommage retenu, en €</label>
+            <%-- Prérempli avec l'estimation du client : l'agent la corrige d'après les pièces --%>
+            <input type="text" id="dommage" name="dommage" inputmode="decimal" required
+                   value="<c:out value='${sinistre.montantEstime}'/>">
+          </p>
+          <p id="calcul">Montant versé : choisissez une garantie.</p>
           <button type="submit">Indemniser le client</button>
         </form>
+
+        <script>
+          // Aperçu du calcul fait par SinistreService.indemniser (qui reste seul juge) : min(dommage - franchise, plafond)
+          (function () {
+            var formulaire = document.getElementById('formIndemnisation');
+            var garantie = document.getElementById('garantie');
+            var dommage = document.getElementById('dommage');
+            var calcul = document.getElementById('calcul');
+
+            function montant(texte) {
+              var valeur = parseFloat(String(texte).replace(',', '.'));
+              return isNaN(valeur) ? null : valeur;
+            }
+
+            function calculer() {
+              var option = garantie.options[garantie.selectedIndex];
+              var d = montant(dommage.value);
+              if (!option.value || d === null) {
+                calcul.textContent = 'Montant versé : choisissez une garantie et indiquez le dommage retenu.';
+                return null;
+              }
+              var franchise = montant(option.dataset.franchise) || 0;
+              var plafond = montant(option.dataset.plafond);
+              var resultat = d - franchise;
+              var texte = d.toFixed(2) + ' € - franchise ' + franchise.toFixed(2) + ' €';
+              if (plafond !== null && resultat > plafond) {
+                resultat = plafond;
+                texte += ', limité au plafond de ' + plafond.toFixed(2) + ' €';
+              }
+              resultat = Math.max(resultat, 0);
+              calcul.textContent = 'Montant versé : ' + resultat.toFixed(2) + ' € (' + texte + ')'
+                  + (resultat === 0 ? ' : rien à verser, le sinistre doit être refusé.' : '');
+              return resultat;
+            }
+
+            garantie.addEventListener('change', calculer);
+            dommage.addEventListener('input', calculer);
+
+            formulaire.addEventListener('submit', function (e) {
+              var resultat = calculer();
+              var d = montant(dommage.value);
+              var estime = montant(formulaire.dataset.estime);
+              var message = 'Verser ' + (resultat === null ? '?' : resultat.toFixed(2))
+                  + ' € au client ? Cette action est définitive.';
+              // Point d'attention, pas un blocage : le client peut avoir sous-estimé ses dommages
+              if (estime !== null && d !== null && d > estime) {
+                message = 'Le dommage retenu (' + d.toFixed(2) + ' €) dépasse l\'estimation du client ('
+                    + estime.toFixed(2) + ' €).\n' + message;
+              }
+              if (!confirm(message)) {
+                e.preventDefault();
+              }
+            });
+          })();
+        </script>
       </c:when>
     </c:choose>
   </c:if>
