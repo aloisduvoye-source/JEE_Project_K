@@ -1,5 +1,7 @@
 package fr.cytech.assurance.dao;
 
+import fr.cytech.assurance.model.CommentaireSinistre;
+import fr.cytech.assurance.model.Contrat;
 import fr.cytech.assurance.model.Sinistre;
 import fr.cytech.assurance.model.Utilisateur;
 import fr.cytech.assurance.model.Versement;
@@ -54,6 +56,40 @@ public class SinistreDao extends GenericDao<Sinistre> {
                         AVEC_DETAILS + " WHERE c.id = :idContrat ORDER BY s.dateDeclaration DESC", Sinistre.class)
                 .setParameter("idContrat", idContrat)
                 .getResultList());
+    }
+
+    /**
+     * Liste tous les sinistres, du plus récent au plus ancien, avec leurs détails.
+     *
+     * @return les sinistres, liste vide s'il n'y en a aucun
+     */
+    public List<Sinistre> listerTousAvecDetails() {
+        return enLecture(em -> em.createQuery(
+                        AVEC_DETAILS + " ORDER BY s.dateDeclaration DESC", Sinistre.class)
+                .getResultList());
+    }
+
+    /**
+     * Enregistre la déclaration d'un sinistre sur un contrat (statut DECLARE).
+     * <p>
+     * Les règles (contrat du client, payé, date couverte) sont vérifiées par le service.
+     *
+     * @param sinistre  sinistre à enregistrer (date, type, description, montant estimé)
+     * @param idContrat id du contrat concerné
+     * @return le sinistre enregistré, avec son numéro
+     * @throws IllegalArgumentException si le contrat n'existe pas
+     */
+    public Sinistre declarer(Sinistre sinistre, Long idContrat) {
+        return enTransaction(em -> {
+            Contrat contrat = em.find(Contrat.class, idContrat);
+            if (contrat == null) {
+                throw new IllegalArgumentException("Contrat introuvable : " + idContrat);
+            }
+            sinistre.setContrat(contrat);
+            sinistre.setStatut(StatutSinistre.DECLARE);
+            em.persist(sinistre);
+            return sinistre;
+        });
     }
 
     /**
@@ -145,21 +181,60 @@ public class SinistreDao extends GenericDao<Sinistre> {
     }
 
     /**
+     * Fait avancer un sinistre d'un statut à un autre, dans une seule transaction :
+     * l'agent est attribué au dossier s'il ne l'était pas, l'étape est datée,
+     * et un commentaire de l'agent (motif d'un refus...) peut être ajouté à la discussion.
+     * <p>
+     * Le statut est relu dans la transaction : si un autre agent a déjà fait avancer le dossier,
+     * rien n'est modifié.
+     *
+     * @param id          id du sinistre
+     * @param attendu     statut que le sinistre doit avoir
+     * @param nouveau     statut à lui donner
+     * @param idAgent     agent qui fait l'action
+     * @param commentaire texte ajouté à la discussion, ou {@code null}
+     * @return {@code false} si le sinistre ou l'agent n'existe pas, ou si le sinistre n'a plus le statut attendu
+     */
+    public boolean faireAvancer(Long id, StatutSinistre attendu, StatutSinistre nouveau,
+                                Long idAgent, String commentaire) {
+        return enTransaction(em -> {
+            Sinistre sinistre = em.find(Sinistre.class, id);
+            Utilisateur agent = em.find(Utilisateur.class, idAgent);
+            if (sinistre == null || agent == null || sinistre.getStatut() != attendu) {return false;}
+            sinistre.setStatut(nouveau);
+            if (sinistre.getAgent() == null) {
+                sinistre.setAgent(agent);
+            }
+            dater(sinistre, LocalDateTime.now());
+            if (commentaire != null) {
+                CommentaireSinistre message = new CommentaireSinistre();
+                message.setSinistre(sinistre);
+                message.setAuteur(agent);
+                message.setContenu(commentaire);
+                em.persist(message);
+            }
+            return true;
+        });
+    }
+
+    /**
      * Indemnise un sinistre : crée le versement et passe le sinistre au statut INDEMNISE, dans une seule transaction.
      * <p>
-     * Le statut de départ (ACCEPTE) et le montant (positif) sont vérifiés par le service.
+     * Le montant (positif) est vérifié par le service. Le statut ACCEPTE est relu dans la transaction :
+     * un sinistre ne peut pas être indemnisé deux fois.
      *
      * @param id      id du sinistre
      * @param montant montant versé au client
      * @param date    date du versement
      * @param idAgent agent qui enregistre l'indemnisation
-     * @return le versement créé, ou {@code null} si le sinistre ou l'agent n'existe pas
+     * @return le versement créé, ou {@code null} si le sinistre ou l'agent n'existe pas,
+     *         ou si le sinistre n'est pas (ou plus) au statut ACCEPTE
      */
     public Versement indemniser(Long id, BigDecimal montant, LocalDate date, Long idAgent) {
         return enTransaction(em -> {
             Sinistre sinistre = em.find(Sinistre.class, id);
             Utilisateur agent = em.find(Utilisateur.class, idAgent);
-            if (sinistre == null || agent == null) {return null;}
+            if (sinistre == null || agent == null || sinistre.getStatut() != StatutSinistre.ACCEPTE) {return null;}
             sinistre.setStatut(StatutSinistre.INDEMNISE);
             dater(sinistre, LocalDateTime.now());
 
