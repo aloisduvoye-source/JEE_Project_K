@@ -4,16 +4,23 @@ import fr.cytech.assurance.dao.ClientDao;
 import fr.cytech.assurance.dao.ContratDao;
 import fr.cytech.assurance.dao.PaiementDao;
 import fr.cytech.assurance.dao.TypeAssuranceDao;
+import fr.cytech.assurance.dao.VersementDao;
 import fr.cytech.assurance.exception.ContratInvalideException;
 import fr.cytech.assurance.model.Client;
 import fr.cytech.assurance.model.Contrat;
 import fr.cytech.assurance.model.Garantie;
+import fr.cytech.assurance.model.Paiement;
 import fr.cytech.assurance.model.TypeAssurance;
+import fr.cytech.assurance.model.Versement;
 import fr.cytech.assurance.model.enums.StatutContrat;
 import fr.cytech.assurance.model.enums.StatutPaiement;
 
+import jakarta.persistence.PersistenceException;
+
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -32,6 +39,7 @@ public class ContratService {
     private final ClientDao clientDao = new ClientDao();
     private final TypeAssuranceDao typeAssuranceDao = new TypeAssuranceDao();
     private final PaiementDao paiementDao = new PaiementDao();
+    private final VersementDao versementDao = new VersementDao();
 
     // Tous les contrats, du plus récent au plus ancien
     public List<Contrat> listerContrats() {
@@ -47,6 +55,31 @@ public class ContratService {
     public Contrat trouverDuClient(Long idContrat, Long idClient) {
         Contrat contrat = contratDao.trouverAvecDetails(idContrat);
         return contrat != null && contrat.getClient().getId().equals(idClient) ? contrat : null;
+    }
+
+    /**
+     * Recherche de contrats pour les agents (§2.2, « rechercher un contrat »). Critères facultatifs (null : ignoré).
+     *
+     * @param texte  numéro de contrat, ou nom, prénom ou email du client (en partie)
+     * @param statut statut des contrats
+     * @param idType type d'assurance
+     */
+    public List<Contrat> rechercher(String texte, StatutContrat statut, Long idType) {
+        String nettoye = texte == null || texte.isBlank() ? null : texte.trim();
+        if (nettoye == null && statut == null && idType == null) {
+            return listerContrats();
+        }
+        return contratDao.rechercher(nettoye, statut, idType);
+    }
+
+    // Contrat qui renouvelle celui-ci, ou null s'il n'a pas été renouvelé
+    public Contrat trouverRenouvellement(Long idContrat) {
+        return contratDao.trouverRenouvellement(idContrat);
+    }
+
+    // Remboursement de prime versé à la résiliation du contrat, ou null s'il n'y en a pas eu
+    public Versement trouverRemboursement(Long idContrat) {
+        return versementDao.trouverRemboursement(idContrat);
     }
 
     // Contrats d'un client, du plus récent au plus ancien, avec leur type et leurs garanties
@@ -159,10 +192,12 @@ public class ContratService {
         }
     }
 
+    // ---------- Résiliation ----------
+
     // Résiliation par un agent, de n'importe quel contrat en cours
     // Lève ContratInvalideException si le contrat n'existe pas ou est déjà terminé
-    public void resilierParAgent(Long idContrat, String motif) {
-        resilier(idContrat == null ? null : contratDao.trouverParId(idContrat), motif);
+    public void resilierParAgent(Long idContrat, String motif, Long idAgent) {
+        resilier(idContrat == null ? null : contratDao.trouverParId(idContrat), motif, idAgent);
     }
 
     // Résiliation par le client, seulement de l'un de ses propres contrats
@@ -170,11 +205,11 @@ public class ContratService {
     public void resilierParClient(Long idContrat, Long idClient, String motif) {
         Contrat contrat = idContrat == null ? null : contratDao.trouverParId(idContrat);
         // Même message pour un contrat d'un autre client : on ne révèle pas qu'il existe
-        resilier(contrat != null && contrat.getClient().getId().equals(idClient) ? contrat : null, motif);
+        resilier(contrat != null && contrat.getClient().getId().equals(idClient) ? contrat : null, motif, null);
     }
 
     // Un contrat EXPIRE ou RESILIE est terminé : il ne peut plus être résilié
-    private void resilier(Contrat contrat, String motif) {
+    private void resilier(Contrat contrat, String motif, Long idAgent) {
         if (contrat == null) {
             throw new ContratInvalideException("Contrat inconnu.");
         }
@@ -184,13 +219,161 @@ public class ContratService {
         if (contrat.getStatut() == StatutContrat.EXPIRE) {
             throw new ContratInvalideException("Ce contrat est expiré : il ne peut plus être résilié.");
         }
-        contratDao.resilier(contrat.getId(), LocalDate.now(), motif == null || motif.isBlank() ? null : motif);
+        LocalDate aujourdhui = LocalDate.now();
+        if (!contratDao.resilier(contrat.getId(), aujourdhui, motif == null || motif.isBlank() ? null : motif,
+                remboursement(contrat, aujourdhui), idAgent)) {
+            throw new ContratInvalideException("Ce contrat est déjà terminé.");
+        }
+    }
+
+    /**
+     * Remboursement dû si le contrat est résilié à cette date : la part de la prime payée qui correspond
+     * à la période qui ne sera plus couverte (remboursement au prorata temporis).
+     * <ul>
+     *     <li>contrat pas payé : rien (son paiement est annulé à la résiliation) ;</li>
+     *     <li>résilié avant sa date de début : toute la prime ;</li>
+     *     <li>sinon : prime × jours restants / jours du contrat. Le jour de la résiliation est encore couvert.</li>
+     * </ul>
+     * Arrondi au centime inférieur.
+     *
+     * @return le montant à rembourser, zéro s'il n'y a rien à rembourser
+     */
+    public BigDecimal remboursement(Contrat contrat, LocalDate dateResiliation) {
+        BigDecimal paye = paiementDao.listerParContrat(contrat.getId()).stream()
+                .filter(p -> p.getStatut() == StatutPaiement.EFFECTUE)
+                .map(Paiement::getMontant)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+        return calculerRemboursement(paye, contrat.getDateDebut(), contrat.getDateFin(), dateResiliation);
+    }
+
+    // Couvert du jour de début à la veille de la fin : (fin - début) jours, dont (fin - résiliation - 1) non couverts
+    static BigDecimal calculerRemboursement(BigDecimal paye, LocalDate debut, LocalDate fin, LocalDate dateResiliation) {
+        if (paye.signum() <= 0) {
+            return BigDecimal.ZERO;
+        }
+        if (dateResiliation.isBefore(debut)) {
+            return paye;
+        }
+        long total = ChronoUnit.DAYS.between(debut, fin);
+        long restants = ChronoUnit.DAYS.between(dateResiliation, fin) - 1;
+        if (total <= 0 || restants <= 0) {
+            return BigDecimal.ZERO;
+        }
+        return paye.multiply(BigDecimal.valueOf(restants))
+                .divide(BigDecimal.valueOf(total), 2, RoundingMode.DOWN);
+    }
+
+    // ---------- Suspension par un agent ----------
+
+    /**
+     * Suspend un contrat ACTIF sur décision d'un agent (fraude, enquête, pièces manquantes...).
+     * Pendant la suspension, le contrat ne couvre plus les nouveaux sinistres. Elle ne prend fin
+     * que quand un agent la lève : la mise à jour automatique des statuts ne la touche pas.
+     *
+     * @param motif raison de la suspension, obligatoire (affichée au client)
+     */
+    public void suspendre(Long idContrat, String motif) {
+        if (motif == null || motif.isBlank()) {
+            throw new ContratInvalideException("Le motif de la suspension est obligatoire.");
+        }
+        if (idContrat == null || !contratDao.suspendre(idContrat, LocalDate.now(), motif.trim())) {
+            throw new ContratInvalideException("Seul un contrat actif peut être suspendu.");
+        }
+    }
+
+    // Lève la suspension décidée par un agent : le contrat redevient ACTIF (ou EXPIRE si sa fin est passée)
+    public void leverSuspension(Long idContrat) {
+        if (idContrat == null || !contratDao.leverSuspension(idContrat)) {
+            throw new ContratInvalideException("Ce contrat n'a pas été suspendu par un agent.");
+        }
+        mettreAJourStatuts(LocalDate.now());
+    }
+
+    // ---------- Renouvellement ----------
+
+    // Renouvellement par un agent, de n'importe quel contrat
+    public Contrat renouvelerParAgent(Long idContrat) {
+        return renouveler(idContrat == null ? null : contratDao.trouverAvecDetails(idContrat));
+    }
+
+    // Renouvellement par le client, seulement de l'un de ses propres contrats
+    public Contrat renouvelerParClient(Long idContrat, Long idClient) {
+        Contrat contrat = idContrat == null ? null : contratDao.trouverAvecDetails(idContrat);
+        // Même message pour un contrat d'un autre client : on ne révèle pas qu'il existe
+        return renouveler(contrat != null && contrat.getClient().getId().equals(idClient) ? contrat : null);
+    }
+
+    /**
+     * Raison pour laquelle ce contrat ne peut pas être renouvelé, ou null s'il peut l'être.
+     * Sert à la fiche (afficher ou non le bouton) et au renouvellement lui-même.
+     */
+    public String raisonNonRenouvelable(Contrat contrat) {
+        if (contrat.getStatut() != StatutContrat.ACTIF && contrat.getStatut() != StatutContrat.EXPIRE) {
+            return "Seul un contrat actif ou expiré peut être renouvelé.";
+        }
+        if (!estPaye(contrat.getId())) {
+            return "Ce contrat n'a pas été payé : il ne peut pas être renouvelé.";
+        }
+        if (contratDao.trouverRenouvellement(contrat.getId()) != null) {
+            return "Ce contrat a déjà été renouvelé.";
+        }
+        if (!contrat.getTypeAssurance().isActif()) {
+            return "Ce type d'assurance n'est plus proposé : le contrat ne peut pas être renouvelé.";
+        }
+        if (!contrat.getClient().getUtilisateur().isActif()) {
+            return "Le compte de ce client est désactivé.";
+        }
+        return null;
+    }
+
+    /**
+     * Crée le contrat qui prend la suite de celui-ci, pour DUREE_EN_MOIS de plus :
+     * <ul>
+     *     <li>même client et même type d'assurance ;</li>
+     *     <li>mêmes garanties, sauf celles que le type ne propose plus (au moins une doit rester) ;</li>
+     *     <li>même prime, relevée au prix de base du type s'il a augmenté ;</li>
+     *     <li>début à la fin de l'ancien contrat, ou aujourd'hui s'il est déjà expiré (pas de période rétroactive).</li>
+     * </ul>
+     * Le nouveau contrat est EN_ATTENTE, avec son paiement à régler, comme un contrat créé par un agent
+     * (qui peut encore le modifier tant qu'il n'est pas payé). Un contrat ne peut être renouvelé qu'une fois.
+     */
+    private Contrat renouveler(Contrat ancien) {
+        if (ancien == null) {
+            throw new ContratInvalideException("Contrat inconnu.");
+        }
+        String raison = raisonNonRenouvelable(ancien);
+        if (raison != null) {
+            throw new ContratInvalideException(raison);
+        }
+        TypeAssurance type = typeAssuranceDao.trouverAvecGaranties(ancien.getTypeAssurance().getId());
+        Set<Long> proposees = type.getGaranties().stream().map(Garantie::getId).collect(Collectors.toSet());
+        Set<Long> garanties = ancien.getGaranties().stream().map(Garantie::getId)
+                .filter(proposees::contains).collect(Collectors.toSet());
+        if (garanties.isEmpty()) {
+            throw new ContratInvalideException("Aucune des garanties de ce contrat n'est encore proposée : "
+                    + "créez plutôt un nouveau contrat.");
+        }
+        LocalDate aujourdhui = LocalDate.now();
+        LocalDate debut = ancien.getDateFin().isBefore(aujourdhui) ? aujourdhui : ancien.getDateFin();
+
+        Contrat nouveau = new Contrat();   // statut EN_ATTENTE par défaut
+        nouveau.setDateDebut(debut);
+        nouveau.setDateFin(dateFin(debut));
+        nouveau.setPrime(ancien.getPrime().max(type.getPrixBase()));
+        try {
+            return contratDao.creerAvecGaranties(nouveau, ancien.getClient().getId(), type.getId(), garanties,
+                    ancien.getId());
+        } catch (PersistenceException e) {
+            // Renouvelé au même moment par quelqu'un d'autre : la colonne id_contrat_precedent est unique
+            throw new ContratInvalideException("Ce contrat a déjà été renouvelé.");
+        }
     }
 
     /**
      * Statut qu'un contrat doit avoir à la date donnée. Seul endroit où cette règle est écrite :
      *   - RESILIE reste RESILIE (décision d'un agent, jamais annulée automatiquement)
      *   - date de fin atteinte : EXPIRE, payé ou non
+     *   - suspendu par un agent : SUSPENDU, jusqu'à ce qu'un agent lève la suspension
      *   - avant la date de début : EN_ATTENTE, payé ou non
      *   - à partir de la date de début, payé : ACTIF
      *   - non payé : EN_ATTENTE le jour de la date de début (dernier jour pour payer), SUSPENDU après
@@ -201,6 +384,10 @@ public class ContratService {
         }
         if (!aujourdhui.isBefore(contrat.getDateFin())) {
             return StatutContrat.EXPIRE;
+        }
+        // Suspension décidée par un agent : seul un agent la lève (leverSuspension)
+        if (contrat.getDateSuspension() != null) {
+            return StatutContrat.SUSPENDU;
         }
         if (aujourdhui.isBefore(contrat.getDateDebut())) {
             return StatutContrat.EN_ATTENTE;

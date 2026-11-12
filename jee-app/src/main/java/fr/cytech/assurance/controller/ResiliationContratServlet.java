@@ -64,7 +64,7 @@ public class ResiliationContratServlet extends HttpServlet {
                 Client client = clientService.trouverParUtilisateur(connecte.getId());
                 contratService.resilierParClient(id, client == null ? null : client.getId(), motif);
             } else {
-                contratService.resilierParAgent(id, motif);
+                contratService.resilierParAgent(id, motif, connecte.getId());
             }
             response.sendRedirect(fiche + "&resilie=1");
         } catch (ContratInvalideException e) {
