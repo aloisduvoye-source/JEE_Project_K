@@ -6,6 +6,7 @@ import fr.cytech.assurance.model.Paiement;
 import fr.cytech.assurance.model.Sinistre;
 import fr.cytech.assurance.model.Utilisateur;
 import fr.cytech.assurance.model.Versement;
+import fr.cytech.assurance.model.enums.StatutContrat;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -129,6 +130,15 @@ public final class ContexteAssistant {
                     .append(", du ").append(date(contrat.getDateDebut()))
                     .append(" au ").append(date(contrat.getDateFin()))
                     .append(", prime annuelle ").append(montant(contrat.getPrime()));
+            if (contrat.isSuspenduParAgent()) {
+                texte.append(", suspendu par un agent depuis le ").append(date(contrat.getDateSuspension()))
+                        .append(" (motif : ").append(contrat.getMotifSuspension()).append(')');
+            } else if (contrat.getStatut() == StatutContrat.SUSPENDU) {
+                texte.append(", suspendu faute de paiement");
+            }
+            if (contrat.getContratPrecedent() != null) {
+                texte.append(", renouvelle le contrat n° ").append(contrat.getContratPrecedent().getId());
+            }
             if (contrat.getDateResiliation() != null) {
                 texte.append(", résilié le ").append(date(contrat.getDateResiliation()));
                 if (contrat.getMotifResiliation() != null) {
