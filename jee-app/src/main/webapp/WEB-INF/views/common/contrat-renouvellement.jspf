@@ -1,0 +1,21 @@
+<%--
+  Renouvellement d'un contrat, commun à la fiche de l'agent et à celle du client (pas à l'admin).
+  Affiché seulement si le contrat peut être renouvelé (attribut "renouvelable", calculé par
+  ContratService.raisonNonRenouvelable) : actif ou expiré, payé, pas encore renouvelé, type toujours proposé.
+  Envoie vers /client/contrats/renouveler ou /agent/contrats/renouveler selon le rôle connecté.
+  Attend les attributs "contrat" et "renouvelable".
+--%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<c:if test="${renouvelable and sessionScope.utilisateur.role != 'ADMIN'}">
+  <h2>Renouveler le contrat</h2>
+  <p>
+    Un nouveau contrat de 12 mois est créé avec les mêmes garanties, à partir du
+    <c:out value="${contrat.statut == 'EXPIRE' ? 'jour du renouvellement' : contrat.dateFin}"/>.
+    Sa prime est à payer avant sa date de début.
+  </p>
+  <form method="post" action="${pageContext.request.contextPath}/${sessionScope.utilisateur.role == 'CLIENT' ? 'client' : 'agent'}/contrats/renouveler"
+        onsubmit="return confirm('Renouveler ce contrat pour 12 mois ?');">
+    <input type="hidden" name="id" value="${contrat.id}">
+    <button type="submit">Renouveler le contrat</button>
+  </form>
+</c:if>

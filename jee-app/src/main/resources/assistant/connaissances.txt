@@ -45,12 +45,23 @@ les factures ou devis de réparation, et tout justificatif de la valeur des bien
 
 - En attente : le contrat est créé mais ne couvre pas encore (prime non payée ou date de début non atteinte).
 - Actif : le contrat couvre le client.
-- Suspendu : la couverture est temporairement interrompue.
+- Suspendu : la couverture est interrompue. Soit la prime n'a pas été payée à temps (le contrat redevient actif
+  dès le paiement), soit un agent l'a suspendu, avec un motif (seul un agent peut lever cette suspension).
+  Un sinistre survenu pendant une suspension n'est pas couvert.
 - Expiré : la date de fin est dépassée.
 - Résilié : le contrat a été arrêté avant sa date de fin par le client ou par l'agent.
 
 Un contrat dure 12 mois. Sa prime est payée en une fois, depuis la fiche du contrat dans l'espace client,
 avant la date de début. Le client peut résilier un contrat depuis cette même fiche.
+
+Résiliation : si la prime a été payée, la part qui correspond à la période qui ne sera plus couverte
+est remboursée (au prorata des jours restants ; toute la prime si le contrat n'avait pas commencé).
+Si la prime n'était pas payée, le paiement est simplement annulé.
+
+Renouvellement : un contrat actif ou expiré, payé, peut être renouvelé une fois, par le client depuis
+la fiche du contrat ou par un agent. Le nouveau contrat dure 12 mois, garde les mêmes garanties
+(celles encore proposées) et commence à la fin de l'ancien (ou le jour même si l'ancien est expiré).
+Sa prime est à payer avant sa date de début.
 
 ## Notions utiles
 

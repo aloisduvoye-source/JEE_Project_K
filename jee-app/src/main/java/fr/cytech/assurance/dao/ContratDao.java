@@ -6,8 +6,11 @@ import fr.cytech.assurance.model.Contrat;
 import fr.cytech.assurance.model.Garantie;
 import fr.cytech.assurance.model.Paiement;
 import fr.cytech.assurance.model.TypeAssurance;
+import fr.cytech.assurance.model.Utilisateur;
+import fr.cytech.assurance.model.Versement;
 import fr.cytech.assurance.model.enums.StatutContrat;
 import fr.cytech.assurance.model.enums.StatutPaiement;
+import fr.cytech.assurance.model.enums.TypeVersement;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -42,7 +45,28 @@ public class ContratDao extends GenericDao<Contrat> {
      * @throws IllegalArgumentException si le client, le type ou l'une des garanties n'existe pas
      */
     public Contrat creerAvecGaranties(Contrat contrat, Long idClient, Long idTypeAssurance, Set<Long> idsGaranties) {
+        return creerAvecGaranties(contrat, idClient, idTypeAssurance, idsGaranties, null);
+    }
+
+    /**
+     * Comme {@link #creerAvecGaranties(Contrat, Long, Long, Set)}, pour le renouvellement d'un contrat :
+     * le nouveau contrat garde le lien vers celui qu'il renouvelle.
+     *
+     * @param idContratPrecedent contrat renouvelé, ou {@code null} pour un premier contrat
+     * @throws IllegalArgumentException si le client, le type, une garantie ou le contrat précédent n'existe pas
+     * @throws jakarta.persistence.PersistenceException si le contrat précédent a déjà été renouvelé
+     *                                                  (colonne id_contrat_precedent unique)
+     */
+    public Contrat creerAvecGaranties(Contrat contrat, Long idClient, Long idTypeAssurance, Set<Long> idsGaranties,
+                                      Long idContratPrecedent) {
         return enTransaction(em -> {
+            if (idContratPrecedent != null) {
+                Contrat precedent = em.find(Contrat.class, idContratPrecedent);
+                if (precedent == null) {
+                    throw new IllegalArgumentException("Contrat introuvable : " + idContratPrecedent);
+                }
+                contrat.setContratPrecedent(precedent);
+            }
             Client client = em.find(Client.class, idClient);
             if (client == null) {
                 throw new IllegalArgumentException("Client introuvable : " + idClient);
@@ -220,6 +244,116 @@ public class ContratDao extends GenericDao<Contrat> {
     }
 
     /**
+     * Recherche des contrats, du plus récent au plus ancien, avec leur client et leur type déjà chargés.
+     * Chaque critère est facultatif ({@code null} : pas de filtre).
+     *
+     * @param texte   numéro de contrat exact, ou morceau du nom, du prénom ou de l'email du client
+     * @param statut  statut recherché
+     * @param idType  id du type d'assurance
+     * @return les contrats correspondants, liste vide s'il n'y en a aucun
+     */
+    public List<Contrat> rechercher(String texte, StatutContrat statut, Long idType) {
+        Long numero = numeroOuNull(texte);
+        return enLecture(em -> {
+            StringBuilder jpql = new StringBuilder("SELECT c FROM Contrat c"
+                    + " JOIN FETCH c.client cl JOIN FETCH cl.utilisateur u"
+                    + " JOIN FETCH c.typeAssurance t WHERE 1 = 1");
+            if (texte != null) {
+                jpql.append(" AND (LOWER(u.nom) LIKE :motif OR LOWER(u.prenom) LIKE :motif OR LOWER(u.email) LIKE :motif"
+                        + " OR LOWER(CONCAT(u.prenom, ' ', u.nom)) LIKE :motif OR LOWER(CONCAT(u.nom, ' ', u.prenom)) LIKE :motif"
+                        + (numero != null ? " OR c.id = :numero" : "") + ")");
+            }
+            if (statut != null) {
+                jpql.append(" AND c.statut = :statut");
+            }
+            if (idType != null) {
+                jpql.append(" AND t.id = :idType");
+            }
+            jpql.append(" ORDER BY c.id DESC");
+
+            var requete = em.createQuery(jpql.toString(), Contrat.class);
+            if (texte != null) {
+                requete.setParameter("motif", "%" + texte.toLowerCase() + "%");
+                if (numero != null) {
+                    requete.setParameter("numero", numero);
+                }
+            }
+            if (statut != null) {
+                requete.setParameter("statut", statut);
+            }
+            if (idType != null) {
+                requete.setParameter("idType", idType);
+            }
+            return requete.getResultList();
+        });
+    }
+
+    // Texte saisi qui est un numéro de contrat ("100001" ou "#100001"), sinon null
+    private static Long numeroOuNull(String texte) {
+        if (texte == null) {
+            return null;
+        }
+        try {
+            return Long.valueOf(texte.startsWith("#") ? texte.substring(1) : texte);
+        } catch (NumberFormatException e) {
+            return null;
+        }
+    }
+
+    /**
+     * Contrat qui renouvelle celui-ci, ou {@code null} s'il n'a pas été renouvelé.
+     *
+     * @param idContrat id du contrat renouvelé
+     */
+    public Contrat trouverRenouvellement(Long idContrat) {
+        return enLecture(em -> em.createQuery(
+                        "SELECT c FROM Contrat c WHERE c.contratPrecedent.id = :id", Contrat.class)
+                .setParameter("id", idContrat)
+                .getResultStream()
+                .findFirst()
+                .orElse(null));
+    }
+
+    /**
+     * Suspend un contrat sur décision d'un agent : statut SUSPENDU, avec la date et le motif.
+     * Le statut est relu dans la transaction : seul un contrat ACTIF peut être suspendu.
+     *
+     * @return {@code false} si le contrat n'existe pas ou n'est pas (ou plus) ACTIF
+     */
+    public boolean suspendre(Long id, LocalDate date, String motif) {
+        return enTransaction(em -> {
+            Contrat contrat = em.find(Contrat.class, id);
+            if (contrat == null || contrat.getStatut() != StatutContrat.ACTIF) {
+                return false;
+            }
+            contrat.setStatut(StatutContrat.SUSPENDU);
+            contrat.setDateSuspension(date);
+            contrat.setMotifSuspension(motif);
+            return true;
+        });
+    }
+
+    /**
+     * Lève la suspension décidée par un agent : efface la date et le motif.
+     * Le statut est ensuite recalculé par la mise à jour automatique (ACTIF, ou EXPIRE si la fin est passée).
+     *
+     * @return {@code false} si le contrat n'existe pas ou n'est pas suspendu par un agent
+     */
+    public boolean leverSuspension(Long id) {
+        return enTransaction(em -> {
+            Contrat contrat = em.find(Contrat.class, id);
+            if (contrat == null || !contrat.isSuspenduParAgent()) {
+                return false;
+            }
+            contrat.setDateSuspension(null);
+            contrat.setMotifSuspension(null);
+            // Statut provisoire, corrigé aussitôt par ContratService.mettreAJourStatuts
+            contrat.setStatut(StatutContrat.ACTIF);
+            return true;
+        });
+    }
+
+    /**
      * Change le statut d'un contrat (activation, suspension, expiration).
      * <p>
      * Pour une résiliation, utiliser {@link #resilier}, qui enregistre aussi la date et le motif.
@@ -235,19 +369,37 @@ public class ContratDao extends GenericDao<Contrat> {
 
     /**
      * Résilie un contrat : statut RESILIE, avec la date et le motif de résiliation.
-     * Son paiement, s'il n'est pas encore réglé (EN_ATTENTE ou EN_RETARD), est annulé dans la même transaction :
-     * un contrat résilié ne doit plus rien. Un paiement déjà effectué est conservé.
+     * Dans la même transaction :
+     * <ul>
+     *     <li>son paiement, s'il n'est pas encore réglé (EN_ATTENTE ou EN_RETARD), est annulé :
+     *         un contrat résilié ne doit plus rien ;</li>
+     *     <li>la part de la prime déjà payée qui n'est plus couverte est remboursée (versement REMBOURSEMENT),
+     *         si {@code remboursement} est positif. Le montant est calculé par le service.</li>
+     * </ul>
+     * Le statut est relu dans la transaction : un contrat déjà résilié ou expiré n'est pas modifié.
      *
-     * @param id    id du contrat
-     * @param date  date de résiliation (obligatoire en base pour un contrat résilié)
-     * @param motif raison de la résiliation, ou {@code null}
-     * @return {@code false} si aucun contrat n'a cet id
+     * @param id            id du contrat
+     * @param date          date de résiliation (obligatoire en base pour un contrat résilié)
+     * @param motif         raison de la résiliation, ou {@code null}
+     * @param remboursement montant à rembourser au client, ou {@code null} / zéro s'il n'y a rien à rembourser
+     * @param idAgent       agent qui résilie, ou {@code null} si c'est le client
+     * @return {@code false} si aucun contrat n'a cet id, ou s'il est déjà résilié ou expiré
      */
-    public boolean resilier(Long id, LocalDate date, String motif) {
+    public boolean resilier(Long id, LocalDate date, String motif, BigDecimal remboursement, Long idAgent) {
         return enTransaction(em -> {
             Contrat contrat = em.find(Contrat.class, id);
-            if (contrat == null) {
+            if (contrat == null || contrat.getStatut() == StatutContrat.RESILIE
+                    || contrat.getStatut() == StatutContrat.EXPIRE) {
                 return false;
+            }
+            if (remboursement != null && remboursement.signum() > 0) {
+                Versement versement = new Versement();
+                versement.setType(TypeVersement.REMBOURSEMENT);
+                versement.setMontant(remboursement);
+                versement.setDateVersement(date);
+                versement.setContrat(contrat);
+                versement.setAgent(idAgent == null ? null : em.find(Utilisateur.class, idAgent));
+                em.persist(versement);
             }
             contrat.setStatut(StatutContrat.RESILIE);
             contrat.setDateResiliation(date);

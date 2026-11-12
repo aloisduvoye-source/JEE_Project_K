@@ -17,6 +17,15 @@
   <c:if test="${not empty param.resilie}">
     <p>Le contrat a été résilié.</p>
   </c:if>
+  <c:if test="${not empty param.renouvele}">
+    <p>Ce contrat renouvelle le précédent. Il deviendra actif à sa date de début une fois sa prime payée.</p>
+  </c:if>
+  <c:if test="${not empty param.suspendu}">
+    <p>Le contrat a été suspendu.</p>
+  </c:if>
+  <c:if test="${not empty param.reactive}">
+    <p>La suspension a été levée.</p>
+  </c:if>
   <%-- Erreur enregistrée avant la redirection (MessageFlash), affichée une seule fois --%>
   <c:if test="${not empty sessionScope.messageErreur}">
     <p><c:out value="${sessionScope.messageErreur}"/></p>
@@ -32,6 +41,32 @@
                 and (empty paiement or paiement.statut != 'EFFECTUE')}">
     <p><a href="${pageContext.request.contextPath}/agent/contrats/modifier?id=${contrat.id}">Modifier le contrat</a></p>
   </c:if>
+
+  <%-- Suspension par un agent seulement (ActionContratServlet et ContratService le vérifient aussi) --%>
+  <c:if test="${sessionScope.utilisateur.role == 'AGENT'}">
+    <c:if test="${contrat.statut == 'ACTIF'}">
+      <h2>Suspendre le contrat</h2>
+      <p>Pendant la suspension, le contrat ne couvre plus les sinistres. Elle dure jusqu'à ce qu'un agent la lève.</p>
+      <form method="post" action="${pageContext.request.contextPath}/agent/contrats/suspendre"
+            onsubmit="return confirm('Suspendre ce contrat ?');">
+        <input type="hidden" name="id" value="${contrat.id}">
+        <p>
+          <label for="motifSuspension">Motif (visible par le client)</label>
+          <input type="text" id="motifSuspension" name="motif" maxlength="255" required>
+        </p>
+        <button type="submit">Suspendre le contrat</button>
+      </form>
+    </c:if>
+    <c:if test="${contrat.suspenduParAgent}">
+      <h2>Lever la suspension</h2>
+      <form method="post" action="${pageContext.request.contextPath}/agent/contrats/lever-suspension">
+        <input type="hidden" name="id" value="${contrat.id}">
+        <button type="submit">Lever la suspension</button>
+      </form>
+    </c:if>
+  </c:if>
+
+  <%@ include file="/WEB-INF/views/common/contrat-renouvellement.jspf" %>
 
   <%@ include file="/WEB-INF/views/common/contrat-resiliation.jspf" %>
 

@@ -17,6 +17,15 @@
   <c:if test="${not empty param.resilie}">
     <p>Le contrat a été résilié.</p>
   </c:if>
+  <c:if test="${not empty param.renouvele}">
+    <p>Ce contrat renouvelle le précédent. Il deviendra actif à sa date de début une fois sa prime payée.</p>
+  </c:if>
+  <c:if test="${not empty param.suspendu}">
+    <p>Le contrat a été suspendu.</p>
+  </c:if>
+  <c:if test="${not empty param.reactive}">
+    <p>La suspension a été levée.</p>
+  </c:if>
   <%-- Erreur enregistrée avant la redirection (MessageFlash), affichée une seule fois --%>
   <c:if test="${not empty sessionScope.messageErreur}">
     <p><c:out value="${sessionScope.messageErreur}"/></p>
@@ -51,6 +60,8 @@
   <c:if test="${paiement.statut == 'EFFECTUE' and contrat.statut != 'EN_ATTENTE'}">
     <p><a href="${pageContext.request.contextPath}/client/sinistres/nouveau?contrat=${contrat.id}">Déclarer un sinistre sur ce contrat</a></p>
   </c:if>
+
+  <%@ include file="/WEB-INF/views/common/contrat-renouvellement.jspf" %>
 
   <%@ include file="/WEB-INF/views/common/contrat-resiliation.jspf" %>
 
