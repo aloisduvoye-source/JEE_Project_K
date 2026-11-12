@@ -25,6 +25,31 @@
     <p><a href="${pageContext.request.contextPath}/agent/contrats/nouveau">Nouveau contrat</a></p>
   </c:if>
 
+  <%-- Recherche en GET : l'adresse peut être gardée ou partagée --%>
+  <form method="get" action="${pageContext.request.contextPath}/agent/contrats">
+    <label for="q">Rechercher</label>
+    <input type="search" id="q" name="q" maxlength="100" placeholder="N° de contrat, nom, email…" value="<c:out value='${q}'/>">
+    <label for="statut">Statut</label>
+    <select id="statut" name="statut">
+      <option value="">Tous</option>
+      <c:forEach var="st" items="${statuts}">
+        <option value="${st}" ${st == statutChoisi ? 'selected' : ''}><c:out value="${st}"/></option>
+      </c:forEach>
+    </select>
+    <label for="type">Type</label>
+    <select id="type" name="type">
+      <option value="">Tous</option>
+      <c:forEach var="t" items="${types}">
+        <option value="${t.id}" ${t.id == typeChoisi ? 'selected' : ''}><c:out value="${t.nom}"/></option>
+      </c:forEach>
+    </select>
+    <button type="submit">Rechercher</button>
+    <c:if test="${recherche}">
+      <a href="${pageContext.request.contextPath}/agent/contrats">Effacer</a>
+    </c:if>
+  </form>
+  <p>${contrats.size()} contrat${contrats.size() > 1 ? 's' : ''}${recherche ? ' trouvé' : ''}${recherche and contrats.size() > 1 ? 's' : ''}.</p>
+
   <table border="1">
     <thead>
       <tr>
@@ -51,7 +76,7 @@
       </c:forEach>
       <c:if test="${empty contrats}">
         <tr>
-          <td colspan="7">Aucun contrat pour l'instant.</td>
+          <td colspan="7">${recherche ? 'Aucun contrat ne correspond à la recherche.' : 'Aucun contrat pour le moment.'}</td>
         </tr>
       </c:if>
     </tbody>
