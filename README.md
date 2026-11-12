@@ -124,7 +124,7 @@ Comptes de test :
 | `docker compose ps` | état des conteneurs |
 | `docker compose logs -f tomcat` | journaux de Tomcat en direct (`Ctrl+C` pour quitter) |
 | `docker compose down` | arrête les conteneurs, **les données sont conservées** |
-| `docker compose down -v` | arrête et **supprime la base** (repart de `schema.sql` + `dump.sql` au prochain lancement) |
+| `docker compose down -v` | arrête et **supprime la base et les pièces justificatives** (repart de `schema.sql` + `dump.sql` au prochain lancement) |
 
 **Après une modification du code Java ou des JSP :**
 ```bash
@@ -137,6 +137,11 @@ docker compose up -d --build tomcat
 docker compose down -v
 docker compose up -d --build
 ```
+
+## Pièces justificatives
+Les fichiers envoyés avec un sinistre (PDF, JPG ou PNG, 5 Mo maximum chacun) sont enregistrés dans le volume Docker `pieces_data`, monté sur `/data/pieces` dans le conteneur Tomcat (variable `DOSSIER_PIECES`), et non dans le `.war`, qui est écrasé à chaque déploiement. La base ne garde que leur nom d'origine et leur nom sur le disque (un identifiant aléatoire).
+
+Ils ne sont jamais servis directement : `/client/sinistres/piece?id=...` et `/agent/sinistres/piece?id=...` vérifient que l'utilisateur a le droit de les voir.
 
 ## Contrôle d'accès
 Chaque rôle a son espace. Les URL qui commencent par ces préfixes sont protégées automatiquement par le filtre `RoleFiltre` :

@@ -47,6 +47,11 @@
     </form>
   </c:if>
 
+  <%-- Un contrat payé et commencé peut couvrir un sinistre (SinistreService vérifie la date du sinistre) --%>
+  <c:if test="${paiement.statut == 'EFFECTUE' and contrat.statut != 'EN_ATTENTE'}">
+    <p><a href="${pageContext.request.contextPath}/client/sinistres/nouveau?contrat=${contrat.id}">Déclarer un sinistre sur ce contrat</a></p>
+  </c:if>
+
   <%@ include file="/WEB-INF/views/common/contrat-resiliation.jspf" %>
 
   <p><a href="${pageContext.request.contextPath}/client/contrats">Retour à mes contrats</a></p>

@@ -84,24 +84,10 @@
 
   <section id="sinistres">
     <h2>Mes sinistres</h2>
-    <p>Déclarer un sinistre : bientôt disponible.</p>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Numéro</th>
-          <th>Contrat</th>
-          <th>Date</th>
-          <th>Type</th>
-          <th>Montant estimé</th>
-          <th>Statut</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colspan="6">Vous n'avez déclaré aucun sinistre.</td>
-        </tr>
-      </tbody>
-    </table>
+    <ul>
+      <li><a href="${pageContext.request.contextPath}/client/sinistres">Suivre mes sinistres</a></li>
+      <li><a href="${pageContext.request.contextPath}/client/sinistres/nouveau">Déclarer un sinistre</a></li>
+    </ul>
   </section>
 
   <section id="assistant">

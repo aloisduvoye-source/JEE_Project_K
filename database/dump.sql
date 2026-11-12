@@ -68,3 +68,27 @@ INSERT INTO utilisateur (nom, prenom, email, identifiant, mot_de_passe_hash, rol
 INSERT INTO client (id_utilisateur, telephone, adresse, date_naissance)
 SELECT id, '0601020304', '12 rue des Lilas, 95000 Cergy', '1990-05-14'
 FROM utilisateur WHERE identifiant = 'client';
+
+-- ============================================================
+-- Contrat de test déjà actif, pour pouvoir déclarer un sinistre tout de suite
+--   assurance automobile du client de test, payée, commencée il y a 2 mois, avec toutes les garanties du type.
+-- Dates relatives au jour du chargement : le contrat reste actif quelle que soit la date de création de la base.
+-- ============================================================
+
+INSERT INTO contrat (id_client, id_type_assurance, date_debut, date_fin, prime, statut)
+SELECT c.id, t.id, CURDATE() - INTERVAL 2 MONTH, CURDATE() - INTERVAL 2 MONTH + INTERVAL 12 MONTH, 450.00, 'ACTIF'
+FROM client c
+JOIN utilisateur u ON u.id = c.id_utilisateur AND u.identifiant = 'client'
+JOIN type_assurance t ON t.nom = 'Assurance automobile';
+
+SET @contrat_test = LAST_INSERT_ID();
+
+INSERT INTO contrat_garantie (id_contrat, id_garantie)
+SELECT @contrat_test, tg.id_garantie
+FROM type_assurance_garantie tg
+JOIN type_assurance t ON t.id = tg.id_type_assurance AND t.nom = 'Assurance automobile';
+
+-- Son paiement unique (la prime entière), réglé par carte la veille de la date de début
+INSERT INTO paiement (id_contrat, montant, date_echeance, date_paiement, mode_paiement, statut)
+SELECT id, prime, date_debut, date_debut - INTERVAL 1 DAY, 'CARTE', 'EFFECTUE'
+FROM contrat WHERE id = @contrat_test;

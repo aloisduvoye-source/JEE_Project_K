@@ -37,23 +37,11 @@
 
   <section id="sinistres">
     <h2>Sinistres</h2>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Numéro</th>
-          <th>Contrat</th>
-          <th>Date</th>
-          <th>Type</th>
-          <th>Montant estimé</th>
-          <th>Statut</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colspan="6">Aucun sinistre à afficher pour l'instant.</td>
-        </tr>
-      </tbody>
-    </table>
+    <ul>
+      <li><a href="${pageContext.request.contextPath}/agent/sinistres?statut=DECLARE">Sinistres à prendre en charge</a></li>
+      <li><a href="${pageContext.request.contextPath}/agent/sinistres?mien=1">Mes dossiers</a></li>
+      <li><a href="${pageContext.request.contextPath}/agent/sinistres">Tous les sinistres</a></li>
+    </ul>
   </section>
 
   <section id="paiements">
