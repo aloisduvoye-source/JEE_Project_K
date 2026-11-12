@@ -50,6 +50,13 @@
       <version>3.0.1</version>
     </dependency>
 
+    <!-- Lecture et écriture du JSON échangé avec l'API d'IA (Gemini) -->
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.11.0</version>
+    </dependency>
+
     <!-- Hachage des mots de passe (BCrypt) -->
     <dependency>
       <groupId>org.mindrot</groupId>

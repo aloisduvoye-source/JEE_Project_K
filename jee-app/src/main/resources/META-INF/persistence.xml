@@ -19,6 +19,7 @@
         <class>fr.cytech.assurance.model.PieceJustificative</class>
         <class>fr.cytech.assurance.model.CommentaireSinistre</class>
         <class>fr.cytech.assurance.model.Paiement</class>
+        <class>fr.cytech.assurance.model.Versement</class>
         <class>fr.cytech.assurance.model.MessageAssistant</class>
 
         <properties>

@@ -41,9 +41,19 @@ services:
       - DB_USER=${DB_USER}
       - DB_PASSWORD=${DB_PASSWORD}
       - AI_API_KEY=${AI_API_KEY}
+      # Facultatifs : modèles Gemini (vides = valeurs par défaut de ClientGemini)
+      - AI_MODEL=${AI_MODEL:-}
+      - AI_MODEL_SECOURS=${AI_MODEL_SECOURS:-}
       # Dates du métier (début de contrat, échéances) à l'heure de Paris : sans ça, le conteneur est en UTC
       # et LocalDate.now() est encore la veille entre minuit et 1 h (2 h en été)
       - TZ=Europe/Paris
+      # Dossier des pièces justificatives envoyées par les clients (sur le volume ci-dessous)
+      - DOSSIER_PIECES=/data/pieces
+    volumes:
+      # Hors du .war, qui est écrasé à chaque déploiement : les fichiers survivent aux redémarrages.
+      # docker compose down -v les supprime, comme la base.
+      - pieces_data:/data/pieces
 
 volumes:
   db_data:
+  pieces_data:

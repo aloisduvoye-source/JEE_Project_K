@@ -8,6 +8,7 @@
 SET NAMES utf8mb4;
 
 DROP TABLE IF EXISTS message_assistant;
+DROP TABLE IF EXISTS versement;
 DROP TABLE IF EXISTS paiement;
 DROP TABLE IF EXISTS commentaire_sinistre;
 DROP TABLE IF EXISTS piece_justificative;
@@ -109,11 +110,12 @@ CREATE TABLE IF NOT EXISTS sinistre(
     type_sinistre           ENUM('ACCIDENT', 'VOL', 'INCENDIE', 'DEGATS_DES_EAUX', 'MALADIE', 'AUTRE') NOT NULL,
     montant_estime          DECIMAL(12,2),
     statut                  ENUM('DECLARE', 'EN_ANALYSE', 'ACCEPTE', 'REFUSE', 'INDEMNISE') NOT NULL DEFAULT 'DECLARE',
-    montant_indemnisation   DECIMAL(12,2),
-    date_indemnisation      DATE NULL,
+    date_prise_en_charge    TIMESTAMP NULL,             -- passage à EN_ANALYSE
+    date_decision           TIMESTAMP NULL,             -- passage à ACCEPTE ou REFUSE
     id_agent                BIGINT UNSIGNED NULL,       -- agent qui traite le dossier
-    CONSTRAINT chk_sinistre_montants CHECK (montant_estime >= 0 AND montant_indemnisation >= 0),
-    CONSTRAINT chk_sinistre_indemnisation CHECK (statut <> 'INDEMNISE' OR (montant_indemnisation IS NOT NULL AND date_indemnisation IS NOT NULL)),
+    CONSTRAINT chk_sinistre_montant CHECK (montant_estime >= 0),
+    CONSTRAINT chk_sinistre_prise_en_charge CHECK (statut = 'DECLARE' OR date_prise_en_charge IS NOT NULL),
+    CONSTRAINT chk_sinistre_decision CHECK (statut IN ('DECLARE', 'EN_ANALYSE') OR date_decision IS NOT NULL),
     FOREIGN KEY (id_contrat) REFERENCES contrat(id),
     FOREIGN KEY (id_agent) REFERENCES utilisateur(id) ON DELETE SET NULL
 ) AUTO_INCREMENT = 100001;   -- l'id sert de numéro de sinistre affiché : le premier est le n° 100001
@@ -128,7 +130,7 @@ CREATE TABLE IF NOT EXISTS piece_justificative(
     FOREIGN KEY (id_sinistre) REFERENCES sinistre(id) ON DELETE CASCADE
 );
 
--- Commentaires ajoutés par les agents lors de l'analyse d'un sinistre
+-- Discussion entre le client et les agents sur un sinistre (l'auteur est un client ou un agent)
 CREATE TABLE IF NOT EXISTS commentaire_sinistre(
     id                      SERIAL PRIMARY KEY,
     id_sinistre             BIGINT UNSIGNED NOT NULL,
@@ -151,6 +153,33 @@ CREATE TABLE IF NOT EXISTS paiement(
     CONSTRAINT chk_paiement_montant CHECK (montant > 0),
     CONSTRAINT chk_paiement_effectue CHECK (statut <> 'EFFECTUE' OR (date_paiement IS NOT NULL AND mode_paiement IS NOT NULL)),
     FOREIGN KEY (id_contrat) REFERENCES contrat(id)
+);
+
+-- Argent versé par l'assurance au client : indemnisation d'un sinistre ou remboursement de prime à la résiliation
+-- (les paiements du client vers l'assurance sont dans la table paiement)
+CREATE TABLE IF NOT EXISTS versement(
+    id                      SERIAL PRIMARY KEY,
+    type                    ENUM('INDEMNISATION', 'REMBOURSEMENT') NOT NULL,
+    montant                 DECIMAL(12,2) NOT NULL,
+    date_versement          DATE NOT NULL,
+    id_contrat              BIGINT UNSIGNED NOT NULL,
+    id_sinistre             BIGINT UNSIGNED NULL UNIQUE,    -- une seule indemnisation par sinistre
+    id_agent                BIGINT UNSIGNED NULL,           -- qui l'a enregistré (NULL : calcul automatique)
+    -- Calcul d'une indemnisation : montant = MIN(montant_dommage - franchise_appliquee, plafond_applique).
+    -- Franchise et plafond sont copiés : le calcul reste juste si la garantie est modifiée ensuite
+    id_garantie             BIGINT UNSIGNED NULL,           -- garantie appliquée
+    montant_dommage         DECIMAL(12,2) NULL,             -- dommage retenu par l'agent
+    franchise_appliquee     DECIMAL(12,2) NULL,
+    plafond_applique        DECIMAL(12,2) NULL,             -- NULL : garantie sans plafond
+    CONSTRAINT chk_versement_montant CHECK (montant > 0),
+    CONSTRAINT chk_versement_type CHECK (
+        (type = 'INDEMNISATION' AND id_sinistre IS NOT NULL) OR (type = 'REMBOURSEMENT' AND id_sinistre IS NULL)),
+    CONSTRAINT chk_versement_calcul CHECK (
+        type <> 'INDEMNISATION' OR (id_garantie IS NOT NULL AND montant_dommage > 0 AND franchise_appliquee >= 0)),
+    FOREIGN KEY (id_contrat) REFERENCES contrat(id),
+    FOREIGN KEY (id_sinistre) REFERENCES sinistre(id),
+    FOREIGN KEY (id_garantie) REFERENCES garantie(id),
+    FOREIGN KEY (id_agent) REFERENCES utilisateur(id) ON DELETE SET NULL
 );
 
 -- Historique des conversations entre un client et l'assistant IA
