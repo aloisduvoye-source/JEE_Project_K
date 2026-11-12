@@ -16,6 +16,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
+import java.time.LocalDate;
 
 // Fiche d'un contrat du client connecté, avec son paiement : le client ne voit que ses propres contrats
 @WebServlet("/client/contrats/detail")
@@ -41,6 +42,11 @@ public class MonContratServlet extends HttpServlet {
         }
         request.setAttribute("contrat", contrat);
         request.setAttribute("paiement", paiementService.trouverParContrat(id));
+        // Renouvellement, suspension et remboursement : affichés sur la fiche (voir ContratService)
+        request.setAttribute("renouvellement", contratService.trouverRenouvellement(id));
+        request.setAttribute("renouvelable", contratService.raisonNonRenouvelable(contrat) == null);
+        request.setAttribute("remboursement", contratService.trouverRemboursement(id));
+        request.setAttribute("remboursementSiResiliation", contratService.remboursement(contrat, LocalDate.now()));
         request.setAttribute("modes", ModePaiement.values());
         request.getRequestDispatcher(VUE).forward(request, response);
     }
