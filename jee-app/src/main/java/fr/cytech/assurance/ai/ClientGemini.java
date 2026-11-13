@@ -118,6 +118,15 @@ public final class ClientGemini {
                     if (tentative < TENTATIVES_PAR_MODELE) {
                         attendre();
                     }
+                } catch (ErreurQuotaJournalier e) {
+                    // Quota du jour épuisé pour ce modèle : inutile de le réessayer avant demain,
+                    // mais le quota est compté par modèle, le modèle de secours peut encore répondre
+                    LOG.warning("Quota journalier de l'API Gemini épuisé pour le modèle " + modele + " : "
+                            + e.getMessage());
+                    derniereErreur = new AssistantIndisponibleException(
+                            "L'assistant a atteint sa limite d'utilisation pour aujourd'hui. "
+                                    + "Veuillez réessayer demain.", e);
+                    break;
                 } catch (ErreurModele e) {
                     // Modèle inconnu (404) ou paramètre refusé par ce modèle (400) : le réessayer ne sert à rien,
                     // mais le modèle de secours peut réussir
@@ -161,6 +170,10 @@ public final class ClientGemini {
             return extraireTexte(reponse.body());
         }
         String detail = "HTTP " + statut + " : " + messageErreur(reponse.body());
+        if (statut == 429 && estQuotaJournalier(reponse.body())) {
+            throw new ErreurQuotaJournalier(detail);
+        }
+        // 429 restant : quota par minute, un nouvel essai un peu plus tard peut réussir
         if (statut == 429 || statut == 500 || statut == 503 || statut == 504) {
             throw new ErreurTemporaire(detail, null);
         }
@@ -263,6 +276,36 @@ public final class ClientGemini {
         }
     }
 
+    /*
+     * Un 429 peut venir du quota par minute (passager) ou du quota par jour (épuisé jusqu'au lendemain).
+     * Le quota dépassé est nommé dans les détails de l'erreur :
+     * "details": [{"@type": "...QuotaFailure", "violations": [{"quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier"}]}]
+     */
+    private static boolean estQuotaJournalier(String json) {
+        try {
+            JsonArray details = JsonParser.parseString(json).getAsJsonObject()
+                    .getAsJsonObject("error").getAsJsonArray("details");
+            if (details == null) {
+                return false;
+            }
+            for (JsonElement detail : details) {
+                JsonArray violations = detail.getAsJsonObject().getAsJsonArray("violations");
+                if (violations == null) {
+                    continue;
+                }
+                for (JsonElement violation : violations) {
+                    JsonElement quota = violation.getAsJsonObject().get("quotaId");
+                    if (quota != null && quota.getAsString().contains("PerDay")) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
     // Erreur : {"error": {"code": 503, "message": "...", "status": "UNAVAILABLE"}}
     private String messageErreur(String json) {
         try {
@@ -294,6 +337,13 @@ public final class ClientGemini {
     private static final class ErreurTemporaire extends RuntimeException {
         ErreurTemporaire(String message, Throwable cause) {
             super(message, cause);
+        }
+    }
+
+    // Quota journalier du modèle épuisé : seul un autre modèle peut réussir avant demain
+    private static final class ErreurQuotaJournalier extends RuntimeException {
+        ErreurQuotaJournalier(String message) {
+            super(message);
         }
     }
 
