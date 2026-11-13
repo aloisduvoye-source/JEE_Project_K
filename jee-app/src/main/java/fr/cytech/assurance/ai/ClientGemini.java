@@ -167,7 +167,7 @@ public final class ClientGemini {
 
         int statut = reponse.statusCode();
         if (statut == 200) {
-            return extraireTexte(reponse.body());
+            return extraireTexte(modele, reponse.body());
         }
         String detail = "HTTP " + statut + " : " + messageErreur(reponse.body());
         if (statut == 429 && estQuotaJournalier(reponse.body())) {
@@ -237,9 +237,10 @@ public final class ClientGemini {
     }
 
     // Réponse : {"candidates": [{"content": {"parts": [{"text": "..."}, ...]}, "finishReason": "STOP"}]}
-    private String extraireTexte(String json) {
+    private String extraireTexte(String modele, String json) {
         try {
             JsonObject racine = JsonParser.parseString(json).getAsJsonObject();
+            journaliserConsommation(modele, racine);
             JsonArray candidats = racine.getAsJsonArray("candidates");
             if (candidats == null || candidats.isEmpty()) {
                 // Question bloquée par les filtres de sécurité : promptFeedback.blockReason est renseigné
@@ -274,6 +275,27 @@ public final class ClientGemini {
             LOG.log(Level.SEVERE, "Réponse Gemini illisible : " + json, e);
             throw new AssistantIndisponibleException("L'assistant a renvoyé une réponse illisible.", e);
         }
+    }
+
+    /*
+     * Tokens consommés par l'appel, pour suivre l'utilisation du quota :
+     * "usageMetadata": {"promptTokenCount": 2650, "cachedContentTokenCount": 2048,
+     *                   "candidatesTokenCount": 120, "thoughtsTokenCount": 35, "totalTokenCount": 2805}
+     * Les tokens en cache sont la partie des instructions identique à un appel récent (facturée moins cher).
+     */
+    private void journaliserConsommation(String modele, JsonObject racine) {
+        JsonObject usage = racine.getAsJsonObject("usageMetadata");
+        if (usage == null) {
+            return;
+        }
+        LOG.info("Gemini " + modele + " : " + entier(usage, "totalTokenCount") + " tokens ("
+                + entier(usage, "promptTokenCount") + " en entrée dont " + entier(usage, "cachedContentTokenCount")
+                + " en cache, " + entier(usage, "candidatesTokenCount") + " de réponse, "
+                + entier(usage, "thoughtsTokenCount") + " de raisonnement)");
+    }
+
+    private static int entier(JsonObject objet, String champ) {
+        return objet.has(champ) ? objet.get(champ).getAsInt() : 0;
     }
 
     /*
