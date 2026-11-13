@@ -25,8 +25,9 @@
     L'assistant répond à partir des informations de votre espace ; il ne peut effectuer aucune opération à votre place.
   </p>
 
-  <div class="conversation">
+  <div class="conversation" id="conversation">
     <c:if test="${empty messages}">
+      <div id="exemples">
       <p>Aucune question pour l'instant. Quelques exemples :</p>
       <%-- Un clic envoie directement la question (formulaire en POST, comme le champ ci-dessous) --%>
       <c:forEach var="exemple" items="${[
@@ -41,6 +42,7 @@
           <button type="submit"><c:out value="${exemple}"/></button>
         </form>
       </c:forEach>
+      </div>
     </c:if>
 
     <c:forEach var="m" items="${messages}">
@@ -61,6 +63,8 @@
     <p><strong><c:out value="${sessionScope.messageErreur}"/></strong></p>
     <c:remove var="messageErreur" scope="session"/>
   </c:if>
+  <%-- Erreur renvoyée en JSON quand la question est envoyée sans recharger la page --%>
+  <p id="erreur-assistant" hidden><strong></strong></p>
 
   <form method="post" action="${pageContext.request.contextPath}/client/assistant" class="form-question">
     <p>
@@ -74,24 +78,116 @@
     <span class="attente" hidden>L'assistant réfléchit, cela peut prendre quelques secondes…</span>
   </form>
 
-  <c:if test="${not empty messages}">
-    <form method="post" action="${pageContext.request.contextPath}/client/assistant"
-          onsubmit="return confirm('Effacer toute la conversation ?');">
-      <input type="hidden" name="action" value="effacer">
-      <p><button type="submit">Effacer la conversation</button></p>
-    </form>
-  </c:if>
+  <%-- Toujours présent, masqué tant que la conversation est vide : il apparaît après la première réponse --%>
+  <form method="post" action="${pageContext.request.contextPath}/client/assistant" id="form-effacer"
+        onsubmit="return confirm('Effacer toute la conversation ?');" ${empty messages ? 'hidden' : ''}>
+    <input type="hidden" name="action" value="effacer">
+    <p><button type="submit">Effacer la conversation</button></p>
+  </form>
 
   <p><a href="${pageContext.request.contextPath}/client/accueil">Retour à mon espace</a></p>
 
   <script>
-    // La réponse prend quelques secondes : on empêche un double envoi et on prévient le client
+    // La question est envoyée sans recharger la page : la réponse est ajoutée à la conversation.
+    // Session expirée : le serveur redirige vers la page de connexion au lieu de répondre en JSON,
+    // on y emmène le client.
+    var conversation = document.getElementById('conversation');
+    var champ = document.getElementById('question');
+    var attente = document.querySelector('.attente');
+    var erreur = document.getElementById('erreur-assistant');
+
+    function deuxChiffres(n) {
+      return (n < 10 ? '0' : '') + n;
+    }
+
+    // Même affichage que les messages générés par la JSP : "2026-11-13 à 15:48"
+    function maintenant() {
+      var d = new Date();
+      return d.getFullYear() + '-' + deuxChiffres(d.getMonth() + 1) + '-' + deuxChiffres(d.getDate())
+          + ' à ' + deuxChiffres(d.getHours()) + ':' + deuxChiffres(d.getMinutes());
+    }
+
+    // textContent et non innerHTML : le texte de la réponse ne peut pas injecter de HTML
+    function ajouterMessage(auteur, contenu, date) {
+      var message = document.createElement('div');
+      message.className = 'message ' + (auteur === 'CLIENT' ? 'client' : 'assistant');
+      var entete = document.createElement('small');
+      entete.textContent = (auteur === 'CLIENT' ? 'Vous' : 'Assistant') + ', ' + date;
+      var texte = document.createElement('p');
+      texte.textContent = contenu;
+      message.appendChild(entete);
+      message.appendChild(texte);
+      conversation.appendChild(message);
+      message.scrollIntoView({block: 'end'});
+      return message;
+    }
+
+    function patienter(enCours) {
+      document.querySelectorAll('.form-question button').forEach(function (bouton) {
+        bouton.disabled = enCours;
+      });
+      attente.hidden = !enCours;
+    }
+
+    function afficherErreur(texte) {
+      erreur.querySelector('strong').textContent = texte;
+      erreur.hidden = false;
+    }
+
     document.querySelectorAll('.form-question').forEach(function (formulaire) {
-      formulaire.addEventListener('submit', function () {
-        document.querySelectorAll('.form-question button').forEach(function (bouton) {
-          bouton.disabled = true;
+      formulaire.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var donnees = new FormData(formulaire);
+        var question = (donnees.get('question') || '').trim();
+        if (question === '') {
+          return;
+        }
+
+        erreur.hidden = true;
+        patienter(true);
+        // La question s'affiche tout de suite, la réponse arrive quelques secondes plus tard
+        var bulle = ajouterMessage('CLIENT', question, maintenant());
+        var exemples = document.getElementById('exemples');
+        if (exemples) {
+          exemples.remove();
+        }
+        if (formulaire.contains(champ)) {
+          champ.value = '';
+        }
+
+        fetch(formulaire.action, {
+          method: 'POST',
+          headers: {'Accept': 'application/json'},
+          body: new URLSearchParams(donnees)
+        }).then(function (reponse) {
+          var type = reponse.headers.get('Content-Type') || '';
+          if (type.indexOf('application/json') === -1) {
+            if (reponse.redirected) {
+              window.location.href = reponse.url;
+              return;
+            }
+            // Page d'erreur du serveur (HTML) : rien n'a été enregistré
+            throw new Error('Réponse inattendue');
+          }
+          return reponse.json().then(function (json) {
+            if (json.erreur) {
+              // Rien n'a été enregistré : on retire la question et on la remet dans le champ
+              bulle.remove();
+              champ.value = question;
+              afficherErreur(json.erreur);
+            } else {
+              ajouterMessage(json.auteur, json.contenu, json.date);
+              document.getElementById('form-effacer').hidden = false;
+            }
+          });
+        }).catch(function () {
+          bulle.remove();
+          champ.value = question;
+          afficherErreur("L'assistant n'a pas pu répondre. Vérifiez votre connexion puis réessayez.");
+        }).finally(function () {
+          patienter(false);
+          champ.focus();
         });
-        document.querySelector('.attente').hidden = false;
       });
     });
 
