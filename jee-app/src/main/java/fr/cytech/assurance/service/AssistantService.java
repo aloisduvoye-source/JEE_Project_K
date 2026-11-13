@@ -2,6 +2,7 @@ package fr.cytech.assurance.service;
 
 import fr.cytech.assurance.ai.ClientGemini;
 import fr.cytech.assurance.ai.ContexteAssistant;
+import fr.cytech.assurance.ai.LimiteurQuestions;
 import fr.cytech.assurance.ai.MessageIA;
 import fr.cytech.assurance.dao.ClientDao;
 import fr.cytech.assurance.dao.ContratDao;
@@ -11,6 +12,7 @@ import fr.cytech.assurance.dao.PaiementDao;
 import fr.cytech.assurance.dao.SinistreDao;
 import fr.cytech.assurance.dao.VersementDao;
 import fr.cytech.assurance.exception.AssistantIndisponibleException;
+import fr.cytech.assurance.exception.TropDeQuestionsException;
 import fr.cytech.assurance.model.Client;
 import fr.cytech.assurance.model.Garantie;
 import fr.cytech.assurance.model.MessageAssistant;
@@ -38,6 +40,7 @@ public class AssistantService {
     private static final int MESSAGES_DE_CONTEXTE = 10;
 
     private final ClientGemini clientIA = ClientGemini.getInstance();
+    private final LimiteurQuestions limiteur = LimiteurQuestions.getInstance();
     private final MessageAssistantDao messageDao = new MessageAssistantDao();
     private final ClientDao clientDao = new ClientDao();
     private final ContratDao contratDao = new ContratDao();
@@ -60,9 +63,12 @@ public class AssistantService {
      * @param utilisateur client connecté
      * @param question    question déjà nettoyée et validée (non vide, au plus LONGUEUR_MAX_QUESTION caractères)
      * @return la réponse enregistrée
+     * @throws TropDeQuestionsException      si le client a posé trop de questions (par minute ou par jour)
      * @throws AssistantIndisponibleException si l'API d'IA ne répond pas
      */
     public MessageAssistant poserQuestion(Utilisateur utilisateur, String question) {
+        // Avant l'appel à l'API : une question refusée ne consomme pas le quota commun
+        limiteur.enregistrer(utilisateur.getId());
         String instructions = construireInstructions(utilisateur);
 
         List<MessageIA> conversation = new ArrayList<>();

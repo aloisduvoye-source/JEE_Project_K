@@ -54,7 +54,7 @@ public final class ClientGemini {
 
     // Réponses courtes et factuelles : un assistant d'assurance ne doit pas inventer
     private static final double TEMPERATURE = 0.3;
-    private static final int TOKENS_MAX = 1024;
+    private static final int TOKENS_MAX = 2048;
 
     private static final ClientGemini INSTANCE = new ClientGemini();
 
@@ -118,6 +118,15 @@ public final class ClientGemini {
                     if (tentative < TENTATIVES_PAR_MODELE) {
                         attendre();
                     }
+                } catch (ErreurQuotaJournalier e) {
+                    // Quota du jour épuisé pour ce modèle : inutile de le réessayer avant demain,
+                    // mais le quota est compté par modèle, le modèle de secours peut encore répondre
+                    LOG.warning("Quota journalier de l'API Gemini épuisé pour le modèle " + modele + " : "
+                            + e.getMessage());
+                    derniereErreur = new AssistantIndisponibleException(
+                            "L'assistant a atteint sa limite d'utilisation pour aujourd'hui. "
+                                    + "Veuillez réessayer demain.", e);
+                    break;
                 } catch (ErreurModele e) {
                     // Modèle inconnu (404) ou paramètre refusé par ce modèle (400) : le réessayer ne sert à rien,
                     // mais le modèle de secours peut réussir
@@ -158,9 +167,13 @@ public final class ClientGemini {
 
         int statut = reponse.statusCode();
         if (statut == 200) {
-            return extraireTexte(reponse.body());
+            return extraireTexte(modele, reponse.body());
         }
         String detail = "HTTP " + statut + " : " + messageErreur(reponse.body());
+        if (statut == 429 && estQuotaJournalier(reponse.body())) {
+            throw new ErreurQuotaJournalier(detail);
+        }
+        // 429 restant : quota par minute, un nouvel essai un peu plus tard peut réussir
         if (statut == 429 || statut == 500 || statut == 503 || statut == 504) {
             throw new ErreurTemporaire(detail, null);
         }
@@ -179,7 +192,7 @@ public final class ClientGemini {
      * {
      *   "systemInstruction": {"parts": [{"text": "..."}]},
      *   "contents": [{"role": "user" | "model", "parts": [{"text": "..."}]}, ...],
-     *   "generationConfig": {"temperature": 0.3, "maxOutputTokens": 1024, "thinkingConfig": {"thinkingBudget": 0}}
+     *   "generationConfig": {"temperature": 0.3, "maxOutputTokens": 2048, "thinkingConfig": {"thinkingLevel": "low"}}
      * }
      */
     private JsonObject construireRequete(String instructions, List<MessageIA> conversation) {
@@ -203,10 +216,12 @@ public final class ClientGemini {
         JsonObject configuration = new JsonObject();
         configuration.addProperty("temperature", TEMPERATURE);
         configuration.addProperty("maxOutputTokens", TOKENS_MAX);
-        // Raisonnement interne désactivé : ses tokens sont pris sur maxOutputTokens et peuvent l'épuiser
+        // Raisonnement interne réduit au minimum : ses tokens sont pris sur maxOutputTokens et peuvent l'épuiser
         // avant la réponse (réponse vide ou coupée). Inutile ici : la réponse est dans les données fournies.
+        // thinkingLevel et non thinkingBudget : les modèles récents (vers lesquels pointent les alias « latest »)
+        // refusent thinkingBudget = 0 (HTTP 400). « low » est accepté par la version lite comme par la complète.
         JsonObject raisonnement = new JsonObject();
-        raisonnement.addProperty("thinkingBudget", 0);
+        raisonnement.addProperty("thinkingLevel", "low");
         configuration.add("thinkingConfig", raisonnement);
         requete.add("generationConfig", configuration);
 
@@ -222,9 +237,11 @@ public final class ClientGemini {
     }
 
     // Réponse : {"candidates": [{"content": {"parts": [{"text": "..."}, ...]}, "finishReason": "STOP"}]}
-    private String extraireTexte(String json) {
+    // Visible dans le paquetage pour les tests
+    static String extraireTexte(String modele, String json) {
         try {
             JsonObject racine = JsonParser.parseString(json).getAsJsonObject();
+            journaliserConsommation(modele, racine);
             JsonArray candidats = racine.getAsJsonArray("candidates");
             if (candidats == null || candidats.isEmpty()) {
                 // Question bloquée par les filtres de sécurité : promptFeedback.blockReason est renseigné
@@ -261,6 +278,58 @@ public final class ClientGemini {
         }
     }
 
+    /*
+     * Tokens consommés par l'appel, pour suivre l'utilisation du quota :
+     * "usageMetadata": {"promptTokenCount": 2650, "cachedContentTokenCount": 2048,
+     *                   "candidatesTokenCount": 120, "thoughtsTokenCount": 35, "totalTokenCount": 2805}
+     * Les tokens en cache sont la partie des instructions identique à un appel récent (facturée moins cher).
+     */
+    private static void journaliserConsommation(String modele, JsonObject racine) {
+        JsonObject usage = racine.getAsJsonObject("usageMetadata");
+        if (usage == null) {
+            return;
+        }
+        LOG.info("Gemini " + modele + " : " + entier(usage, "totalTokenCount") + " tokens ("
+                + entier(usage, "promptTokenCount") + " en entrée dont " + entier(usage, "cachedContentTokenCount")
+                + " en cache, " + entier(usage, "candidatesTokenCount") + " de réponse, "
+                + entier(usage, "thoughtsTokenCount") + " de raisonnement)");
+    }
+
+    private static int entier(JsonObject objet, String champ) {
+        return objet.has(champ) ? objet.get(champ).getAsInt() : 0;
+    }
+
+    /*
+     * Un 429 peut venir du quota par minute (passager) ou du quota par jour (épuisé jusqu'au lendemain).
+     * Le quota dépassé est nommé dans les détails de l'erreur :
+     * "details": [{"@type": "...QuotaFailure", "violations": [{"quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier"}]}]
+     */
+    // Visible dans le paquetage pour les tests
+    static boolean estQuotaJournalier(String json) {
+        try {
+            JsonArray details = JsonParser.parseString(json).getAsJsonObject()
+                    .getAsJsonObject("error").getAsJsonArray("details");
+            if (details == null) {
+                return false;
+            }
+            for (JsonElement detail : details) {
+                JsonArray violations = detail.getAsJsonObject().getAsJsonArray("violations");
+                if (violations == null) {
+                    continue;
+                }
+                for (JsonElement violation : violations) {
+                    JsonElement quota = violation.getAsJsonObject().get("quotaId");
+                    if (quota != null && quota.getAsString().contains("PerDay")) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } catch (RuntimeException e) {
+            return false;
+        }
+    }
+
     // Erreur : {"error": {"code": 503, "message": "...", "status": "UNAVAILABLE"}}
     private String messageErreur(String json) {
         try {
@@ -292,6 +361,13 @@ public final class ClientGemini {
     private static final class ErreurTemporaire extends RuntimeException {
         ErreurTemporaire(String message, Throwable cause) {
             super(message, cause);
+        }
+    }
+
+    // Quota journalier du modèle épuisé : seul un autre modèle peut réussir avant demain
+    private static final class ErreurQuotaJournalier extends RuntimeException {
+        ErreurQuotaJournalier(String message) {
+            super(message);
         }
     }
 
