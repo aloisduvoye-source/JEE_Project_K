@@ -54,7 +54,7 @@ public final class ClientGemini {
 
     // Réponses courtes et factuelles : un assistant d'assurance ne doit pas inventer
     private static final double TEMPERATURE = 0.3;
-    private static final int TOKENS_MAX = 1024;
+    private static final int TOKENS_MAX = 2048;
 
     private static final ClientGemini INSTANCE = new ClientGemini();
 
@@ -179,7 +179,7 @@ public final class ClientGemini {
      * {
      *   "systemInstruction": {"parts": [{"text": "..."}]},
      *   "contents": [{"role": "user" | "model", "parts": [{"text": "..."}]}, ...],
-     *   "generationConfig": {"temperature": 0.3, "maxOutputTokens": 1024, "thinkingConfig": {"thinkingBudget": 0}}
+     *   "generationConfig": {"temperature": 0.3, "maxOutputTokens": 2048, "thinkingConfig": {"thinkingLevel": "low"}}
      * }
      */
     private JsonObject construireRequete(String instructions, List<MessageIA> conversation) {
@@ -203,10 +203,12 @@ public final class ClientGemini {
         JsonObject configuration = new JsonObject();
         configuration.addProperty("temperature", TEMPERATURE);
         configuration.addProperty("maxOutputTokens", TOKENS_MAX);
-        // Raisonnement interne désactivé : ses tokens sont pris sur maxOutputTokens et peuvent l'épuiser
+        // Raisonnement interne réduit au minimum : ses tokens sont pris sur maxOutputTokens et peuvent l'épuiser
         // avant la réponse (réponse vide ou coupée). Inutile ici : la réponse est dans les données fournies.
+        // thinkingLevel et non thinkingBudget : les modèles récents (vers lesquels pointent les alias « latest »)
+        // refusent thinkingBudget = 0 (HTTP 400). « low » est accepté par la version lite comme par la complète.
         JsonObject raisonnement = new JsonObject();
-        raisonnement.addProperty("thinkingBudget", 0);
+        raisonnement.addProperty("thinkingLevel", "low");
         configuration.add("thinkingConfig", raisonnement);
         requete.add("generationConfig", configuration);
 
