@@ -1,6 +1,7 @@
 package fr.cytech.assurance.controller;
 
 import fr.cytech.assurance.exception.AssistantIndisponibleException;
+import fr.cytech.assurance.exception.TropDeQuestionsException;
 import fr.cytech.assurance.model.Utilisateur;
 import fr.cytech.assurance.service.AssistantService;
 import fr.cytech.assurance.util.MessageFlash;
@@ -62,6 +63,9 @@ public class AssistantServlet extends HttpServlet {
         }
         try {
             assistantService.poserQuestion(utilisateur, question);
+        } catch (TropDeQuestionsException e) {
+            MessageFlash.erreur(request, e.getMessage());
+            request.getSession().setAttribute(QUESTION_NON_ENVOYEE, question);
         } catch (AssistantIndisponibleException e) {
             log("Assistant indisponible pour l'utilisateur " + utilisateur.getId(), e);
             MessageFlash.erreur(request, e.getMessage());
