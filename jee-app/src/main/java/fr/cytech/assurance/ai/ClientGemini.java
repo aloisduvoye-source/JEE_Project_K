@@ -237,7 +237,8 @@ public final class ClientGemini {
     }
 
     // Réponse : {"candidates": [{"content": {"parts": [{"text": "..."}, ...]}, "finishReason": "STOP"}]}
-    private String extraireTexte(String modele, String json) {
+    // Visible dans le paquetage pour les tests
+    static String extraireTexte(String modele, String json) {
         try {
             JsonObject racine = JsonParser.parseString(json).getAsJsonObject();
             journaliserConsommation(modele, racine);
@@ -283,7 +284,7 @@ public final class ClientGemini {
      *                   "candidatesTokenCount": 120, "thoughtsTokenCount": 35, "totalTokenCount": 2805}
      * Les tokens en cache sont la partie des instructions identique à un appel récent (facturée moins cher).
      */
-    private void journaliserConsommation(String modele, JsonObject racine) {
+    private static void journaliserConsommation(String modele, JsonObject racine) {
         JsonObject usage = racine.getAsJsonObject("usageMetadata");
         if (usage == null) {
             return;
@@ -303,7 +304,8 @@ public final class ClientGemini {
      * Le quota dépassé est nommé dans les détails de l'erreur :
      * "details": [{"@type": "...QuotaFailure", "violations": [{"quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier"}]}]
      */
-    private static boolean estQuotaJournalier(String json) {
+    // Visible dans le paquetage pour les tests
+    static boolean estQuotaJournalier(String json) {
         try {
             JsonArray details = JsonParser.parseString(json).getAsJsonObject()
                     .getAsJsonObject("error").getAsJsonArray("details");
