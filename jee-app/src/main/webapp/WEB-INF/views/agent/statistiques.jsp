@@ -13,6 +13,20 @@
 
   <h1>Statistiques et analyse des données</h1>
 
+  <section style="background: #f4f6fb; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+    <h2>Analyse intelligente (Assistant IA Gemini)</h2>
+    <form method="get" action="${pageContext.request.contextPath}/agent/statistiques">
+      <input type="hidden" name="analyser" value="true">
+      <button type="submit">Générer une synthèse IA des statistiques</button>
+    </form>
+
+    <c:if test="${not empty analyseIa}">
+      <div style="margin-top: 12px; white-space: pre-line; background: white; padding: 12px; border-left: 4px solid #2563eb;">
+        <c:out value="${analyseIa}"/>
+      </div>
+    </c:if>
+  </section>
+
   <section>
     <h2>Statistiques Clients</h2>
     <ul>
