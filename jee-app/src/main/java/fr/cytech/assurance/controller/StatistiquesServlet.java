@@ -9,6 +9,10 @@ import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 
+/**
+ * Page Statistiques : clients, contrats et finances, avec des graphiques.
+ * URL protégée automatiquement par RoleFiltre : le préfixe /agent est ouvert aux AGENT et ADMIN.
+ */
 @WebServlet("/agent/statistiques")
 public class StatistiquesServlet extends HttpServlet {
 
