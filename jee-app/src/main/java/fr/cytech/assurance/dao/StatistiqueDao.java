@@ -36,8 +36,12 @@ public class StatistiqueDao {
 
     public List<Object[]> repartitionClientsParType() {
         return enLecture(em -> em.createQuery(
-                        "SELECT c.typeAssurance.nom, COUNT( DISTINCT c.client.id) FROM Contrat c GROUP BY c.typeAssurance.nom",
+                        "SELECT c.typeAssurance.nom, COUNT(DISTINCT c.client.id) FROM Contrat c"
+                                + " WHERE c.statut = :statut"
+                                + " GROUP BY c.typeAssurance.nom"
+                                + " ORDER BY c.typeAssurance.nom",
                         Object[].class)
+                .setParameter("statut", StatutContrat.ACTIF)
                 .getResultList());
     }
 
