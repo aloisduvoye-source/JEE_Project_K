@@ -65,15 +65,6 @@ public class AnalyseStatistiquesService {
         }
     }
 
-    /**
-     * @return la date de la dernière synthèse réussie, ou null s'il n'y en a pas encore eu
-     */
-    public LocalDateTime dateDerniereAnalyse() {
-        synchronized (VERROU) {
-            return dateDerniereAnalyse;
-        }
-    }
-
     // Toutes les statistiques de la page, en texte
     private String donnees() {
         BigDecimal ratio = statistiqueService.calculerRatioIndemnisations();

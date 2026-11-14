@@ -14,17 +14,20 @@
 
   <h1>Statistiques et analyse des données</h1>
 
-  <section style="background: #f4f6fb; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+  <section id="analyse" style="background: #f4f6fb; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
     <h2>Analyse intelligente (Assistant IA Gemini)</h2>
-    <form method="get" action="${pageContext.request.contextPath}/agent/statistiques">
-      <input type="hidden" name="analyser" value="true">
+    <%-- POST : recharger la page ne relance pas l'appel à l'API --%>
+    <form method="post" action="${pageContext.request.contextPath}/agent/statistiques">
       <button type="submit">Générer une synthèse IA des statistiques</button>
     </form>
+    <p>Une même synthèse est réutilisée pendant 10 minutes.</p>
 
-    <c:if test="${not empty analyseIa}">
+    <%-- Synthèse gardée en session par StatistiquesServlet.doPost : affichée une fois puis effacée --%>
+    <c:if test="${not empty sessionScope.analyseIa}">
       <div style="margin-top: 12px; white-space: pre-line; background: white; padding: 12px; border-left: 4px solid #2563eb;">
-        <c:out value="${analyseIa}"/>
+        <c:out value="${sessionScope.analyseIa}"/>
       </div>
+      <c:remove var="analyseIa" scope="session"/>
     </c:if>
   </section>
 
