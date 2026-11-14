@@ -1,18 +1,23 @@
 package fr.cytech.assurance.dao;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.math.BigDecimal;
-
 import fr.cytech.assurance.model.enums.StatutContrat;
 import fr.cytech.assurance.model.enums.StatutPaiement;
 import fr.cytech.assurance.model.enums.TypeVersement;
+import fr.cytech.assurance.util.JpaUtil;
+import jakarta.persistence.EntityManager;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.function.Function;
 
-public class StatistiqueDao extends GenericDao<Object> {
+public class StatistiqueDao {
 
-    public StatistiqueDao() {
-        super(Object.class);
+    // Lecture seule avec un EntityManager fermé à la fin, comme GenericDao.enLecture
+    private <R> R enLecture(Function<EntityManager, R> operation) {
+        try (EntityManager em = JpaUtil.getEntityManager()) {
+            return operation.apply(em);
+        }
     }
 
     public int compterTotalClients() {
