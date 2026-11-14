@@ -14,54 +14,95 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Statistiques globales de la page Statistiques (agents et administrateur) : clients, contrats et finances.
+ */
 public class StatistiqueService {
 
+    // Libellé d'un mois dans les évolutions : "09/2026"
     private static final DateTimeFormatter FORMAT_MOIS = DateTimeFormatter.ofPattern("MM/yyyy");
 
-private final StatistiqueDao statistiqueDao = new StatistiqueDao();
+    private final StatistiqueDao statistiqueDao = new StatistiqueDao();
 
+    /**
+     * @return le nombre total de clients
+     */
     public int compterTotalClients() {
         return statistiqueDao.compterTotalClients();
     }
 
+    /**
+     * @return le nombre de clients inscrits depuis le 1er du mois en cours
+     */
     public int compterNouveauxClients() {
         LocalDateTime debutMois = LocalDate.now().withDayOfMonth(1).atStartOfDay();
         return statistiqueDao.compterNouveauxClients(debutMois);
     }
 
+    /**
+     * @return lignes {nom du type, nombre de clients ayant un contrat actif de ce type}
+     */
     public List<Object[]> repartitionClientsParType() {
         return statistiqueDao.repartitionClientsParType();
     }
 
+    /**
+     * @return le nombre de contrats actifs
+     */
     public int compterContratsActifs() {
         return statistiqueDao.compterContratsParStatut(StatutContrat.ACTIF);
     }
 
+    /**
+     * @return le nombre de contrats expirés
+     */
     public int compterContratsExpires() {
         return statistiqueDao.compterContratsParStatut(StatutContrat.EXPIRE);
     }
 
+    /**
+     * @return le nombre de contrats résiliés
+     */
     public int compterContratsResilies() {
         return statistiqueDao.compterContratsParStatut(StatutContrat.RESILIE);
     }
 
+    /**
+     * Nombre de contrats par mois de début, sans trou entre le premier et le dernier mois.
+     *
+     * @return lignes {"MM/AAAA", nombre de contrats}, de la plus ancienne à la plus récente
+     */
     public List<Object[]> evolutionContratsParMois() {
         return completerMois(statistiqueDao.evolutionContratsParMois(), 0L);
     }
 
+    /**
+     * @return la somme des paiements effectués, avant remboursements
+     */
     public BigDecimal calculerChiffreAffaires() {
         return statistiqueDao.calculerChiffreAffaires();
     }
 
-    public BigDecimal calculerTotalPrimes(){
+    /**
+     * @return la somme des primes annuelles des contrats actifs
+     */
+    public BigDecimal calculerTotalPrimes() {
         return statistiqueDao.calculerTotalPrimes();
     }
 
-    public BigDecimal calculerTotalIndemnisations(){
+    /**
+     * @return la somme des indemnisations de sinistres versées
+     */
+    public BigDecimal calculerTotalIndemnisations() {
         return statistiqueDao.calculerTotalIndemnisations();
     }
 
-    public List<Object[]> evolutionRevenusParMois(){
+    /**
+     * Montant des paiements effectués par mois, sans trou entre le premier et le dernier mois.
+     *
+     * @return lignes {"MM/AAAA", montant}, de la plus ancienne à la plus récente
+     */
+    public List<Object[]> evolutionRevenusParMois() {
         return completerMois(statistiqueDao.evolutionRevenusParMois(), BigDecimal.ZERO.setScale(2));
     }
 
