@@ -5,8 +5,9 @@
 <head>
   <meta charset="UTF-8">
   <title>Statistiques</title>
-  <%-- Chargement de Chart.js pour les graphiques (ajouté avec l'aide de l'IA) --%>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <%-- Chargement de Chart.js pour les graphiques (ajouté avec l'aide de l'IA).
+       Version fixée : sans elle, le CDN sert toujours la dernière, qui peut changer et casser la page --%>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
   <%@ include file="/WEB-INF/views/common/header.jspf" %>
@@ -35,16 +36,16 @@
     </ul>
 
     <h3>Répartition par type d'assurance</h3>
-    <table border="1">
+    <table border="1" id="tableClients">
       <thead>
         <tr>
           <th>Type d'assurance</th>
-          <th>Nombre de clients</th>
+          <th>Clients ayant un contrat actif</th>
         </tr>
       </thead>
       <tbody>
         <c:forEach var="ligne" items="${repartitionClients}">
-          <tr>
+          <tr data-libelle="<c:out value='${ligne[0]}'/>" data-valeur="<c:out value='${ligne[1]}'/>">
             <td><c:out value="${ligne[0]}"/></td>
             <td><c:out value="${ligne[1]}"/></td>
           </tr>
@@ -69,19 +70,20 @@
       <li>Contrats résiliés : <strong><c:out value="${contratsResilies}"/></strong></li>
     </ul>
 
-    <h3>Évolution du nombre de contrats</h3>
-    <table border="1">
+    <h3>Évolution du nombre de contrats actifs</h3>
+    <p>Contrats actifs en même temps, en fin de mois (aujourd'hui pour le mois en cours).</p>
+    <table border="1" id="tableContrats">
       <thead>
         <tr>
           <th>Période (Mois / Année)</th>
-          <th>Nombre de contrats</th>
+          <th>Contrats actifs</th>
         </tr>
       </thead>
       <tbody>
         <c:forEach var="ligne" items="${evolutionContrats}">
-          <tr>
-            <td>${ligne[1]}/${ligne[0]}</td>
-            <td><c:out value="${ligne[2]}"/></td>
+          <tr data-libelle="<c:out value='${ligne[0]}'/>" data-valeur="<c:out value='${ligne[1]}'/>">
+            <td><c:out value="${ligne[0]}"/></td>
+            <td><c:out value="${ligne[1]}"/></td>
           </tr>
         </c:forEach>
         <c:if test="${empty evolutionContrats}">
@@ -99,28 +101,44 @@
   <section>
     <h2>Statistiques Financières</h2>
     <ul>
-      <li>Chiffre d'affaires encaissé : <strong><c:out value="${chiffreAffaires}"/> €</strong></li>
+      <li>Chiffre d'affaires encaissé (paiements effectués, avant remboursements) : <strong><c:out value="${chiffreAffaires}"/> €</strong></li>
+      <li>Montant total des remboursements (résiliations) : <strong><c:out value="${totalRemboursements}"/> €</strong></li>
+      <li>Chiffre d'affaires net (encaissé - remboursements) : <strong><c:out value="${chiffreAffairesNet}"/> €</strong></li>
       <li>Montant total des primes actives : <strong><c:out value="${totalPrimes}"/> €</strong></li>
       <li>Montant total des indemnisations : <strong><c:out value="${totalIndemnisations}"/> €</strong></li>
+      <li>Ratio indemnisations / primes encaissées (chiffre d'affaires net) :
+        <strong>
+          <c:choose>
+            <c:when test="${empty ratioIndemnisations}">–</c:when>
+            <c:otherwise><c:out value="${ratioIndemnisations}"/> %</c:otherwise>
+          </c:choose>
+        </strong>
+      </li>
     </ul>
 
-    <h3>Évolution des revenus</h3>
-    <table border="1">
+    <h3>Évolution mensuelle des flux financiers</h3>
+    <p>Argent encaissé (paiements effectués) et versé aux clients (indemnisations, remboursements), mois par mois.</p>
+    <table border="1" id="tableRevenus">
       <thead>
         <tr>
           <th>Période (Mois / Année)</th>
-          <th>Revenus encaissés (€)</th>
+          <th>Encaissé (€)</th>
+          <th>Indemnisations (€)</th>
+          <th>Remboursements (€)</th>
         </tr>
       </thead>
       <tbody>
-        <c:forEach var="ligne" items="${evolutionRevenus}">
-          <tr>
-            <td>${ligne[1]}/${ligne[0]}</td>
+        <c:forEach var="ligne" items="${evolutionFinances}">
+          <tr data-libelle="<c:out value='${ligne[0]}'/>" data-encaisse="<c:out value='${ligne[1]}'/>"
+              data-indemnise="<c:out value='${ligne[2]}'/>" data-rembourse="<c:out value='${ligne[3]}'/>">
+            <td><c:out value="${ligne[0]}"/></td>
+            <td><c:out value="${ligne[1]}"/> €</td>
             <td><c:out value="${ligne[2]}"/> €</td>
+            <td><c:out value="${ligne[3]}"/> €</td>
           </tr>
         </c:forEach>
-        <c:if test="${empty evolutionRevenus}">
-          <tr><td colspan="2">Aucun paiement effectué.</td></tr>
+        <c:if test="${empty evolutionFinances}">
+          <tr><td colspan="4">Aucun paiement ni versement.</td></tr>
         </c:if>
       </tbody>
     </table>
@@ -136,38 +154,54 @@
 
   <%-- Script Chart.js pour dessiner les 3 graphiques (généré avec l'aide de l'IA) --%>
   <script>
+    // Libellés et valeurs lus dans les lignes du tableau (attributs data-) : c:out dans un attribut HTML
+    // est décodé par le navigateur, alors que dans le script une apostrophe resterait affichée "&#039;"
+    // attributs : noms des valeurs à lire (data-valeur par défaut), une liste de nombres par nom
+    function donnees(idTableau, attributs = ['valeur']) {
+      const lignes = document.querySelectorAll('#' + idTableau + ' tbody tr[data-libelle]');
+      const resultat = {libelles: Array.from(lignes, ligne => ligne.dataset.libelle)};
+      for (const attribut of attributs) {
+        resultat[attribut] = Array.from(lignes, ligne => Number(ligne.dataset[attribut]));
+      }
+      return resultat;
+    }
+
     // 1. Camembert : répartition des clients par type d'assurance (aide de l'ia)
+    const clients = donnees('tableClients');
     new Chart(document.getElementById('chartClients'), {
       type: 'pie',
       data: {
-        labels: [<c:forEach var="l" items="${repartitionClients}">'<c:out value="${l[0]}"/>',</c:forEach>],
+        labels: clients.libelles,
         datasets: [{
-          data: [<c:forEach var="l" items="${repartitionClients}">${l[1]},</c:forEach>]
+          data: clients.valeur
         }]
       }
     });
 
-    // 2. Courbe : évolution du nombre de contrats par mois (aide de l'ia)
+    // 2. Courbe : nombre de contrats actifs en même temps, mois par mois (aide de l'ia)
+    const contrats = donnees('tableContrats');
     new Chart(document.getElementById('chartContrats'), {
       type: 'line',
       data: {
-        labels: [<c:forEach var="l" items="${evolutionContrats}">'${l[1]}/${l[0]}',</c:forEach>],
+        labels: contrats.libelles,
         datasets: [{
-          label: 'Nombre de contrats',
-          data: [<c:forEach var="l" items="${evolutionContrats}">${l[2]},</c:forEach>]
+          label: 'Contrats actifs',
+          data: contrats.valeur
         }]
       }
     });
 
-    // 3. Barres : évolution des revenus par mois (aide de l'ia)
+    // 3. Barres : argent encaissé et versé par mois (aide de l'ia)
+    const finances = donnees('tableRevenus', ['encaisse', 'indemnise', 'rembourse']);
     new Chart(document.getElementById('chartRevenus'), {
       type: 'bar',
       data: {
-        labels: [<c:forEach var="l" items="${evolutionRevenus}">'${l[1]}/${l[0]}',</c:forEach>],
-        datasets: [{
-          label: 'Revenus (€)',
-          data: [<c:forEach var="l" items="${evolutionRevenus}">${l[2]},</c:forEach>]
-        }]
+        labels: finances.libelles,
+        datasets: [
+          {label: 'Encaissé (€)', data: finances.encaisse},
+          {label: 'Indemnisations (€)', data: finances.indemnise},
+          {label: 'Remboursements (€)', data: finances.rembourse}
+        ]
       }
     });
   </script>

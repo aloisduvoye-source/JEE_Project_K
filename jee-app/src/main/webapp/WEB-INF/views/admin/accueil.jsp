@@ -65,23 +65,6 @@
     </ul>
   </section>
 
-    <h3>Contrats</h3>
-    <ul>
-      <li>Contrats actifs : –</li>
-      <li>Contrats expirés : –</li>
-      <li>Contrats résiliés : –</li>
-      <li>Évolution du nombre de contrats : –</li>
-    </ul>
-
-    <h3>Finances</h3>
-    <ul>
-      <li>Chiffre d'affaires : –</li>
-      <li>Montant des primes : –</li>
-      <li>Montant des indemnisations : –</li>
-      <li>Évolution des revenus : –</li>
-    </ul>
-  </section>
-
   <section id="indicateurs">
     <h2>Indicateurs de performance</h2>
     <ul>

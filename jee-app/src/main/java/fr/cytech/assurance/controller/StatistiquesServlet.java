@@ -11,6 +11,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.math.BigDecimal;
 
+/**
+ * Page Statistiques : clients, contrats et finances, avec des graphiques.
+ * URL protégée automatiquement par RoleFiltre : le préfixe /agent est ouvert aux AGENT et ADMIN.
+ */
 @WebServlet("/agent/statistiques")
 public class StatistiquesServlet extends HttpServlet {
 
@@ -42,7 +46,10 @@ public class StatistiquesServlet extends HttpServlet {
         request.setAttribute("chiffreAffaires", statistiqueService.calculerChiffreAffaires());
         request.setAttribute("totalPrimes", statistiqueService.calculerTotalPrimes());
         request.setAttribute("totalIndemnisations", statistiqueService.calculerTotalIndemnisations());
-        request.setAttribute("evolutionRevenus", statistiqueService.evolutionRevenusParMois());
+        request.setAttribute("totalRemboursements", statistiqueService.calculerTotalRemboursements());
+        request.setAttribute("chiffreAffairesNet", statistiqueService.calculerChiffreAffairesNet());
+        request.setAttribute("ratioIndemnisations", statistiqueService.calculerRatioIndemnisations());
+        request.setAttribute("evolutionFinances", statistiqueService.evolutionFinancesParMois());
 
         if ("true".equals(request.getParameter("analyser"))) {
             String analyseIa = analyseStatistiquesService.analyser(
