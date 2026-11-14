@@ -76,17 +76,19 @@ public class StatistiqueDao {
     }
 
     /**
-     * Nombre de contrats par mois de début, tous statuts confondus.
-     * Les mois sans contrat sont absents (complétés par StatistiqueService).
+     * Périodes de tous les contrats, pour savoir combien étaient actifs à une date donnée (calcul dans StatistiqueService).
      *
-     * @return lignes {année (Integer), mois (Integer), nombre de contrats (Long)}, de la plus ancienne à la plus récente
+     * @return lignes {date de début, date de fin, date de résiliation, date de suspension, date du premier paiement
+     *         effectué} (LocalDate, les trois dernières peuvent être null), triées par date de début
      */
-    public List<Object[]> evolutionContratsParMois() {
+    public List<Object[]> periodesContrats() {
         return enLecture(em -> em.createQuery(
-                        "SELECT YEAR(c.dateDebut), MONTH(c.dateDebut), COUNT(c) FROM Contrat c"
-                                + " GROUP BY YEAR(c.dateDebut), MONTH(c.dateDebut)"
-                                + " ORDER BY YEAR(c.dateDebut), MONTH(c.dateDebut)",
+                        "SELECT c.dateDebut, c.dateFin, c.dateResiliation, c.dateSuspension,"
+                                + " (SELECT MIN(p.datePaiement) FROM Paiement p"
+                                + "  WHERE p.contrat = c AND p.statut = :effectue)"
+                                + " FROM Contrat c ORDER BY c.dateDebut",
                         Object[].class)
+                .setParameter("effectue", StatutPaiement.EFFECTUE)
                 .getResultList());
     }
 

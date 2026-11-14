@@ -68,12 +68,40 @@ public class StatistiqueService {
     }
 
     /**
-     * Nombre de contrats par mois de début, sans trou entre le premier et le dernier mois.
+     * Nombre de contrats actifs en même temps, mois par mois : ceux actifs le dernier jour du mois
+     * (aujourd'hui pour le mois en cours), du mois du premier contrat jusqu'au mois en cours.
      *
-     * @return lignes {"MM/AAAA", nombre de contrats}, de la plus ancienne à la plus récente
+     * @return lignes {"MM/AAAA", nombre de contrats actifs (Long)}, de la plus ancienne à la plus récente
      */
     public List<Object[]> evolutionContratsParMois() {
-        return completerMois(statistiqueDao.evolutionContratsParMois(), 0L);
+        List<Object[]> periodes = statistiqueDao.periodesContrats();
+        List<Object[]> resultat = new ArrayList<>();
+        if (periodes.isEmpty()) {
+            return resultat;
+        }
+        LocalDate aujourdhui = LocalDate.now();
+        YearMonth dernier = YearMonth.from(aujourdhui);
+        for (YearMonth mois = YearMonth.from((LocalDate) periodes.get(0)[0]); !mois.isAfter(dernier);
+             mois = mois.plusMonths(1)) {
+            LocalDate date = mois.equals(dernier) ? aujourdhui : mois.atEndOfMonth();
+            long actifs = periodes.stream().filter(p -> actifLe(p, date)).count();
+            resultat.add(new Object[]{mois.format(FORMAT_MOIS), actifs});
+        }
+        return resultat;
+    }
+
+    // Actif à cette date : commencé, pas encore fini, payé, ni résilié ni suspendu par un agent avant
+    // (même règle que ContratService.statutAttendu ; une suspension déjà levée n'est plus connue)
+    private static boolean actifLe(Object[] periode, LocalDate date) {
+        LocalDate debut = (LocalDate) periode[0];
+        LocalDate fin = (LocalDate) periode[1];
+        LocalDate resiliation = (LocalDate) periode[2];
+        LocalDate suspension = (LocalDate) periode[3];
+        LocalDate paiement = (LocalDate) periode[4];
+        return !date.isBefore(debut) && date.isBefore(fin)
+                && paiement != null && !date.isBefore(paiement)
+                && (resiliation == null || date.isBefore(resiliation))
+                && (suspension == null || date.isBefore(suspension));
     }
 
     /**

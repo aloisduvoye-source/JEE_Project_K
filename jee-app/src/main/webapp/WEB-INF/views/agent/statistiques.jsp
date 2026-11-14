@@ -56,12 +56,13 @@
       <li>Contrats résiliés : <strong><c:out value="${contratsResilies}"/></strong></li>
     </ul>
 
-    <h3>Évolution du nombre de contrats</h3>
+    <h3>Évolution du nombre de contrats actifs</h3>
+    <p>Contrats actifs en même temps, en fin de mois (aujourd'hui pour le mois en cours).</p>
     <table border="1" id="tableContrats">
       <thead>
         <tr>
           <th>Période (Mois / Année)</th>
-          <th>Nombre de contrats</th>
+          <th>Contrats actifs</th>
         </tr>
       </thead>
       <tbody>
@@ -145,14 +146,14 @@
       }
     });
 
-    // 2. Courbe : évolution du nombre de contrats par mois (aide de l'ia)
+    // 2. Courbe : nombre de contrats actifs en même temps, mois par mois (aide de l'ia)
     const contrats = donnees('tableContrats');
     new Chart(document.getElementById('chartContrats'), {
       type: 'line',
       data: {
         labels: contrats.libelles,
         datasets: [{
-          label: 'Nombre de contrats',
+          label: 'Contrats actifs',
           data: contrats.valeurs
         }]
       }
