@@ -5,8 +5,9 @@
 <head>
   <meta charset="UTF-8">
   <title>Statistiques</title>
-  <%-- Chargement de Chart.js pour les graphiques (ajouté avec l'aide de l'IA) --%>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <%-- Chargement de Chart.js pour les graphiques (ajouté avec l'aide de l'IA).
+       Version fixée : sans elle, le CDN sert toujours la dernière, qui peut changer et casser la page --%>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
   <%@ include file="/WEB-INF/views/common/header.jspf" %>
