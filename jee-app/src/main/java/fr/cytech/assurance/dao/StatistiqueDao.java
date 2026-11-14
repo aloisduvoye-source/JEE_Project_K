@@ -125,10 +125,23 @@ public class StatistiqueDao {
      * @return le montant total, 0 s'il n'y a aucune indemnisation
      */
     public BigDecimal calculerTotalIndemnisations() {
+        return calculerTotalVersements(TypeVersement.INDEMNISATION);
+    }
+
+    /**
+     * Somme des remboursements de prime versés à la résiliation des contrats.
+     *
+     * @return le montant total, 0 s'il n'y a aucun remboursement
+     */
+    public BigDecimal calculerTotalRemboursements() {
+        return calculerTotalVersements(TypeVersement.REMBOURSEMENT);
+    }
+
+    private BigDecimal calculerTotalVersements(TypeVersement type) {
         return enLecture(em -> em.createQuery(
                         "SELECT COALESCE(SUM(v.montant), 0) FROM Versement v WHERE v.type = :type",
                         BigDecimal.class)
-                .setParameter("type", TypeVersement.INDEMNISATION)
+                .setParameter("type", type)
                 .getSingleResult());
     }
 

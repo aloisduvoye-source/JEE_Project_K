@@ -126,6 +126,20 @@ public class StatistiqueService {
     }
 
     /**
+     * @return la somme des remboursements de prime versés à la résiliation
+     */
+    public BigDecimal calculerTotalRemboursements() {
+        return statistiqueDao.calculerTotalRemboursements();
+    }
+
+    /**
+     * @return le chiffre d'affaires net : paiements effectués moins remboursements
+     */
+    public BigDecimal calculerChiffreAffairesNet() {
+        return calculerChiffreAffaires().subtract(calculerTotalRemboursements());
+    }
+
+    /**
      * Montant des paiements effectués par mois, sans trou entre le premier et le dernier mois.
      *
      * @return lignes {"MM/AAAA", montant}, de la plus ancienne à la plus récente
