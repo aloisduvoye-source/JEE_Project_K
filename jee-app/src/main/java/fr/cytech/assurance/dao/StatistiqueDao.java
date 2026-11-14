@@ -162,6 +162,24 @@ public class StatistiqueDao {
                 .getResultList());
     }
 
+    /**
+     * Montant des versements d'un type (indemnisations ou remboursements), par mois de versement.
+     * Les mois sans versement sont absents (complétés par StatistiqueService).
+     *
+     * @param type type de versement
+     * @return lignes {année (Integer), mois (Integer), montant (BigDecimal)}, de la plus ancienne à la plus récente
+     */
+    public List<Object[]> evolutionVersementsParMois(TypeVersement type) {
+        return enLecture(em -> em.createQuery(
+                        "SELECT YEAR(v.dateVersement), MONTH(v.dateVersement), COALESCE(SUM(v.montant), 0)"
+                                + " FROM Versement v WHERE v.type = :type"
+                                + " GROUP BY YEAR(v.dateVersement), MONTH(v.dateVersement)"
+                                + " ORDER BY YEAR(v.dateVersement), MONTH(v.dateVersement)",
+                        Object[].class)
+                .setParameter("type", type)
+                .getResultList());
+    }
+
     // Lecture seule avec un EntityManager fermé à la fin, comme GenericDao.enLecture
     private <R> R enLecture(Function<EntityManager, R> operation) {
         try (EntityManager em = JpaUtil.getEntityManager()) {

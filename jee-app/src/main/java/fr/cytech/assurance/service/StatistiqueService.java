@@ -2,6 +2,7 @@ package fr.cytech.assurance.service;
 
 import fr.cytech.assurance.dao.StatistiqueDao;
 import fr.cytech.assurance.model.enums.StatutContrat;
+import fr.cytech.assurance.model.enums.TypeVersement;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -11,7 +12,7 @@ import java.time.YearMonth;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -156,32 +157,42 @@ public class StatistiqueService {
     }
 
     /**
-     * Montant des paiements effectués par mois, sans trou entre le premier et le dernier mois.
+     * Argent encaissé et versé par mois, sans trou entre le premier et le dernier mois (0 pour un mois sans rien).
      *
-     * @return lignes {"MM/AAAA", montant}, de la plus ancienne à la plus récente
+     * @return lignes {"MM/AAAA", encaissé, indemnisations, remboursements} (montants en BigDecimal),
+     *         de la plus ancienne à la plus récente
      */
-    public List<Object[]> evolutionRevenusParMois() {
-        return completerMois(statistiqueDao.evolutionRevenusParMois(), BigDecimal.ZERO.setScale(2));
-    }
+    public List<Object[]> evolutionFinancesParMois() {
+        // Par mois : {encaissé, indemnisations, remboursements}
+        Map<YearMonth, BigDecimal[]> montants = new HashMap<>();
+        ajouterParMois(montants, statistiqueDao.evolutionRevenusParMois(), 0);
+        ajouterParMois(montants, statistiqueDao.evolutionVersementsParMois(TypeVersement.INDEMNISATION), 1);
+        ajouterParMois(montants, statistiqueDao.evolutionVersementsParMois(TypeVersement.REMBOURSEMENT), 2);
 
-    // Lignes {année, mois, valeur} triées -> lignes {"MM/AAAA", valeur}, du premier au dernier mois,
-    // avec "zero" pour les mois absents (sinon la courbe relierait deux mois éloignés comme s'ils se suivaient)
-    private List<Object[]> completerMois(List<Object[]> lignes, Number zero) {
-        Map<YearMonth, Number> valeurs = new LinkedHashMap<>();
-        for (Object[] ligne : lignes) {
-            if (ligne[0] != null && ligne[1] != null) {
-                valeurs.put(YearMonth.of(((Number) ligne[0]).intValue(), ((Number) ligne[1]).intValue()),
-                        (Number) ligne[2]);
-            }
-        }
         List<Object[]> resultat = new ArrayList<>();
-        if (valeurs.isEmpty()) {
+        if (montants.isEmpty()) {
             return resultat;
         }
-        YearMonth dernier = Collections.max(valeurs.keySet());
-        for (YearMonth mois = Collections.min(valeurs.keySet()); !mois.isAfter(dernier); mois = mois.plusMonths(1)) {
-            resultat.add(new Object[]{mois.format(FORMAT_MOIS), valeurs.getOrDefault(mois, zero)});
+        YearMonth dernier = Collections.max(montants.keySet());
+        for (YearMonth mois = Collections.min(montants.keySet()); !mois.isAfter(dernier); mois = mois.plusMonths(1)) {
+            BigDecimal[] valeurs = montants.getOrDefault(mois, nouveauxMontants());
+            resultat.add(new Object[]{mois.format(FORMAT_MOIS), valeurs[0], valeurs[1], valeurs[2]});
         }
         return resultat;
+    }
+
+    // Range les lignes {année, mois, montant} du DAO dans la colonne "colonne" de chaque mois
+    private static void ajouterParMois(Map<YearMonth, BigDecimal[]> montants, List<Object[]> lignes, int colonne) {
+        for (Object[] ligne : lignes) {
+            if (ligne[0] != null && ligne[1] != null) {
+                YearMonth mois = YearMonth.of(((Number) ligne[0]).intValue(), ((Number) ligne[1]).intValue());
+                montants.computeIfAbsent(mois, m -> nouveauxMontants())[colonne] = (BigDecimal) ligne[2];
+            }
+        }
+    }
+
+    private static BigDecimal[] nouveauxMontants() {
+        BigDecimal zero = BigDecimal.ZERO.setScale(2);
+        return new BigDecimal[]{zero, zero, zero};
     }
 }

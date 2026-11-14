@@ -102,23 +102,29 @@
       </li>
     </ul>
 
-    <h3>Évolution des revenus</h3>
+    <h3>Évolution mensuelle des flux financiers</h3>
+    <p>Argent encaissé (paiements effectués) et versé aux clients (indemnisations, remboursements), mois par mois.</p>
     <table border="1" id="tableRevenus">
       <thead>
         <tr>
           <th>Période (Mois / Année)</th>
-          <th>Revenus encaissés (€)</th>
+          <th>Encaissé (€)</th>
+          <th>Indemnisations (€)</th>
+          <th>Remboursements (€)</th>
         </tr>
       </thead>
       <tbody>
-        <c:forEach var="ligne" items="${evolutionRevenus}">
-          <tr data-libelle="<c:out value='${ligne[0]}'/>" data-valeur="<c:out value='${ligne[1]}'/>">
+        <c:forEach var="ligne" items="${evolutionFinances}">
+          <tr data-libelle="<c:out value='${ligne[0]}'/>" data-encaisse="<c:out value='${ligne[1]}'/>"
+              data-indemnise="<c:out value='${ligne[2]}'/>" data-rembourse="<c:out value='${ligne[3]}'/>">
             <td><c:out value="${ligne[0]}"/></td>
             <td><c:out value="${ligne[1]}"/> €</td>
+            <td><c:out value="${ligne[2]}"/> €</td>
+            <td><c:out value="${ligne[3]}"/> €</td>
           </tr>
         </c:forEach>
-        <c:if test="${empty evolutionRevenus}">
-          <tr><td colspan="2">Aucun paiement effectué.</td></tr>
+        <c:if test="${empty evolutionFinances}">
+          <tr><td colspan="4">Aucun paiement ni versement.</td></tr>
         </c:if>
       </tbody>
     </table>
@@ -136,12 +142,14 @@
   <script>
     // Libellés et valeurs lus dans les lignes du tableau (attributs data-) : c:out dans un attribut HTML
     // est décodé par le navigateur, alors que dans le script une apostrophe resterait affichée "&#039;"
-    function donnees(idTableau) {
-      const lignes = document.querySelectorAll('#' + idTableau + ' tbody tr[data-valeur]');
-      return {
-        libelles: Array.from(lignes, ligne => ligne.dataset.libelle),
-        valeurs: Array.from(lignes, ligne => Number(ligne.dataset.valeur))
-      };
+    // attributs : noms des valeurs à lire (data-valeur par défaut), une liste de nombres par nom
+    function donnees(idTableau, attributs = ['valeur']) {
+      const lignes = document.querySelectorAll('#' + idTableau + ' tbody tr[data-libelle]');
+      const resultat = {libelles: Array.from(lignes, ligne => ligne.dataset.libelle)};
+      for (const attribut of attributs) {
+        resultat[attribut] = Array.from(lignes, ligne => Number(ligne.dataset[attribut]));
+      }
+      return resultat;
     }
 
     // 1. Camembert : répartition des clients par type d'assurance (aide de l'ia)
@@ -151,7 +159,7 @@
       data: {
         labels: clients.libelles,
         datasets: [{
-          data: clients.valeurs
+          data: clients.valeur
         }]
       }
     });
@@ -164,21 +172,22 @@
         labels: contrats.libelles,
         datasets: [{
           label: 'Contrats actifs',
-          data: contrats.valeurs
+          data: contrats.valeur
         }]
       }
     });
 
-    // 3. Barres : évolution des revenus par mois (aide de l'ia)
-    const revenus = donnees('tableRevenus');
+    // 3. Barres : argent encaissé et versé par mois (aide de l'ia)
+    const finances = donnees('tableRevenus', ['encaisse', 'indemnise', 'rembourse']);
     new Chart(document.getElementById('chartRevenus'), {
       type: 'bar',
       data: {
-        labels: revenus.libelles,
-        datasets: [{
-          label: 'Revenus (€)',
-          data: revenus.valeurs
-        }]
+        labels: finances.libelles,
+        datasets: [
+          {label: 'Encaissé (€)', data: finances.encaisse},
+          {label: 'Indemnisations (€)', data: finances.indemnise},
+          {label: 'Remboursements (€)', data: finances.rembourse}
+        ]
       }
     });
   </script>
