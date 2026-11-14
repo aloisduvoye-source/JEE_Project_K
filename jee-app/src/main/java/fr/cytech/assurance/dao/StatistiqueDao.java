@@ -1,18 +1,22 @@
 package fr.cytech.assurance.dao;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.math.BigDecimal;
-
 import fr.cytech.assurance.model.enums.StatutContrat;
 import fr.cytech.assurance.model.enums.StatutPaiement;
 import fr.cytech.assurance.model.enums.TypeVersement;
+import fr.cytech.assurance.util.JpaUtil;
+import jakarta.persistence.EntityManager;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.function.Function;
 
-public class StatistiqueDao extends GenericDao<Object> {
+public class StatistiqueDao {
 
-    public StatistiqueDao() {
-        super(Object.class);
+    private <R> R enLecture(Function<EntityManager, R> operation) {
+        try (EntityManager em = JpaUtil.getEntityManager()) {
+            return operation.apply(em);
+        }
     }
 
     public int compterTotalClients() {
@@ -31,7 +35,7 @@ public class StatistiqueDao extends GenericDao<Object> {
 
     public List<Object[]> repartitionClientsParType() {
         return enLecture(em -> em.createQuery(
-                        "SELECT c.typeAssurance.nom, COUNT( DISTINCT c.client.id) FROM Contrat c GROUP BY c.typeAssurance.nom",
+                        "SELECT c.typeAssurance.nom, COUNT(DISTINCT c.client.id) FROM Contrat c GROUP BY c.typeAssurance.nom",
                         Object[].class)
                 .getResultList());
     }
@@ -51,9 +55,9 @@ public class StatistiqueDao extends GenericDao<Object> {
                                 + " ORDER BY YEAR(c.dateDebut), MONTH(c.dateDebut)",
                         Object[].class)
                 .getResultList());
-    } 
+    }
 
-    public BigDecimal calculerChiffreAffaires(){
+    public BigDecimal calculerChiffreAffaires() {
         return enLecture(em -> em.createQuery(
                         "SELECT COALESCE(SUM(p.montant), 0) FROM Paiement p WHERE p.statut = :statut",
                         BigDecimal.class)
@@ -61,7 +65,7 @@ public class StatistiqueDao extends GenericDao<Object> {
                 .getSingleResult());
     }
 
-    public BigDecimal calculerTotalPrimes(){
+    public BigDecimal calculerTotalPrimes() {
         return enLecture(em -> em.createQuery(
                         "SELECT COALESCE(SUM(c.prime), 0) FROM Contrat c WHERE c.statut = :statut",
                         BigDecimal.class)
@@ -69,7 +73,7 @@ public class StatistiqueDao extends GenericDao<Object> {
                 .getSingleResult());
     }
 
-    public BigDecimal calculerTotalIndemnisations(){
+    public BigDecimal calculerTotalIndemnisations() {
         return enLecture(em -> em.createQuery(
                         "SELECT COALESCE(SUM(v.montant), 0) FROM Versement v WHERE v.type = :type",
                         BigDecimal.class)
@@ -87,6 +91,4 @@ public class StatistiqueDao extends GenericDao<Object> {
                 .setParameter("statut", StatutPaiement.EFFECTUE)
                 .getResultList());
     }
-
-    
 }
