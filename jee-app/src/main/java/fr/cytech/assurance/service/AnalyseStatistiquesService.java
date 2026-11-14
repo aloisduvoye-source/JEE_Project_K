@@ -5,6 +5,8 @@ import fr.cytech.assurance.ai.MessageIA;
 import fr.cytech.assurance.exception.AssistantIndisponibleException;
 
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -25,11 +27,21 @@ public class AnalyseStatistiquesService {
             + "Base-toi uniquement sur les chiffres fournis. "
             + "Écris en texte brut, sans Markdown (pas d'astérisques, de dièses ni de tirets de liste).";
 
+    // Une analyse sert pendant cette durée à tous les agents : le quota de l'API est partagé avec
+    // l'assistant des clients, qu'un agent qui clique plusieurs fois ne doit pas pouvoir épuiser
+    private static final Duration DUREE_CACHE = Duration.ofMinutes(10);
+
+    // Dernière analyse réussie (commune à toute l'application) et son heure, protégées par VERROU
+    private static final Object VERROU = new Object();
+    private static String derniereAnalyse;
+    private static LocalDateTime dateDerniereAnalyse;
+
     private final ClientGemini clientGemini = ClientGemini.getInstance();
     private final StatistiqueService statistiqueService = new StatistiqueService();
 
     /**
-     * Demande à l'IA une synthèse des statistiques actuelles.
+     * Synthèse des statistiques actuelles par l'IA. Une synthèse de moins de DUREE_CACHE est réutilisée
+     * sans appeler l'API ; deux demandes simultanées n'en génèrent qu'une.
      *
      * @return le texte de la synthèse, ou un message expliquant pourquoi elle n'est pas disponible
      */
@@ -37,10 +49,28 @@ public class AnalyseStatistiquesService {
         if (!clientGemini.estConfigure()) {
             return "L'assistant IA n'est pas configuré (clé AI_API_KEY manquante dans .env).";
         }
-        try {
-            return clientGemini.generer(INSTRUCTIONS, List.of(MessageIA.client(donnees())));
-        } catch (AssistantIndisponibleException e) {
-            return e.getMessage();
+        synchronized (VERROU) {
+            LocalDateTime maintenant = LocalDateTime.now();
+            if (derniereAnalyse != null && dateDerniereAnalyse.plus(DUREE_CACHE).isAfter(maintenant)) {
+                return derniereAnalyse;
+            }
+            try {
+                derniereAnalyse = clientGemini.generer(INSTRUCTIONS, List.of(MessageIA.client(donnees())));
+                dateDerniereAnalyse = maintenant;
+                return derniereAnalyse;
+            } catch (AssistantIndisponibleException e) {
+                // Pas gardée en cache : on peut réessayer tout de suite
+                return e.getMessage();
+            }
+        }
+    }
+
+    /**
+     * @return la date de la dernière synthèse réussie, ou null s'il n'y en a pas encore eu
+     */
+    public LocalDateTime dateDerniereAnalyse() {
+        synchronized (VERROU) {
+            return dateDerniereAnalyse;
         }
     }
 
