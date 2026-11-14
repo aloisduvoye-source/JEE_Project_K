@@ -8,11 +8,33 @@
   <%-- Chargement de Chart.js pour les graphiques (ajouté avec l'aide de l'IA).
        Version fixée : sans elle, le CDN sert toujours la dernière, qui peut changer et casser la page --%>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <%-- Seul style nécessaire en attendant la feuille commune : garder les retours à la ligne de la synthèse IA --%>
+  <style>
+    .analyse-ia { white-space: pre-line; }
+  </style>
 </head>
 <body>
   <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
   <h1>Statistiques et analyse des données</h1>
+
+  <section id="analyse">
+    <h2>Analyse intelligente (Assistant IA Gemini)</h2>
+    <%-- POST : recharger la page ne relance pas l'appel à l'API --%>
+    <form method="post" action="${pageContext.request.contextPath}/agent/statistiques" id="formAnalyse">
+      <button type="submit">Générer une synthèse IA des statistiques</button>
+    </form>
+    <p id="analyseEnCours" hidden>Analyse en cours : cela peut prendre jusqu'à une minute…</p>
+    <p>Une même synthèse est réutilisée pendant 10 minutes.</p>
+
+    <%-- Synthèse gardée en session par StatistiquesServlet.doPost : affichée une fois puis effacée --%>
+    <c:if test="${not empty sessionScope.analyseIa}">
+      <div class="analyse-ia">
+        <c:out value="${sessionScope.analyseIa}"/>
+      </div>
+      <c:remove var="analyseIa" scope="session"/>
+    </c:if>
+  </section>
 
   <section>
     <h2>Statistiques Clients</h2>
@@ -140,6 +162,12 @@
 
   <%-- Script Chart.js pour dessiner les 3 graphiques (généré avec l'aide de l'IA) --%>
   <script>
+    // Pendant l'analyse IA (jusqu'à une minute) : bouton désactivé, pour ne pas relancer la demande
+    document.getElementById('formAnalyse').addEventListener('submit', function () {
+      this.querySelector('button').disabled = true;
+      document.getElementById('analyseEnCours').hidden = false;
+    });
+
     // Libellés et valeurs lus dans les lignes du tableau (attributs data-) : c:out dans un attribut HTML
     // est décodé par le navigateur, alors que dans le script une apostrophe resterait affichée "&#039;"
     // attributs : noms des valeurs à lire (data-valeur par défaut), une liste de nombres par nom

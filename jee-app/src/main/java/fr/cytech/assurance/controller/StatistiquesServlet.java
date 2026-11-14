@@ -1,5 +1,6 @@
 package fr.cytech.assurance.controller;
 
+import fr.cytech.assurance.service.AnalyseStatistiquesService;
 import fr.cytech.assurance.service.StatistiqueService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
@@ -17,8 +18,11 @@ import java.io.IOException;
 public class StatistiquesServlet extends HttpServlet {
 
     private static final String VUE = "/WEB-INF/views/agent/statistiques.jsp";
+    // Synthèse IA gardée en session le temps de la redirection (comme MessageFlash), effacée par la JSP
+    private static final String ATTRIBUT_ANALYSE = "analyseIa";
 
     private final StatistiqueService statistiqueService = new StatistiqueService();
+    private final AnalyseStatistiquesService analyseStatistiquesService = new AnalyseStatistiquesService();
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
@@ -37,7 +41,16 @@ public class StatistiquesServlet extends HttpServlet {
         request.setAttribute("chiffreAffairesNet", statistiqueService.calculerChiffreAffairesNet());
         request.setAttribute("ratioIndemnisations", statistiqueService.calculerRatioIndemnisations());
         request.setAttribute("evolutionFinances", statistiqueService.evolutionFinancesParMois());
-
         request.getRequestDispatcher(VUE).forward(request, response);
+    }
+
+    /**
+     * Demande la synthèse IA, puis revient sur la page (en GET) qui l'affiche une fois.
+     * En POST, et suivi d'une redirection : recharger la page ne relance pas un appel à l'API.
+     */
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        request.getSession().setAttribute(ATTRIBUT_ANALYSE, analyseStatistiquesService.analyser());
+        response.sendRedirect(request.getContextPath() + "/agent/statistiques#analyse");
     }
 }
