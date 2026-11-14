@@ -9,7 +9,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 
 /**
  * Page Statistiques : clients, contrats et finances, avec des graphiques.
@@ -26,16 +25,6 @@ public class StatistiquesServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-
-        int totalClients = statistiqueService.compterTotalClients();
-        int nouveauxClients = statistiqueService.compterNouveauxClients();
-        int contratsActifs = statistiqueService.compterContratsActifs();
-        int contratsExpires = statistiqueService.compterContratsExpires();
-        int contratsResilies = statistiqueService.compterContratsResilies();
-        BigDecimal chiffreAffaires = statistiqueService.calculerChiffreAffaires();
-        BigDecimal totalPrimes = statistiqueService.calculerTotalPrimes();
-        BigDecimal totalIndemnisations = statistiqueService.calculerTotalIndemnisations();
-        
         request.setAttribute("totalClients", statistiqueService.compterTotalClients());
         request.setAttribute("nouveauxClients", statistiqueService.compterNouveauxClients());
         request.setAttribute("repartitionClients", statistiqueService.repartitionClientsParType());
@@ -52,11 +41,7 @@ public class StatistiquesServlet extends HttpServlet {
         request.setAttribute("evolutionFinances", statistiqueService.evolutionFinancesParMois());
 
         if ("true".equals(request.getParameter("analyser"))) {
-            String analyseIa = analyseStatistiquesService.analyser(
-                    totalClients, nouveauxClients,
-                    contratsActifs, contratsExpires, contratsResilies,
-                    chiffreAffaires, totalPrimes, totalIndemnisations);
-            request.setAttribute("analyseIa", analyseIa);
+            request.setAttribute("analyseIa", analyseStatistiquesService.analyser());
         }
 
         request.getRequestDispatcher(VUE).forward(request, response);
