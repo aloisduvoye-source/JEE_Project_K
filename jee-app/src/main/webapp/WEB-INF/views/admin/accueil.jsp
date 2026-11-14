@@ -59,14 +59,11 @@
   </section>
 
   <section id="statistiques">
-    <h2>Statistiques globales</h2>
-
-    <h3>Clients</h3>
+    <h2>Statistiques</h2>
     <ul>
-      <li>Nombre total de clients : –</li>
-      <li>Nouveaux clients : –</li>
-      <li>Répartition par type d'assurance : –</li>
+      <li><a href="${pageContext.request.contextPath}/agent/statistiques">Consulter les statistiques</a></li>
     </ul>
+  </section>
 
     <h3>Contrats</h3>
     <ul>

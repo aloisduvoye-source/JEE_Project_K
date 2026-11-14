@@ -75,21 +75,10 @@
 
   <section id="statistiques">
     <h2>Statistiques</h2>
-
-    <h3>Clients</h3>
     <ul>
-      <li>Nombre total de clients : –</li>
-      <li>Nouveaux clients : –</li>
-      <li>Répartition par type d'assurance : –</li>
+      <li><a href="${pageContext.request.contextPath}/agent/statistiques">Consulter les statistiques</a></li>
     </ul>
-
-    <h3>Contrats</h3>
-    <ul>
-      <li>Contrats actifs : –</li>
-      <li>Contrats expirés : –</li>
-      <li>Contrats résiliés : –</li>
-      <li>Évolution du nombre de contrats : –</li>
-    </ul>
+  </section>
 
     <h3>Finances</h3>
     <ul>
