@@ -22,7 +22,7 @@
     </ul>
 
     <h3>Répartition par type d'assurance</h3>
-    <table border="1">
+    <table border="1" id="tableClients">
       <thead>
         <tr>
           <th>Type d'assurance</th>
@@ -31,7 +31,7 @@
       </thead>
       <tbody>
         <c:forEach var="ligne" items="${repartitionClients}">
-          <tr>
+          <tr data-libelle="<c:out value='${ligne[0]}'/>" data-valeur="<c:out value='${ligne[1]}'/>">
             <td><c:out value="${ligne[0]}"/></td>
             <td><c:out value="${ligne[1]}"/></td>
           </tr>
@@ -57,7 +57,7 @@
     </ul>
 
     <h3>Évolution du nombre de contrats</h3>
-    <table border="1">
+    <table border="1" id="tableContrats">
       <thead>
         <tr>
           <th>Période (Mois / Année)</th>
@@ -66,7 +66,7 @@
       </thead>
       <tbody>
         <c:forEach var="ligne" items="${evolutionContrats}">
-          <tr>
+          <tr data-libelle="<c:out value='${ligne[0]}'/>" data-valeur="<c:out value='${ligne[1]}'/>">
             <td><c:out value="${ligne[0]}"/></td>
             <td><c:out value="${ligne[1]}"/></td>
           </tr>
@@ -92,7 +92,7 @@
     </ul>
 
     <h3>Évolution des revenus</h3>
-    <table border="1">
+    <table border="1" id="tableRevenus">
       <thead>
         <tr>
           <th>Période (Mois / Année)</th>
@@ -101,7 +101,7 @@
       </thead>
       <tbody>
         <c:forEach var="ligne" items="${evolutionRevenus}">
-          <tr>
+          <tr data-libelle="<c:out value='${ligne[0]}'/>" data-valeur="<c:out value='${ligne[1]}'/>">
             <td><c:out value="${ligne[0]}"/></td>
             <td><c:out value="${ligne[1]}"/> €</td>
           </tr>
@@ -123,37 +123,50 @@
 
   <%-- Script Chart.js pour dessiner les 3 graphiques (généré avec l'aide de l'IA) --%>
   <script>
+    // Libellés et valeurs lus dans les lignes du tableau (attributs data-) : c:out dans un attribut HTML
+    // est décodé par le navigateur, alors que dans le script une apostrophe resterait affichée "&#039;"
+    function donnees(idTableau) {
+      const lignes = document.querySelectorAll('#' + idTableau + ' tbody tr[data-valeur]');
+      return {
+        libelles: Array.from(lignes, ligne => ligne.dataset.libelle),
+        valeurs: Array.from(lignes, ligne => Number(ligne.dataset.valeur))
+      };
+    }
+
     // 1. Camembert : répartition des clients par type d'assurance (aide de l'ia)
+    const clients = donnees('tableClients');
     new Chart(document.getElementById('chartClients'), {
       type: 'pie',
       data: {
-        labels: [<c:forEach var="l" items="${repartitionClients}">'<c:out value="${l[0]}"/>',</c:forEach>],
+        labels: clients.libelles,
         datasets: [{
-          data: [<c:forEach var="l" items="${repartitionClients}">${l[1]},</c:forEach>]
+          data: clients.valeurs
         }]
       }
     });
 
     // 2. Courbe : évolution du nombre de contrats par mois (aide de l'ia)
+    const contrats = donnees('tableContrats');
     new Chart(document.getElementById('chartContrats'), {
       type: 'line',
       data: {
-        labels: [<c:forEach var="l" items="${evolutionContrats}">'${l[0]}',</c:forEach>],
+        labels: contrats.libelles,
         datasets: [{
           label: 'Nombre de contrats',
-          data: [<c:forEach var="l" items="${evolutionContrats}">${l[1]},</c:forEach>]
+          data: contrats.valeurs
         }]
       }
     });
 
     // 3. Barres : évolution des revenus par mois (aide de l'ia)
+    const revenus = donnees('tableRevenus');
     new Chart(document.getElementById('chartRevenus'), {
       type: 'bar',
       data: {
-        labels: [<c:forEach var="l" items="${evolutionRevenus}">'${l[0]}',</c:forEach>],
+        labels: revenus.libelles,
         datasets: [{
           label: 'Revenus (€)',
-          data: [<c:forEach var="l" items="${evolutionRevenus}">${l[1]},</c:forEach>]
+          data: revenus.valeurs
         }]
       }
     });
