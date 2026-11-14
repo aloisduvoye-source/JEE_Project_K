@@ -92,6 +92,14 @@
       <li>Chiffre d'affaires net (encaissé - remboursements) : <strong><c:out value="${chiffreAffairesNet}"/> €</strong></li>
       <li>Montant total des primes actives : <strong><c:out value="${totalPrimes}"/> €</strong></li>
       <li>Montant total des indemnisations : <strong><c:out value="${totalIndemnisations}"/> €</strong></li>
+      <li>Ratio indemnisations / primes encaissées (chiffre d'affaires net) :
+        <strong>
+          <c:choose>
+            <c:when test="${empty ratioIndemnisations}">–</c:when>
+            <c:otherwise><c:out value="${ratioIndemnisations}"/> %</c:otherwise>
+          </c:choose>
+        </strong>
+      </li>
     </ul>
 
     <h3>Évolution des revenus</h3>

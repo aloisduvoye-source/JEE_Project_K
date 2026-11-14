@@ -35,6 +35,7 @@ public class StatistiquesServlet extends HttpServlet {
         request.setAttribute("totalIndemnisations", statistiqueService.calculerTotalIndemnisations());
         request.setAttribute("totalRemboursements", statistiqueService.calculerTotalRemboursements());
         request.setAttribute("chiffreAffairesNet", statistiqueService.calculerChiffreAffairesNet());
+        request.setAttribute("ratioIndemnisations", statistiqueService.calculerRatioIndemnisations());
         request.setAttribute("evolutionRevenus", statistiqueService.evolutionRevenusParMois());
 
         request.getRequestDispatcher(VUE).forward(request, response);

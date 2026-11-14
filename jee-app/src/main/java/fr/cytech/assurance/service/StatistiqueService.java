@@ -4,6 +4,7 @@ import fr.cytech.assurance.dao.StatistiqueDao;
 import fr.cytech.assurance.model.enums.StatutContrat;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.YearMonth;
@@ -137,6 +138,21 @@ public class StatistiqueService {
      */
     public BigDecimal calculerChiffreAffairesNet() {
         return calculerChiffreAffaires().subtract(calculerTotalRemboursements());
+    }
+
+    /**
+     * Part des primes encaissées (chiffre d'affaires net) reversée en indemnisations, en pourcentage.
+     * Au-dessus de 100 %, l'assurance a versé plus qu'elle n'a gardé de primes.
+     *
+     * @return le ratio arrondi à 0,1 %, ou null s'il n'y a encore aucune prime encaissée
+     */
+    public BigDecimal calculerRatioIndemnisations() {
+        BigDecimal net = calculerChiffreAffairesNet();
+        if (net.signum() <= 0) {
+            return null;
+        }
+        return calculerTotalIndemnisations().multiply(BigDecimal.valueOf(100))
+                .divide(net, 1, RoundingMode.HALF_UP);
     }
 
     /**
