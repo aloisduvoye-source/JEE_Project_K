@@ -1,0 +1,198 @@
+package fr.cytech.assurance.service;
+
+import fr.cytech.assurance.dao.StatistiqueDao;
+import fr.cytech.assurance.model.enums.StatutContrat;
+import fr.cytech.assurance.model.enums.TypeVersement;
+
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.YearMonth;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * Statistiques globales de la page Statistiques (agents et administrateur) : clients, contrats et finances.
+ */
+public class StatistiqueService {
+
+    // Libellé d'un mois dans les évolutions : "09/2026"
+    private static final DateTimeFormatter FORMAT_MOIS = DateTimeFormatter.ofPattern("MM/yyyy");
+
+    private final StatistiqueDao statistiqueDao = new StatistiqueDao();
+
+    /**
+     * @return le nombre total de clients
+     */
+    public int compterTotalClients() {
+        return statistiqueDao.compterTotalClients();
+    }
+
+    /**
+     * @return le nombre de clients inscrits depuis le 1er du mois en cours
+     */
+    public int compterNouveauxClients() {
+        LocalDateTime debutMois = LocalDate.now().withDayOfMonth(1).atStartOfDay();
+        return statistiqueDao.compterNouveauxClients(debutMois);
+    }
+
+    /**
+     * @return lignes {nom du type, nombre de clients ayant un contrat actif de ce type}
+     */
+    public List<Object[]> repartitionClientsParType() {
+        return statistiqueDao.repartitionClientsParType();
+    }
+
+    /**
+     * @return le nombre de contrats actifs
+     */
+    public int compterContratsActifs() {
+        return statistiqueDao.compterContratsParStatut(StatutContrat.ACTIF);
+    }
+
+    /**
+     * @return le nombre de contrats expirés
+     */
+    public int compterContratsExpires() {
+        return statistiqueDao.compterContratsParStatut(StatutContrat.EXPIRE);
+    }
+
+    /**
+     * @return le nombre de contrats résiliés
+     */
+    public int compterContratsResilies() {
+        return statistiqueDao.compterContratsParStatut(StatutContrat.RESILIE);
+    }
+
+    /**
+     * Nombre de contrats actifs en même temps, mois par mois : ceux actifs le dernier jour du mois
+     * (aujourd'hui pour le mois en cours), du mois du premier contrat jusqu'au mois en cours.
+     *
+     * @return lignes {"MM/AAAA", nombre de contrats actifs (Long)}, de la plus ancienne à la plus récente
+     */
+    public List<Object[]> evolutionContratsParMois() {
+        List<Object[]> periodes = statistiqueDao.periodesContrats();
+        List<Object[]> resultat = new ArrayList<>();
+        if (periodes.isEmpty()) {
+            return resultat;
+        }
+        LocalDate aujourdhui = LocalDate.now();
+        YearMonth dernier = YearMonth.from(aujourdhui);
+        for (YearMonth mois = YearMonth.from((LocalDate) periodes.get(0)[0]); !mois.isAfter(dernier);
+             mois = mois.plusMonths(1)) {
+            LocalDate date = mois.equals(dernier) ? aujourdhui : mois.atEndOfMonth();
+            long actifs = periodes.stream().filter(p -> actifLe(p, date)).count();
+            resultat.add(new Object[]{mois.format(FORMAT_MOIS), actifs});
+        }
+        return resultat;
+    }
+
+    // Actif à cette date : commencé, pas encore fini, payé, ni résilié ni suspendu par un agent avant
+    // (même règle que ContratService.statutAttendu ; une suspension déjà levée n'est plus connue)
+    private static boolean actifLe(Object[] periode, LocalDate date) {
+        LocalDate debut = (LocalDate) periode[0];
+        LocalDate fin = (LocalDate) periode[1];
+        LocalDate resiliation = (LocalDate) periode[2];
+        LocalDate suspension = (LocalDate) periode[3];
+        LocalDate paiement = (LocalDate) periode[4];
+        return !date.isBefore(debut) && date.isBefore(fin)
+                && paiement != null && !date.isBefore(paiement)
+                && (resiliation == null || date.isBefore(resiliation))
+                && (suspension == null || date.isBefore(suspension));
+    }
+
+    /**
+     * @return la somme des paiements effectués, avant remboursements
+     */
+    public BigDecimal calculerChiffreAffaires() {
+        return statistiqueDao.calculerChiffreAffaires();
+    }
+
+    /**
+     * @return la somme des primes annuelles des contrats actifs
+     */
+    public BigDecimal calculerTotalPrimes() {
+        return statistiqueDao.calculerTotalPrimes();
+    }
+
+    /**
+     * @return la somme des indemnisations de sinistres versées
+     */
+    public BigDecimal calculerTotalIndemnisations() {
+        return statistiqueDao.calculerTotalIndemnisations();
+    }
+
+    /**
+     * @return la somme des remboursements de prime versés à la résiliation
+     */
+    public BigDecimal calculerTotalRemboursements() {
+        return statistiqueDao.calculerTotalRemboursements();
+    }
+
+    /**
+     * @return le chiffre d'affaires net : paiements effectués moins remboursements
+     */
+    public BigDecimal calculerChiffreAffairesNet() {
+        return calculerChiffreAffaires().subtract(calculerTotalRemboursements());
+    }
+
+    /**
+     * Part des primes encaissées (chiffre d'affaires net) reversée en indemnisations, en pourcentage.
+     * Au-dessus de 100 %, l'assurance a versé plus qu'elle n'a gardé de primes.
+     *
+     * @return le ratio arrondi à 0,1 %, ou null s'il n'y a encore aucune prime encaissée
+     */
+    public BigDecimal calculerRatioIndemnisations() {
+        BigDecimal net = calculerChiffreAffairesNet();
+        if (net.signum() <= 0) {
+            return null;
+        }
+        return calculerTotalIndemnisations().multiply(BigDecimal.valueOf(100))
+                .divide(net, 1, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * Argent encaissé et versé par mois, sans trou entre le premier et le dernier mois (0 pour un mois sans rien).
+     *
+     * @return lignes {"MM/AAAA", encaissé, indemnisations, remboursements} (montants en BigDecimal),
+     *         de la plus ancienne à la plus récente
+     */
+    public List<Object[]> evolutionFinancesParMois() {
+        // Par mois : {encaissé, indemnisations, remboursements}
+        Map<YearMonth, BigDecimal[]> montants = new HashMap<>();
+        ajouterParMois(montants, statistiqueDao.evolutionRevenusParMois(), 0);
+        ajouterParMois(montants, statistiqueDao.evolutionVersementsParMois(TypeVersement.INDEMNISATION), 1);
+        ajouterParMois(montants, statistiqueDao.evolutionVersementsParMois(TypeVersement.REMBOURSEMENT), 2);
+
+        List<Object[]> resultat = new ArrayList<>();
+        if (montants.isEmpty()) {
+            return resultat;
+        }
+        YearMonth dernier = Collections.max(montants.keySet());
+        for (YearMonth mois = Collections.min(montants.keySet()); !mois.isAfter(dernier); mois = mois.plusMonths(1)) {
+            BigDecimal[] valeurs = montants.getOrDefault(mois, nouveauxMontants());
+            resultat.add(new Object[]{mois.format(FORMAT_MOIS), valeurs[0], valeurs[1], valeurs[2]});
+        }
+        return resultat;
+    }
+
+    // Range les lignes {année, mois, montant} du DAO dans la colonne "colonne" de chaque mois
+    private static void ajouterParMois(Map<YearMonth, BigDecimal[]> montants, List<Object[]> lignes, int colonne) {
+        for (Object[] ligne : lignes) {
+            if (ligne[0] != null && ligne[1] != null) {
+                YearMonth mois = YearMonth.of(((Number) ligne[0]).intValue(), ((Number) ligne[1]).intValue());
+                montants.computeIfAbsent(mois, m -> nouveauxMontants())[colonne] = (BigDecimal) ligne[2];
+            }
+        }
+    }
+
+    private static BigDecimal[] nouveauxMontants() {
+        BigDecimal zero = BigDecimal.ZERO.setScale(2);
+        return new BigDecimal[]{zero, zero, zero};
+    }
+}
