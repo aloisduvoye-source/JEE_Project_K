@@ -66,8 +66,8 @@
       <tbody>
         <c:forEach var="ligne" items="${evolutionContrats}">
           <tr>
-            <td>${ligne[1]}/${ligne[0]}</td>
-            <td><c:out value="${ligne[2]}"/></td>
+            <td><c:out value="${ligne[0]}"/></td>
+            <td><c:out value="${ligne[1]}"/></td>
           </tr>
         </c:forEach>
         <c:if test="${empty evolutionContrats}">
@@ -101,8 +101,8 @@
       <tbody>
         <c:forEach var="ligne" items="${evolutionRevenus}">
           <tr>
-            <td>${ligne[1]}/${ligne[0]}</td>
-            <td><c:out value="${ligne[2]}"/> €</td>
+            <td><c:out value="${ligne[0]}"/></td>
+            <td><c:out value="${ligne[1]}"/> €</td>
           </tr>
         </c:forEach>
         <c:if test="${empty evolutionRevenus}">
@@ -137,10 +137,10 @@
     new Chart(document.getElementById('chartContrats'), {
       type: 'line',
       data: {
-        labels: [<c:forEach var="l" items="${evolutionContrats}">'${l[1]}/${l[0]}',</c:forEach>],
+        labels: [<c:forEach var="l" items="${evolutionContrats}">'${l[0]}',</c:forEach>],
         datasets: [{
           label: 'Nombre de contrats',
-          data: [<c:forEach var="l" items="${evolutionContrats}">${l[2]},</c:forEach>]
+          data: [<c:forEach var="l" items="${evolutionContrats}">${l[1]},</c:forEach>]
         }]
       }
     });
@@ -149,10 +149,10 @@
     new Chart(document.getElementById('chartRevenus'), {
       type: 'bar',
       data: {
-        labels: [<c:forEach var="l" items="${evolutionRevenus}">'${l[1]}/${l[0]}',</c:forEach>],
+        labels: [<c:forEach var="l" items="${evolutionRevenus}">'${l[0]}',</c:forEach>],
         datasets: [{
           label: 'Revenus (€)',
-          data: [<c:forEach var="l" items="${evolutionRevenus}">${l[2]},</c:forEach>]
+          data: [<c:forEach var="l" items="${evolutionRevenus}">${l[1]},</c:forEach>]
         }]
       }
     });
