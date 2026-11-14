@@ -8,13 +8,17 @@
   <%-- Chargement de Chart.js pour les graphiques (ajouté avec l'aide de l'IA).
        Version fixée : sans elle, le CDN sert toujours la dernière, qui peut changer et casser la page --%>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <%-- Seul style nécessaire en attendant la feuille commune : garder les retours à la ligne de la synthèse IA --%>
+  <style>
+    .analyse-ia { white-space: pre-line; }
+  </style>
 </head>
 <body>
   <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
   <h1>Statistiques et analyse des données</h1>
 
-  <section id="analyse" style="background: #f4f6fb; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+  <section id="analyse">
     <h2>Analyse intelligente (Assistant IA Gemini)</h2>
     <%-- POST : recharger la page ne relance pas l'appel à l'API --%>
     <form method="post" action="${pageContext.request.contextPath}/agent/statistiques" id="formAnalyse">
@@ -25,7 +29,7 @@
 
     <%-- Synthèse gardée en session par StatistiquesServlet.doPost : affichée une fois puis effacée --%>
     <c:if test="${not empty sessionScope.analyseIa}">
-      <div style="margin-top: 12px; white-space: pre-line; background: white; padding: 12px; border-left: 4px solid #2563eb;">
+      <div class="analyse-ia">
         <c:out value="${sessionScope.analyseIa}"/>
       </div>
       <c:remove var="analyseIa" scope="session"/>
