@@ -26,7 +26,7 @@
       <thead>
         <tr>
           <th>Type d'assurance</th>
-          <th>Nombre de clients</th>
+          <th>Clients ayant un contrat actif</th>
         </tr>
       </thead>
       <tbody>
@@ -86,7 +86,7 @@
   <section>
     <h2>Statistiques Financières</h2>
     <ul>
-      <li>Chiffre d'affaires encaissé : <strong><c:out value="${chiffreAffaires}"/> €</strong></li>
+      <li>Chiffre d'affaires encaissé (paiements effectués, avant remboursements) : <strong><c:out value="${chiffreAffaires}"/> €</strong></li>
       <li>Montant total des primes actives : <strong><c:out value="${totalPrimes}"/> €</strong></li>
       <li>Montant total des indemnisations : <strong><c:out value="${totalIndemnisations}"/> €</strong></li>
     </ul>
