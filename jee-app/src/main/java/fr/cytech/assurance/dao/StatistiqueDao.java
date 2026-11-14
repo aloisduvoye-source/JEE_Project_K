@@ -11,21 +11,31 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Function;
 
+/**
+ * Requêtes d'agrégation (COUNT, SUM, GROUP BY) de la page Statistiques.
+ * <p>
+ * N'hérite pas de GenericDao : elle ne gère aucune entité, seulement des calculs en lecture
+ * sur les clients, contrats, paiements et versements.
+ */
 public class StatistiqueDao {
 
-    // Lecture seule avec un EntityManager fermé à la fin, comme GenericDao.enLecture
-    private <R> R enLecture(Function<EntityManager, R> operation) {
-        try (EntityManager em = JpaUtil.getEntityManager()) {
-            return operation.apply(em);
-        }
-    }
-
+    /**
+     * Nombre total de clients.
+     *
+     * @return le nombre de fiches client
+     */
     public int compterTotalClients() {
         return enLecture(em -> em.createQuery("SELECT COUNT(c) FROM Client c", Long.class)
                 .getSingleResult()
                 .intValue());
     }
 
+    /**
+     * Nombre de clients dont le compte a été créé depuis une date.
+     *
+     * @param depuis date et heure de début (incluse)
+     * @return le nombre de nouveaux clients
+     */
     public int compterNouveauxClients(LocalDateTime depuis) {
         return enLecture(em -> em.createQuery(
                         "SELECT COUNT(c) FROM Client c WHERE c.utilisateur.dateCreation >= :depuis", Long.class)
@@ -34,6 +44,12 @@ public class StatistiqueDao {
                 .intValue());
     }
 
+    /**
+     * Nombre de clients ayant au moins un contrat actif, pour chaque type d'assurance.
+     * Un client qui a deux contrats actifs du même type n'est compté qu'une fois.
+     *
+     * @return lignes {nom du type (String), nombre de clients (Long)}, triées par nom
+     */
     public List<Object[]> repartitionClientsParType() {
         return enLecture(em -> em.createQuery(
                         "SELECT c.typeAssurance.nom, COUNT(DISTINCT c.client.id) FROM Contrat c"
@@ -45,6 +61,12 @@ public class StatistiqueDao {
                 .getResultList());
     }
 
+    /**
+     * Nombre de contrats ayant un statut.
+     *
+     * @param statut statut des contrats à compter
+     * @return le nombre de contrats
+     */
     public int compterContratsParStatut(StatutContrat statut) {
         return enLecture(em -> em.createQuery(
                         "SELECT COUNT(c) FROM Contrat c WHERE c.statut = :statut", Long.class)
@@ -53,6 +75,12 @@ public class StatistiqueDao {
                 .intValue());
     }
 
+    /**
+     * Nombre de contrats par mois de début, tous statuts confondus.
+     * Les mois sans contrat sont absents (complétés par StatistiqueService).
+     *
+     * @return lignes {année (Integer), mois (Integer), nombre de contrats (Long)}, de la plus ancienne à la plus récente
+     */
     public List<Object[]> evolutionContratsParMois() {
         return enLecture(em -> em.createQuery(
                         "SELECT YEAR(c.dateDebut), MONTH(c.dateDebut), COUNT(c) FROM Contrat c"
@@ -60,9 +88,15 @@ public class StatistiqueDao {
                                 + " ORDER BY YEAR(c.dateDebut), MONTH(c.dateDebut)",
                         Object[].class)
                 .getResultList());
-    } 
+    }
 
-    public BigDecimal calculerChiffreAffaires(){
+    /**
+     * Chiffre d'affaires encaissé : somme des paiements effectués.
+     * Les remboursements versés à la résiliation ne sont pas déduits.
+     *
+     * @return le montant total, 0 s'il n'y a aucun paiement effectué
+     */
+    public BigDecimal calculerChiffreAffaires() {
         return enLecture(em -> em.createQuery(
                         "SELECT COALESCE(SUM(p.montant), 0) FROM Paiement p WHERE p.statut = :statut",
                         BigDecimal.class)
@@ -70,7 +104,12 @@ public class StatistiqueDao {
                 .getSingleResult());
     }
 
-    public BigDecimal calculerTotalPrimes(){
+    /**
+     * Somme des primes annuelles des contrats actifs.
+     *
+     * @return le montant total, 0 s'il n'y a aucun contrat actif
+     */
+    public BigDecimal calculerTotalPrimes() {
         return enLecture(em -> em.createQuery(
                         "SELECT COALESCE(SUM(c.prime), 0) FROM Contrat c WHERE c.statut = :statut",
                         BigDecimal.class)
@@ -78,7 +117,12 @@ public class StatistiqueDao {
                 .getSingleResult());
     }
 
-    public BigDecimal calculerTotalIndemnisations(){
+    /**
+     * Somme des indemnisations de sinistres versées (hors remboursements).
+     *
+     * @return le montant total, 0 s'il n'y a aucune indemnisation
+     */
+    public BigDecimal calculerTotalIndemnisations() {
         return enLecture(em -> em.createQuery(
                         "SELECT COALESCE(SUM(v.montant), 0) FROM Versement v WHERE v.type = :type",
                         BigDecimal.class)
@@ -86,6 +130,12 @@ public class StatistiqueDao {
                 .getSingleResult());
     }
 
+    /**
+     * Montant des paiements effectués, par mois de paiement.
+     * Les mois sans paiement sont absents (complétés par StatistiqueService).
+     *
+     * @return lignes {année (Integer), mois (Integer), montant (BigDecimal)}, de la plus ancienne à la plus récente
+     */
     public List<Object[]> evolutionRevenusParMois() {
         return enLecture(em -> em.createQuery(
                         "SELECT YEAR(p.datePaiement), MONTH(p.datePaiement), COALESCE(SUM(p.montant), 0)"
@@ -97,5 +147,10 @@ public class StatistiqueDao {
                 .getResultList());
     }
 
-    
+    // Lecture seule avec un EntityManager fermé à la fin, comme GenericDao.enLecture
+    private <R> R enLecture(Function<EntityManager, R> operation) {
+        try (EntityManager em = JpaUtil.getEntityManager()) {
+            return operation.apply(em);
+        }
+    }
 }
