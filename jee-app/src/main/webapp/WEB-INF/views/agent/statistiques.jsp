@@ -17,9 +17,10 @@
   <section id="analyse" style="background: #f4f6fb; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
     <h2>Analyse intelligente (Assistant IA Gemini)</h2>
     <%-- POST : recharger la page ne relance pas l'appel à l'API --%>
-    <form method="post" action="${pageContext.request.contextPath}/agent/statistiques">
+    <form method="post" action="${pageContext.request.contextPath}/agent/statistiques" id="formAnalyse">
       <button type="submit">Générer une synthèse IA des statistiques</button>
     </form>
+    <p id="analyseEnCours" hidden>Analyse en cours : cela peut prendre jusqu'à une minute…</p>
     <p>Une même synthèse est réutilisée pendant 10 minutes.</p>
 
     <%-- Synthèse gardée en session par StatistiquesServlet.doPost : affichée une fois puis effacée --%>
@@ -157,6 +158,12 @@
 
   <%-- Script Chart.js pour dessiner les 3 graphiques (généré avec l'aide de l'IA) --%>
   <script>
+    // Pendant l'analyse IA (jusqu'à une minute) : bouton désactivé, pour ne pas relancer la demande
+    document.getElementById('formAnalyse').addEventListener('submit', function () {
+      this.querySelector('button').disabled = true;
+      document.getElementById('analyseEnCours').hidden = false;
+    });
+
     // Libellés et valeurs lus dans les lignes du tableau (attributs data-) : c:out dans un attribut HTML
     // est décodé par le navigateur, alors que dans le script une apostrophe resterait affichée "&#039;"
     // attributs : noms des valeurs à lire (data-valeur par défaut), une liste de nombres par nom
