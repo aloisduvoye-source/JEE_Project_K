@@ -79,14 +79,5 @@
       <li><a href="${pageContext.request.contextPath}/agent/statistiques">Consulter les statistiques</a></li>
     </ul>
   </section>
-
-    <h3>Finances</h3>
-    <ul>
-      <li>Chiffre d'affaires : –</li>
-      <li>Montant des primes : –</li>
-      <li>Montant des indemnisations : –</li>
-      <li>Évolution des revenus : –</li>
-    </ul>
-  </section>
 </body>
 </html>
