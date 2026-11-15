@@ -43,6 +43,15 @@
         <option value="${t.id}" ${t.id == typeChoisi ? 'selected' : ''}><c:out value="${t.nom}"/></option>
       </c:forEach>
     </select>
+    <label for="tri">Trier par</label>
+    <select id="tri" name="tri">
+      <option value="debut_desc" ${triChoisi == 'debut_desc' ? 'selected' : ''}>Début (plus récent)</option>
+      <option value="debut_asc" ${triChoisi == 'debut_asc' ? 'selected' : ''}>Début (plus ancien)</option>
+      <option value="fin_asc" ${triChoisi == 'fin_asc' ? 'selected' : ''}>Fin (plus proche)</option>
+      <option value="fin_desc" ${triChoisi == 'fin_desc' ? 'selected' : ''}>Fin (plus lointaine)</option>
+      <option value="prime_desc" ${triChoisi == 'prime_desc' ? 'selected' : ''}>Prime (décroissante)</option>
+      <option value="prime_asc" ${triChoisi == 'prime_asc' ? 'selected' : ''}>Prime (croissante)</option>
+    </select>
     <button type="submit">Rechercher</button>
     <c:if test="${recherche}">
       <a href="${pageContext.request.contextPath}/agent/contrats">Effacer</a>

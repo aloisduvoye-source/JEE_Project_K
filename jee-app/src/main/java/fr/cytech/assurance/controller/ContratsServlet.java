@@ -37,11 +37,13 @@ public class ContratsServlet extends HttpServlet {
         }
         StatutContrat statut = statut(request.getParameter("statut"));
         Long idType = Validateur.idOuNull(request.getParameter("type"));
+        String tri = Validateur.nettoyer(request.getParameter("tri"));
 
-        request.setAttribute("contrats", contratService.rechercher(texte, statut, idType));
+        request.setAttribute("contrats", contratService.rechercher(texte, statut, idType, tri));
         request.setAttribute("q", texte);
         request.setAttribute("statutChoisi", statut);
         request.setAttribute("typeChoisi", idType);
+        request.setAttribute("triChoisi", tri.isEmpty() ? "debut_desc" : tri);
         request.setAttribute("statuts", StatutContrat.values());
         // Tous les types, archivés compris : ils restent liés à des contrats existants
         request.setAttribute("types", typeAssuranceService.listerAvecGaranties());

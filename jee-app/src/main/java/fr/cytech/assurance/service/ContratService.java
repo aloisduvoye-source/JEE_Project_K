@@ -21,9 +21,11 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Règles métier des contrats. Les servlets vérifient le format des saisies (Validateur),
@@ -58,18 +60,49 @@ public class ContratService {
     }
 
     /**
-     * Recherche de contrats pour les agents (§2.2, « rechercher un contrat »). Critères facultatifs (null : ignoré).
+     * Recherche et tri de contrats pour les agents (§2.2, « rechercher un contrat »). Critères facultatifs (null : ignoré).
      *
      * @param texte  numéro de contrat, ou nom, prénom ou email du client (en partie)
      * @param statut statut des contrats
      * @param idType type d'assurance
+     * @param tri    critère de tri (debut_desc, debut_asc, fin_asc, fin_desc, prime_desc, prime_asc)
      */
-    public List<Contrat> rechercher(String texte, StatutContrat statut, Long idType) {
+    public List<Contrat> rechercher(String texte, StatutContrat statut, Long idType, String tri) {
         String nettoye = texte == null || texte.isBlank() ? null : texte.trim();
-        if (nettoye == null && statut == null && idType == null) {
-            return listerContrats();
+        List<Contrat> resultats = (nettoye == null && statut == null && idType == null)
+                ? listerContrats()
+                : contratDao.rechercher(nettoye, statut, idType);
+        return trierContrats(resultats, tri);
+    }
+
+    /**
+     * Contrats d'un client, avec leur type et leurs garanties, filtrés et triés. Critères facultatifs (null : ignoré).
+     */
+    public List<Contrat> listerContratsDuClient(Long idClient, StatutContrat statut, Long idType, String tri) {
+        if (idClient == null) {
+            return List.of();
         }
-        return contratDao.rechercher(nettoye, statut, idType);
+        Stream<Contrat> flux = contratDao.listerParClient(idClient).stream();
+        if (statut != null) {
+            flux = flux.filter(c -> c.getStatut() == statut);
+        }
+        if (idType != null) {
+            flux = flux.filter(c -> c.getTypeAssurance() != null && idType.equals(c.getTypeAssurance().getId()));
+        }
+        return trierContrats(flux.toList(), tri);
+    }
+
+    private List<Contrat> trierContrats(List<Contrat> contrats, String tri) {
+        Comparator<Contrat> comparateur = switch (tri == null ? "" : tri) {
+            case "debut_asc" -> Comparator.comparing(Contrat::getDateDebut);
+            case "fin_asc" -> Comparator.comparing(Contrat::getDateFin);
+            case "fin_desc" -> Comparator.comparing(Contrat::getDateFin).reversed();
+            case "prime_asc" -> Comparator.comparing(Contrat::getPrime);
+            case "prime_desc" -> Comparator.comparing(Contrat::getPrime).reversed();
+            default -> Comparator.comparing(Contrat::getDateDebut).reversed()
+                    .thenComparing(Comparator.comparing(Contrat::getId).reversed());
+        };
+        return contrats.stream().sorted(comparateur).toList();
     }
 
     // Contrat qui renouvelle celui-ci, ou null s'il n'a pas été renouvelé
@@ -80,11 +113,6 @@ public class ContratService {
     // Remboursement de prime versé à la résiliation du contrat, ou null s'il n'y en a pas eu
     public Versement trouverRemboursement(Long idContrat) {
         return versementDao.trouverRemboursement(idContrat);
-    }
-
-    // Contrats d'un client, du plus récent au plus ancien, avec leur type et leurs garanties
-    public List<Contrat> listerContratsDuClient(Long idClient) {
-        return contratDao.listerParClient(idClient);
     }
 
     /**
