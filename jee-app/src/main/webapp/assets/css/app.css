@@ -1043,6 +1043,20 @@ a.puce { display: inline-flex; align-items: center; text-decoration: none; }
     radial-gradient(700px 380px at 50% -5%, color-mix(in srgb, var(--primaire) 13%, transparent), transparent 70%);
 }
 .auth-carte { width: 100%; max-width: 440px; }
+.auth-disposition { display: grid; grid-template-columns: minmax(0, 380px) minmax(0, 440px); gap: 56px; align-items: center; }
+.auth-photo {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 2 / 3;
+  max-height: 560px;
+  border-radius: 20px;
+  object-fit: cover;
+  box-shadow: var(--ombre-haute);
+}
+@media (max-width: 860px) {
+  .auth-disposition { grid-template-columns: minmax(0, 440px); }
+  .auth-photo { display: none; }
+}
 .auth-carte-large { max-width: 720px; }
 .auth-entete { margin-bottom: 26px; text-align: center; }
 .auth-entete .logo-icone { width: 48px; height: 48px; margin: 0 auto 16px; border-radius: 14px; }
