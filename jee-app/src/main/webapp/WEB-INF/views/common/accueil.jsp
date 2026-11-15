@@ -56,8 +56,9 @@
           </ul>
         </div>
 
-        <%-- Illustration : aperçu (fictif) de l'espace client --%>
+        <%-- Illustration : photo (assets/img/CREDITS.md) et aperçu (fictif) de l'espace client --%>
         <div class="hero-visuel" aria-hidden="true">
+          <img class="hero-photo" src="${pageContext.request.contextPath}/assets/img/accueil-famille.jpg" alt="" width="1200" height="800">
           <div class="maquette maquette-contrat">
             <div class="maquette-ligne">
               <div class="maquette-titre">
@@ -69,12 +70,6 @@
             <div>
               <div class="progression-libelle"><span>Période de couverture</span><span>64 %</span></div>
               <div class="progression"><span style="width:64%"></span></div>
-            </div>
-            <div class="etiquettes">
-              <span class="etiquette">Responsabilité civile</span>
-              <span class="etiquette">Incendie</span>
-              <span class="etiquette">Dégâts des eaux</span>
-              <span class="etiquette">Vol</span>
             </div>
             <div class="maquette-prix"><span>Prime annuelle</span><strong>250,00 €</strong></div>
           </div>

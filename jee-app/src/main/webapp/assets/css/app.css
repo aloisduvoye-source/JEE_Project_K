@@ -988,16 +988,26 @@ a.puce { display: inline-flex; align-items: center; text-decoration: none; }
 .hero-points li { display: inline-flex; align-items: center; gap: 8px; }
 .hero-points .icone { color: var(--succes); }
 
-.hero-visuel { position: relative; min-height: 400px; }
+.hero-visuel { position: relative; min-height: 520px; }
+.hero-photo {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: calc(100% - 40px);
+  height: calc(100% - 56px);
+  border-radius: 20px;
+  object-fit: cover;
+  box-shadow: var(--ombre-haute);
+}
 .maquette { position: absolute; padding: 18px; border: 1px solid var(--bordure); border-radius: 16px; background: var(--surface); box-shadow: var(--ombre-haute); }
-.maquette-contrat { top: 10px; left: 0; right: 48px; display: grid; gap: 16px; }
+.maquette-contrat { bottom: 0; left: 0; width: 270px; display: grid; gap: 14px; }
 .maquette-ligne { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
 .maquette-titre { display: flex; align-items: center; gap: 12px; }
 .maquette-titre small { display: block; color: var(--texte-doux); font-size: .8rem; }
 .maquette-prix { display: flex; align-items: baseline; justify-content: space-between; padding-top: 14px; border-top: 1px dashed var(--bordure-forte); color: var(--texte-doux); font-size: .85rem; }
 .maquette-prix strong { color: var(--texte); font-size: 1.3rem; }
-.maquette-sinistre { right: 0; bottom: 70px; width: 260px; animation: flotter 6s ease-in-out infinite; }
-.maquette-paiement { bottom: 0; left: 28px; display: flex; align-items: center; gap: 12px; width: 250px; animation: flotter 7s ease-in-out 1s infinite; }
+.maquette-sinistre { right: -16px; bottom: 96px; width: 210px; animation: flotter 6s ease-in-out infinite; }
+.maquette-paiement { top: 28px; right: -16px; display: flex; align-items: center; gap: 12px; width: 230px; animation: flotter 7s ease-in-out 1s infinite; }
 .maquette-paiement small { display: block; color: var(--texte-doux); font-size: .8rem; }
 .maquette-etapes { display: flex; gap: 6px; margin-top: 12px; }
 .maquette-etapes span { flex: 1; height: 5px; border-radius: 3px; background: var(--neutre-doux); }
