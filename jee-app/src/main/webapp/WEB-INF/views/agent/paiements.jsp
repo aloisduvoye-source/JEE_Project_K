@@ -1,85 +1,92 @@
 <%@ page contentType="text/html;charset=UTF-8" pageEncoding="UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
+<%@ taglib prefix="app" tagdir="/WEB-INF/tags" %>
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <title>Gestion des paiements</title>
+  <%@ include file="/WEB-INF/views/common/head.jspf" %>
+  <title>Paiements · Billy Assurance</title>
 </head>
 <body>
-<%@ include file="/WEB-INF/views/common/header.jspf" %>
+  <%@ include file="/WEB-INF/views/common/header.jspf" %>
 
-<h1>Tous les paiements</h1>
+  <c:set var="filtre" value="${not empty statutSelectionne or not empty modeSelectionne}"/>
+  <main id="contenu" class="page">
+    <div class="conteneur apparition">
+      <div class="entete-page">
+        <div>
+          <h1>Paiements</h1>
+          <p class="sous-titre">${fn:length(paiements)} paiement${fn:length(paiements) > 1 ? 's' : ''}${filtre ? ' avec ces critères' : ' au total'}.</p>
+        </div>
+      </div>
 
-<form method="get" action="${pageContext.request.contextPath}/agent/paiements">
-    <label for="statut">Statut :</label>
-    <select id="statut" name="statut">
-        <option value="">Tous</option>
-        <c:forEach var="s" items="${statuts}">
-            <option value="${s}" ${s == statutSelectionne ? 'selected' : ''}><c:out value="${s}"/></option>
-        </c:forEach>
-    </select>
+      <%-- Filtres et tri faits par le serveur, en GET : l'adresse peut être gardée en favori (ex. les retards) --%>
+      <form class="barre-outils" method="get" action="${pageContext.request.contextPath}/agent/paiements">
+        <%@ include file="/WEB-INF/views/common/paiements-filtres.jspf" %>
+        <button type="submit" class="bouton bouton-principal">Filtrer</button>
+        <c:if test="${filtre}">
+          <a class="bouton bouton-fantome" href="${pageContext.request.contextPath}/agent/paiements">Effacer</a>
+        </c:if>
+      </form>
 
-    <label for="mode">Mode :</label>
-    <select id="mode" name="mode">
-        <option value="">Tous</option>
-        <c:forEach var="m" items="${modes}">
-            <option value="${m}" ${m == modeSelectionne ? 'selected' : ''}><c:out value="${m}"/></option>
-        </c:forEach>
-    </select>
+      <c:choose>
+        <c:when test="${empty paiements}">
+          <div class="carte vide">
+            <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-carte"/></svg></span>
+            <h2>Aucun paiement</h2>
+            <p>${filtre ? 'Aucun paiement ne correspond à ces critères.' : 'Les paiements des contrats apparaîtront ici.'}</p>
+          </div>
+        </c:when>
+        <c:otherwise>
+          <div class="tableau-conteneur">
+            <table class="tableau">
+              <thead>
+                <tr>
+                  <th>Contrat</th>
+                  <th>Client</th>
+                  <th>Échéance</th>
+                  <th class="a-droite">Montant</th>
+                  <th>Payé le</th>
+                  <th>Mode</th>
+                  <th>Statut</th>
+                  <th><span class="visuellement-cache">Actions</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <c:forEach var="p" items="${paiements}">
+                  <c:set var="assure" value="${p.contrat.client.utilisateur}"/>
+                  <tr>
+                    <td>
+                      <a class="cellule-principale" href="${pageContext.request.contextPath}/agent/contrats/detail?id=${p.contrat.id}">Contrat n° <c:out value="${p.contrat.id}"/></a>
+                      <div class="cellule-secondaire"><c:out value="${p.contrat.typeAssurance.nom}"/></div>
+                    </td>
+                    <td>
+                      <div class="cellule-personne">
+                        <span class="avatar"><c:out value="${fn:toUpperCase(fn:substring(assure.prenom, 0, 1))}${fn:toUpperCase(fn:substring(assure.nom, 0, 1))}"/></span>
+                        <div class="cellule-principale"><c:out value="${assure.prenom} ${assure.nom}"/></div>
+                      </div>
+                    </td>
+                    <td class="nombre"><app:date valeur="${p.dateEcheance}"/></td>
+                    <td class="a-droite nombre cellule-principale"><app:euros valeur="${p.montant}"/></td>
+                    <td class="nombre"><app:date valeur="${p.datePaiement}"/></td>
+                    <td><c:choose><c:when test="${empty p.modePaiement}">—</c:when><c:otherwise><app:modePaiement valeur="${p.modePaiement}"/></c:otherwise></c:choose></td>
+                    <td><app:statutPaiement valeur="${p.statut}"/></td>
+                    <td class="cellule-actions">
+                      <a class="bouton bouton-petit bouton-fantome" href="${pageContext.request.contextPath}/agent/contrats/detail?id=${p.contrat.id}">
+                        Voir le contrat<svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg>
+                      </a>
+                    </td>
+                  </tr>
+                </c:forEach>
+              </tbody>
+            </table>
+          </div>
+        </c:otherwise>
+      </c:choose>
+    </div>
+  </main>
 
-    <label for="tri">Trier par :</label>
-    <select id="tri" name="tri">
-        <option value="echeance_desc" ${triSelectionne == 'echeance_desc' ? 'selected' : ''}>Échéance (plus récente)</option>
-        <option value="echeance_asc" ${triSelectionne == 'echeance_asc' ? 'selected' : ''}>Échéance (plus ancienne)</option>
-        <option value="montant_desc" ${triSelectionne == 'montant_desc' ? 'selected' : ''}>Montant (décroissant)</option>
-        <option value="montant_asc" ${triSelectionne == 'montant_asc' ? 'selected' : ''}>Montant (croissant)</option>
-        <option value="paiement_desc" ${triSelectionne == 'paiement_desc' ? 'selected' : ''}>Date de paiement (récente)</option>
-    </select>
-
-    <button type="submit">Filtrer</button>
-    <a href="${pageContext.request.contextPath}/agent/paiements">Réinitialiser</a>
-</form>
-
-<br>
-
-<c:if test="${empty paiements}">
-    <p>Aucun paiement trouvé.</p>
-</c:if>
-
-<c:if test="${not empty paiements}">
-    <table border="1">
-        <thead>
-        <tr>
-            <th>Contrat</th>
-            <th>Client</th>
-            <th>Échéance</th>
-            <th>Montant</th>
-            <th>Date de paiement</th>
-            <th>Mode</th>
-            <th>Statut</th>
-            <th>Action</th>
-        </tr>
-        </thead>
-        <tbody>
-        <c:forEach var="p" items="${paiements}">
-            <tr>
-                <td>Contrat n° <c:out value="${p.contrat.id}"/> (<c:out value="${p.contrat.typeAssurance.nom}"/>)</td>
-                <td><c:out value="${p.contrat.client.utilisateur.prenom} ${p.contrat.client.utilisateur.nom}"/></td>
-                <td><c:out value="${p.dateEcheance}"/></td>
-                <td><c:out value="${p.montant}"/> €</td>
-                <td><c:out value="${empty p.datePaiement ? '-' : p.datePaiement}"/></td>
-                <td><c:out value="${empty p.modePaiement ? '-' : p.modePaiement}"/></td>
-                <td><c:out value="${p.statut}"/></td>
-                <td>
-                    <a href="${pageContext.request.contextPath}/agent/contrats/detail?id=${p.contrat.id}">Voir le contrat</a>
-                </td>
-            </tr>
-        </c:forEach>
-        </tbody>
-    </table>
-</c:if>
-
-<p><a href="${pageContext.request.contextPath}/agent/accueil">Retour à l'espace agent</a></p>
+  <%@ include file="/WEB-INF/views/common/footer.jspf" %>
 </body>
 </html>

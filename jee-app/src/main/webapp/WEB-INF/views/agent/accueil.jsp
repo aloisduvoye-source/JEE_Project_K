@@ -67,11 +67,14 @@
             </div>
             <span class="tuile-lien">Traiter <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
           </a>
-          <div class="tuile tuile-bientot">
-            <span class="badge ton-neutre">Bientôt</span>
-            <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-carte"/></svg></span>
-            <div><h3>Paiements</h3><p>Suivre les paiements et les retards de tous les contrats.</p></div>
-          </div>
+          <a class="tuile" href="${pageContext.request.contextPath}/agent/paiements?statut=EN_RETARD">
+            <span class="pastille ton-attention"><svg class="icone" aria-hidden="true"><use href="#i-carte"/></svg></span>
+            <div>
+              <h3>Paiements</h3>
+              <p>Suivre les paiements et les retards de tous les contrats.</p>
+            </div>
+            <span class="tuile-lien">Voir les retards <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
+          </a>
         </div>
       </div>
 

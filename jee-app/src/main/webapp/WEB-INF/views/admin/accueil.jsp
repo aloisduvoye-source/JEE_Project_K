@@ -75,6 +75,14 @@
             </div>
             <span class="tuile-lien">Consulter <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
           </a>
+          <a class="tuile" href="${pageContext.request.contextPath}/agent/paiements">
+            <span class="pastille ton-info"><svg class="icone" aria-hidden="true"><use href="#i-carte"/></svg></span>
+            <div>
+              <h3>Paiements</h3>
+              <p>Les paiements de tous les contrats, filtrés par statut ou par mode.</p>
+            </div>
+            <span class="tuile-lien">Consulter <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
+          </a>
           <a class="tuile" href="${pageContext.request.contextPath}/agent/sinistres">
             <span class="pastille ton-attention"><svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg></span>
             <div>

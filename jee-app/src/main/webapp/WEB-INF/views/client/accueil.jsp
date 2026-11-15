@@ -51,14 +51,14 @@
             </div>
             <span class="tuile-lien">Suivre <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
           </a>
-          <div class="tuile tuile-bientot">
-            <span class="badge ton-neutre">Bientôt</span>
-            <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-carte"/></svg></span>
+          <a class="tuile" href="${pageContext.request.contextPath}/client/paiements">
+            <span class="pastille ton-info"><svg class="icone" aria-hidden="true"><use href="#i-carte"/></svg></span>
             <div>
               <h3>Mes paiements</h3>
-              <p>L'historique de tous vos paiements. En attendant, chaque contrat se paie depuis sa fiche.</p>
+              <p>Vos échéances à régler et l'historique de vos paiements.</p>
             </div>
-          </div>
+            <span class="tuile-lien">Consulter <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
+          </a>
         </div>
       </div>
 

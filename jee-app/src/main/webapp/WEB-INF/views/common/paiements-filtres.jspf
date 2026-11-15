@@ -1,0 +1,43 @@
+<%--
+  Listes déroulantes du filtre et du tri des paiements, communes à la liste de l'agent et à celle du client.
+  À inclure dans un <form method="get" class="barre-outils">, avant le bouton d'envoi.
+  Attend les attributs "statuts", "statutSelectionne", "modes", "modeSelectionne" et "triSelectionne".
+--%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="app" tagdir="/WEB-INF/tags" %>
+<label>
+  <span class="visuellement-cache">Statut</span>
+  <select class="saisie" name="statut">
+    <option value="">Tous les statuts</option>
+    <c:forEach var="s" items="${statuts}">
+      <option value="${s}" ${s == statutSelectionne ? 'selected' : ''}>
+        <c:choose>
+          <c:when test="${s == 'EN_ATTENTE'}">À payer</c:when>
+          <c:when test="${s == 'EFFECTUE'}">Payés</c:when>
+          <c:when test="${s == 'EN_RETARD'}">En retard</c:when>
+          <c:when test="${s == 'ANNULE'}">Annulés</c:when>
+          <c:otherwise><c:out value="${s}"/></c:otherwise>
+        </c:choose>
+      </option>
+    </c:forEach>
+  </select>
+</label>
+<label>
+  <span class="visuellement-cache">Mode de paiement</span>
+  <select class="saisie" name="mode">
+    <option value="">Tous les modes</option>
+    <c:forEach var="m" items="${modes}">
+      <option value="${m}" ${m == modeSelectionne ? 'selected' : ''}><app:modePaiement valeur="${m}"/></option>
+    </c:forEach>
+  </select>
+</label>
+<label>
+  <span class="visuellement-cache">Trier par</span>
+  <select class="saisie" name="tri">
+    <option value="echeance_desc" ${triSelectionne == 'echeance_desc' ? 'selected' : ''}>Échéance (plus récente)</option>
+    <option value="echeance_asc" ${triSelectionne == 'echeance_asc' ? 'selected' : ''}>Échéance (plus ancienne)</option>
+    <option value="montant_desc" ${triSelectionne == 'montant_desc' ? 'selected' : ''}>Montant (décroissant)</option>
+    <option value="montant_asc" ${triSelectionne == 'montant_asc' ? 'selected' : ''}>Montant (croissant)</option>
+    <option value="paiement_desc" ${triSelectionne == 'paiement_desc' ? 'selected' : ''}>Date de paiement (récente)</option>
+  </select>
+</label>
