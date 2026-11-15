@@ -14,7 +14,7 @@
       <section class="banniere">
         <p class="banniere-sur-titre">Espace agent</p>
         <h1>Bonjour <c:out value="${sessionScope.utilisateur.prenom}"/>,</h1>
-        <p>Créez et suivez les contrats de vos clients, traitez leurs sinistres et gérez les garanties. Les statistiques arrivent bientôt.</p>
+        <p>Créez et suivez les contrats de vos clients, traitez leurs sinistres, gérez les garanties et suivez les statistiques.</p>
         <div class="banniere-actions">
           <a class="bouton bouton-blanc" href="${pageContext.request.contextPath}/agent/contrats/nouveau">
             <svg class="icone" aria-hidden="true"><use href="#i-plus"/></svg>Nouveau contrat
@@ -75,35 +75,14 @@
             </div>
             <span class="tuile-lien">Voir les retards <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
           </a>
-        </div>
-      </div>
-
-      <div>
-        <div class="titre-section">
-          <h2>Statistiques</h2>
-          <span class="badge ton-neutre">Bientôt</span>
-        </div>
-        <div class="grille grille-stats">
-          <div class="carte stat">
-            <div class="stat-entete"><span class="stat-libelle">Clients</span><span class="pastille pastille-petite ton-primaire"><svg class="icone" aria-hidden="true"><use href="#i-utilisateurs"/></svg></span></div>
-            <div class="stat-valeur en-attente">—</div>
-            <div class="stat-detail">Total et nouveaux clients</div>
-          </div>
-          <div class="carte stat">
-            <div class="stat-entete"><span class="stat-libelle">Contrats actifs</span><span class="pastille pastille-petite ton-succes"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg></span></div>
-            <div class="stat-valeur en-attente">—</div>
-            <div class="stat-detail">Expirés, résiliés, évolution</div>
-          </div>
-          <div class="carte stat">
-            <div class="stat-entete"><span class="stat-libelle">Chiffre d'affaires</span><span class="pastille pastille-petite ton-info"><svg class="icone" aria-hidden="true"><use href="#i-euro"/></svg></span></div>
-            <div class="stat-valeur en-attente">—</div>
-            <div class="stat-detail">Paiements encaissés</div>
-          </div>
-          <div class="carte stat">
-            <div class="stat-entete"><span class="stat-libelle">Indemnisations</span><span class="pastille pastille-petite ton-attention"><svg class="icone" aria-hidden="true"><use href="#i-stats"/></svg></span></div>
-            <div class="stat-valeur en-attente">—</div>
-            <div class="stat-detail">Montants versés aux clients</div>
-          </div>
+          <a class="tuile" href="${pageContext.request.contextPath}/agent/statistiques">
+            <span class="pastille ton-violet"><svg class="icone" aria-hidden="true"><use href="#i-stats"/></svg></span>
+            <div>
+              <h3>Statistiques</h3>
+              <p>Clients, contrats et finances en graphiques, avec une synthèse par l'assistant IA.</p>
+            </div>
+            <span class="tuile-lien">Consulter <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
+          </a>
         </div>
       </div>
     </div>

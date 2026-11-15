@@ -14,7 +14,7 @@
       <section class="banniere">
         <p class="banniere-sur-titre">Administration</p>
         <h1>Bonjour <c:out value="${sessionScope.utilisateur.prenom}"/>,</h1>
-        <p>Gérez le catalogue des types d'assurance et des garanties, et consultez l'ensemble des contrats et des sinistres. Créez les comptes des agents et activez ou désactivez les comptes. Les indicateurs arrivent bientôt.</p>
+        <p>Gérez le catalogue des types d'assurance et des garanties, et consultez l'ensemble des contrats et des sinistres. Créez les comptes des agents, activez ou désactivez les comptes et suivez les statistiques. Les indicateurs de performance arrivent bientôt.</p>
         <div class="banniere-actions">
           <a class="bouton bouton-blanc" href="${pageContext.request.contextPath}/admin/types-assurance">
             <svg class="icone" aria-hidden="true"><use href="#i-couches"/></svg>Types d'assurance
@@ -80,6 +80,14 @@
             <div>
               <h3>Paiements</h3>
               <p>Les paiements de tous les contrats, filtrés par statut ou par mode.</p>
+            </div>
+            <span class="tuile-lien">Consulter <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
+          </a>
+          <a class="tuile" href="${pageContext.request.contextPath}/agent/statistiques">
+            <span class="pastille ton-violet"><svg class="icone" aria-hidden="true"><use href="#i-stats"/></svg></span>
+            <div>
+              <h3>Statistiques</h3>
+              <p>Clients, contrats et finances en graphiques, avec une synthèse par l'assistant IA.</p>
             </div>
             <span class="tuile-lien">Consulter <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
           </a>

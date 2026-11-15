@@ -1103,6 +1103,14 @@ a.puce { display: inline-flex; align-items: center; text-decoration: none; }
 .calcul dd { margin: 0; font-weight: 600; }
 .calcul .recap-total { margin-top: 4px; padding-top: 8px; border-top: 1px solid var(--bordure); }
 
+/* Statistiques : graphiques Chart.js, données repliables, synthèse de l'assistant IA */
+.titre-icone { display: flex; align-items: center; gap: 12px; }
+.espace-haut-petit { margin-top: 16px; }
+.graphique { position: relative; height: 300px; min-width: 0; }
+.analyse-ia { border-top: 1px solid var(--bordure); line-height: 1.65; white-space: pre-line; }
+details > summary { color: var(--primaire); font-size: .9rem; font-weight: 600; cursor: pointer; }
+details[open] > summary { margin-bottom: 12px; }
+
 /* 13. Animations ---------------------------------------------------------- */
 
 @keyframes apparaitre { from { opacity: 0; transform: translateY(8px); } }
