@@ -6,6 +6,8 @@ import fr.cytech.assurance.model.Paiement;
 import fr.cytech.assurance.model.Sinistre;
 import fr.cytech.assurance.model.Utilisateur;
 import fr.cytech.assurance.model.Versement;
+import fr.cytech.assurance.model.enums.StatutContrat;
+import fr.cytech.assurance.model.enums.StatutPaiement;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +36,10 @@ public final class ContexteAssistant {
 
     private static final String FICHIER_CONNAISSANCES = "/assistant/connaissances.txt";
     private static final String CONNAISSANCES = chargerConnaissances();
+
+    // Paiements réglés ou annulés plus anciens que ça : non envoyés au modèle. Ils s'accumulent d'année
+    // en année et alourdiraient chaque question, alors que le client demande presque toujours les récents.
+    static final int MOIS_DE_PAIEMENTS = 12;
 
     private static final DateTimeFormatter FORMAT_DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
 
@@ -88,7 +94,7 @@ public final class ContexteAssistant {
         texte.append("Client : ").append(utilisateur.getPrenom()).append(' ').append(utilisateur.getNom()).append('\n');
 
         decrireContrats(texte, contrats);
-        decrirePaiements(texte, paiements);
+        decrirePaiements(texte, paiements, aujourdhui);
         decrireSinistres(texte, sinistres);
         decrireVersements(texte, versements);
         return texte.toString();
@@ -129,6 +135,15 @@ public final class ContexteAssistant {
                     .append(", du ").append(date(contrat.getDateDebut()))
                     .append(" au ").append(date(contrat.getDateFin()))
                     .append(", prime annuelle ").append(montant(contrat.getPrime()));
+            if (contrat.isSuspenduParAgent()) {
+                texte.append(", suspendu par un agent depuis le ").append(date(contrat.getDateSuspension()))
+                        .append(" (motif : ").append(contrat.getMotifSuspension()).append(')');
+            } else if (contrat.getStatut() == StatutContrat.SUSPENDU) {
+                texte.append(", suspendu faute de paiement");
+            }
+            if (contrat.getContratPrecedent() != null) {
+                texte.append(", renouvelle le contrat n° ").append(contrat.getContratPrecedent().getId());
+            }
             if (contrat.getDateResiliation() != null) {
                 texte.append(", résilié le ").append(date(contrat.getDateResiliation()));
                 if (contrat.getMotifResiliation() != null) {
@@ -149,13 +164,19 @@ public final class ContexteAssistant {
         }
     }
 
-    private static void decrirePaiements(StringBuilder texte, List<Paiement> paiements) {
-        texte.append("\nPaiements (").append(paiements.size()).append(") :\n");
-        if (paiements.isEmpty()) {
+    private static void decrirePaiements(StringBuilder texte, List<Paiement> paiements, LocalDate aujourdhui) {
+        LocalDate limite = aujourdhui.minusMonths(MOIS_DE_PAIEMENTS);
+        List<Paiement> envoyes = paiements.stream()
+                .filter(paiement -> estAEnvoyer(paiement, limite))
+                .toList();
+        int anciens = paiements.size() - envoyes.size();
+
+        texte.append("\nPaiements des ").append(MOIS_DE_PAIEMENTS).append(" derniers mois et paiements non réglés (")
+                .append(envoyes.size()).append(") :\n");
+        if (envoyes.isEmpty()) {
             texte.append("Aucun paiement.\n");
-            return;
         }
-        for (Paiement paiement : paiements) {
+        for (Paiement paiement : envoyes) {
             texte.append("- Contrat n° ").append(paiement.getContrat().getId())
                     .append(" : ").append(montant(paiement.getMontant()))
                     .append(", échéance le ").append(date(paiement.getDateEcheance()))
@@ -168,6 +189,21 @@ public final class ContexteAssistant {
             }
             texte.append('\n');
         }
+        // Le modèle doit savoir que la liste n'est pas complète, pour ne pas affirmer qu'il n'y a rien eu avant
+        if (anciens > 0) {
+            texte.append('(').append(anciens).append(anciens > 1
+                            ? " paiements plus anciens, réglés ou annulés, ne sont pas listés"
+                            : " paiement plus ancien, réglé ou annulé, n'est pas listé")
+                    .append(" : le client peut tous les consulter dans la section « Mes paiements » de son espace.)\n");
+        }
+    }
+
+    // Un paiement en attente ou en retard est toujours envoyé, quelle que soit son échéance
+    private static boolean estAEnvoyer(Paiement paiement, LocalDate limite) {
+        if (paiement.getStatut() == StatutPaiement.EN_ATTENTE || paiement.getStatut() == StatutPaiement.EN_RETARD) {
+            return true;
+        }
+        return paiement.getDateEcheance() == null || !paiement.getDateEcheance().isBefore(limite);
     }
 
     private static void decrireSinistres(StringBuilder texte, List<Sinistre> sinistres) {

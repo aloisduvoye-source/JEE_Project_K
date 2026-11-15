@@ -10,6 +10,9 @@ import fr.cytech.assurance.model.enums.StatutContrat;
 import fr.cytech.assurance.model.enums.StatutPaiement;
 
 import java.time.LocalDate;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Stream;
 
 /**
  * Règles des paiements. Chaque contrat a un seul paiement : la prime entière,
@@ -60,5 +63,44 @@ public class PaiementService {
         paiementDao.enregistrerPaiement(paiement.getId(), aujourdhui, mode);
         // Sans attendre la prochaine mise à jour automatique (toutes les heures)
         contratService.mettreAJourStatuts(aujourdhui);
+    }
+
+    /**
+     * Liste les paiements d'un client avec filtrage et tri optionnels.
+     */
+    public List<Paiement> listerPourClient(Long idClient, StatutPaiement statut, ModePaiement mode, String tri) {
+        if (idClient == null) {
+            return List.of();
+        }
+        return filtrerEtTrier(paiementDao.listerParClient(idClient), statut, mode, tri);
+    }
+
+    /**
+     * Liste tous les paiements (agent/admin) avec filtrage et tri optionnels.
+     */
+    public List<Paiement> listerTous(StatutPaiement statut, ModePaiement mode, String tri) {
+        return filtrerEtTrier(paiementDao.listerTousAvecDetails(), statut, mode, tri);
+    }
+
+    private List<Paiement> filtrerEtTrier(List<Paiement> paiements, StatutPaiement statut, ModePaiement mode, String tri) {
+        Stream<Paiement> flux = paiements.stream();
+
+        if (statut != null) {
+            flux = flux.filter(p -> p.getStatut() == statut);
+        }
+        if (mode != null) {
+            flux = flux.filter(p -> p.getModePaiement() == mode);
+        }
+
+        Comparator<Paiement> comparateur = switch (tri == null ? "" : tri) {
+            case "echeance_asc" -> Comparator.comparing(Paiement::getDateEcheance);
+            case "montant_asc" -> Comparator.comparing(Paiement::getMontant);
+            case "montant_desc" -> Comparator.comparing(Paiement::getMontant).reversed();
+            case "paiement_desc" -> Comparator.comparing(
+                    Paiement::getDatePaiement, Comparator.nullsLast(Comparator.reverseOrder()));
+            default -> Comparator.comparing(Paiement::getDateEcheance).reversed(); // echeance_desc par défaut
+        };
+
+        return flux.sorted(comparateur).toList();
     }
 }

@@ -56,9 +56,17 @@ public class Contrat {
     @Column(name = "motif_resiliation", length = 255)
     private String motifResiliation;
 
+    // Suspension décidée par un agent : renseignée tant qu'elle dure (null pour une suspension faute de paiement,
+    // qui est automatique). La mise à jour automatique des statuts ne lève jamais une suspension par un agent
+    @Column(name = "date_suspension")
+    private LocalDate dateSuspension;
+
+    @Column(name = "motif_suspension", length = 255)
+    private String motifSuspension;
+
     // Contrat renouvelé par celui-ci (null pour un premier contrat)
     @ManyToOne
-    @JoinColumn(name = "id_contrat_precedent")
+    @JoinColumn(name = "id_contrat_precedent", unique = true)
     @OnDelete(action = OnDeleteAction.SET_NULL)
     private Contrat contratPrecedent;
 
@@ -90,6 +98,12 @@ public class Contrat {
     public void setDateResiliation(LocalDate dateResiliation) {this.dateResiliation = dateResiliation;}
     public String getMotifResiliation() {return motifResiliation;}
     public void setMotifResiliation(String motifResiliation) {this.motifResiliation = motifResiliation;}
+    public LocalDate getDateSuspension() {return dateSuspension;}
+    public void setDateSuspension(LocalDate dateSuspension) {this.dateSuspension = dateSuspension;}
+    public String getMotifSuspension() {return motifSuspension;}
+    public void setMotifSuspension(String motifSuspension) {this.motifSuspension = motifSuspension;}
+    // true si un agent a suspendu le contrat (et non le défaut de paiement)
+    public boolean isSuspenduParAgent() {return dateSuspension != null && statut == StatutContrat.SUSPENDU;}
     public Contrat getContratPrecedent() {return contratPrecedent;}
     public void setContratPrecedent(Contrat contratPrecedent) {this.contratPrecedent = contratPrecedent;}
     public Set<Garantie> getGaranties() {return garanties;}

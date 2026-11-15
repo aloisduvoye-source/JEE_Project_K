@@ -132,6 +132,11 @@ public class SinistreService {
         if (dateSinistre.isAfter(LocalDate.now())) {
             throw new SinistreInvalideException("La date du sinistre ne peut pas être dans le futur.");
         }
+        // Suspension décidée par un agent : plus de couverture à partir de sa date, tant qu'elle dure
+        if (contrat.getDateSuspension() != null && !dateSinistre.isBefore(contrat.getDateSuspension())) {
+            throw new SinistreInvalideException("Votre contrat est suspendu depuis le " + contrat.getDateSuspension()
+                    + " : il ne couvre pas un sinistre survenu à partir de cette date.");
+        }
         if (!couvre(contrat, dateSinistre)) {
             throw new SinistreInvalideException("Votre contrat ne couvrait pas cette date (du "
                     + contrat.getDateDebut() + " au " + finDeCouverture(contrat) + ").");

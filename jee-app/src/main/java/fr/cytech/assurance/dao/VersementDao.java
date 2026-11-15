@@ -1,6 +1,7 @@
 package fr.cytech.assurance.dao;
 
 import fr.cytech.assurance.model.Versement;
+import fr.cytech.assurance.model.enums.TypeVersement;
 
 import java.util.List;
 
@@ -32,6 +33,22 @@ public class VersementDao extends GenericDao<Versement> {
                         Versement.class)
                 .setParameter("idClient", idClient)
                 .getResultList());
+    }
+
+    /**
+     * Recherche le remboursement de prime versé à la résiliation d'un contrat.
+     *
+     * @param idContrat id du contrat
+     * @return le remboursement, ou {@code null} si le contrat n'a rien eu à rembourser
+     */
+    public Versement trouverRemboursement(Long idContrat) {
+        return enLecture(em -> em.createQuery(
+                        "SELECT v FROM Versement v WHERE v.contrat.id = :idContrat AND v.type = :type", Versement.class)
+                .setParameter("idContrat", idContrat)
+                .setParameter("type", TypeVersement.REMBOURSEMENT)
+                .getResultStream()
+                .findFirst()
+                .orElse(null));
     }
 
     /**
