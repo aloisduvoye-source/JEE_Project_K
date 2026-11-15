@@ -44,7 +44,7 @@ public class MesContratsServlet extends HttpServlet {
         request.setAttribute("triChoisi", tri.isEmpty() ? "debut_desc" : tri);
         request.setAttribute("statuts", StatutContrat.values());
         request.setAttribute("types", typeAssuranceService.listerAvecGaranties());
-        request.setAttribute("recherche", statut != null || idType != null || !tri.isEmpty());
+        request.setAttribute("recherche", statut != null || idType != null);
         request.getRequestDispatcher(VUE).forward(request, response);
     }
 

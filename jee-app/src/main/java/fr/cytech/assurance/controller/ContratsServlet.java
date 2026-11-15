@@ -47,7 +47,7 @@ public class ContratsServlet extends HttpServlet {
         request.setAttribute("statuts", StatutContrat.values());
         // Tous les types, archivés compris : ils restent liés à des contrats existants
         request.setAttribute("types", typeAssuranceService.listerAvecGaranties());
-        request.setAttribute("recherche", !texte.isEmpty() || statut != null || idType != null || !tri.isEmpty());
+        request.setAttribute("recherche", !texte.isEmpty() || statut != null || idType != null);
         request.getRequestDispatcher(VUE).forward(request, response);
     }
 
