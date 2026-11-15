@@ -42,6 +42,47 @@
         <aside class="pile">
           <%-- Le paiement est affiché sans formulaire : c'est le client qui paie, depuis sa propre fiche --%>
           <%@ include file="/WEB-INF/views/common/contrat-paiement.jspf" %>
+
+          <%-- Suspension par un agent seulement (ActionContratServlet et ContratService le vérifient aussi) --%>
+          <c:if test="${sessionScope.utilisateur.role == 'AGENT' and contrat.statut == 'ACTIF'}">
+            <section class="carte">
+              <div class="carte-entete">
+                <div><h2>Suspendre le contrat</h2><p>Pendant la suspension, le contrat ne couvre plus les sinistres. Elle dure jusqu'à ce qu'un agent la lève.</p></div>
+              </div>
+              <form class="carte-corps formulaire" method="post" action="${pageContext.request.contextPath}/agent/contrats/suspendre"
+                    data-confirmer="Suspendre ce contrat ?"
+                    data-confirmer-texte="Il ne couvrira plus les sinistres jusqu'à la levée de la suspension."
+                    data-confirmer-bouton="Suspendre">
+                <input type="hidden" name="id" value="${contrat.id}">
+                <div class="champ">
+                  <label for="motifSuspension">Motif <span class="texte-doux">(visible par le client)</span></label>
+                  <input class="saisie" type="text" id="motifSuspension" name="motif" maxlength="255" required>
+                </div>
+                <div class="actions-formulaire">
+                  <button type="submit" class="bouton bouton-danger-doux bouton-bloc">
+                    <svg class="icone" aria-hidden="true"><use href="#i-cadenas"/></svg>Suspendre le contrat
+                  </button>
+                </div>
+              </form>
+            </section>
+          </c:if>
+          <c:if test="${sessionScope.utilisateur.role == 'AGENT' and contrat.suspenduParAgent}">
+            <section class="carte">
+              <div class="carte-entete">
+                <div><h2>Lever la suspension</h2><p>Le contrat couvrira de nouveau les sinistres.</p></div>
+              </div>
+              <form class="carte-corps formulaire" method="post" action="${pageContext.request.contextPath}/agent/contrats/lever-suspension">
+                <input type="hidden" name="id" value="${contrat.id}">
+                <div class="actions-formulaire">
+                  <button type="submit" class="bouton bouton-principal bouton-bloc">
+                    <svg class="icone" aria-hidden="true"><use href="#i-restaurer"/></svg>Lever la suspension
+                  </button>
+                </div>
+              </form>
+            </section>
+          </c:if>
+
+          <%@ include file="/WEB-INF/views/common/contrat-renouvellement.jspf" %>
           <%@ include file="/WEB-INF/views/common/contrat-resiliation.jspf" %>
         </aside>
       </div>

@@ -78,6 +78,7 @@
             </section>
           </c:if>
 
+          <%@ include file="/WEB-INF/views/common/contrat-renouvellement.jspf" %>
           <%@ include file="/WEB-INF/views/common/contrat-resiliation.jspf" %>
         </aside>
       </div>

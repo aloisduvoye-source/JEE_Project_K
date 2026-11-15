@@ -2,9 +2,10 @@
   Formulaire de résiliation d'un contrat, commun à la fiche de l'agent et à celle du client.
   Affiché seulement pour un contrat en cours (EN_ATTENTE, ACTIF, SUSPENDU), et pas à l'admin.
   Envoie vers /client/contrats/resilier ou /agent/contrats/resilier selon le rôle connecté.
-  Attend l'attribut "contrat".
+  Attend les attributs "contrat" et "remboursementSiResiliation" (montant remboursé si résilié aujourd'hui).
 --%>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="app" tagdir="/WEB-INF/tags" %>
 <c:if test="${sessionScope.utilisateur.role != 'ADMIN'
               and contrat.statut != 'RESILIE' and contrat.statut != 'EXPIRE'}">
   <section class="carte">
@@ -17,6 +18,14 @@
           data-confirmer-texte="Cette action est définitive : le contrat ne pourra plus être réactivé."
           data-confirmer-bouton="Résilier">
       <input type="hidden" name="id" value="${contrat.id}">
+      <%-- Montant calculé pour une résiliation aujourd'hui (ContratService.remboursement) --%>
+      <c:if test="${remboursementSiResiliation.signum() > 0}">
+        <div class="alerte ton-info" role="note">
+          <svg class="icone" aria-hidden="true"><use href="#i-info"/></svg>
+          <div class="alerte-texte">La part de la prime non couverte sera remboursée :
+            <strong class="nombre"><app:euros valeur="${remboursementSiResiliation}"/></strong> si le contrat est résilié aujourd'hui.</div>
+        </div>
+      </c:if>
       <div class="champ">
         <label for="motif">Motif <span class="texte-doux">(facultatif)</span></label>
         <input class="saisie" type="text" id="motif" name="motif" maxlength="255" placeholder="Déménagement, changement d'assureur…">
