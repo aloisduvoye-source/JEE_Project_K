@@ -121,4 +121,21 @@ public class PaiementDao extends GenericDao<Paiement> {
     public boolean annuler(Long id) {
         return mettreAJour(id, p -> p.setStatut(StatutPaiement.ANNULE));
     }
+
+    /**
+     * Liste tous les paiements de l'assurance (pour agents et administrateurs),
+     * avec contrat, type d'assurance, client et utilisateur déjà chargés.
+     *
+     * @return tous les paiements, du plus récent au plus ancien
+     */
+    public List<Paiement> listerTousAvecDetails() {
+        return enLecture(em -> em.createQuery(
+                        "SELECT p FROM Paiement p"
+                                + " JOIN FETCH p.contrat c"
+                                + " JOIN FETCH c.typeAssurance"
+                                + " JOIN FETCH c.client cl"
+                                + " JOIN FETCH cl.utilisateur"
+                                + " ORDER BY p.dateEcheance DESC", Paiement.class)
+                .getResultList());
+    }
 }

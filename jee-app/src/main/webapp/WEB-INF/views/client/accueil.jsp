@@ -46,40 +46,11 @@
 
   <section id="paiements">
     <h2>Mes paiements</h2>
-
-    <h3>Échéances à venir</h3>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Contrat</th>
-          <th>Échéance</th>
-          <th>Montant</th>
-          <th>Statut</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colspan="4">Aucune échéance en attente.</td>
-        </tr>
-      </tbody>
-    </table>
-
-    <h3>Historique des paiements</h3>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Contrat</th>
-          <th>Date de paiement</th>
-          <th>Montant</th>
-          <th>Mode</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colspan="4">Aucun paiement effectué pour l'instant.</td>
-        </tr>
-      </tbody>
-    </table>
+    <ul>
+      <li><a href="${pageContext.request.contextPath}/client/paiements">Consulter mes paiements et échéances</a></li>
+      <li><a href="${pageContext.request.contextPath}/client/paiements?statut=EN_ATTENTE">Paiements en attente</a></li>
+      <li><a href="${pageContext.request.contextPath}/client/paiements?statut=EFFECTUE">Historique des paiements effectués</a></li>
+    </ul>
   </section>
 
   <section id="sinistres">
