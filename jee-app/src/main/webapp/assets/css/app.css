@@ -1017,6 +1017,15 @@ a.puce { display: inline-flex; align-items: center; text-decoration: none; }
 .section-entete { max-width: 620px; margin: 0 auto 40px; text-align: center; }
 .section-entete h2 { font-size: clamp(1.5rem, 1.2rem + 1vw, 2rem); letter-spacing: -.03em; }
 .section-entete p { margin-top: 10px; color: var(--texte-doux); font-size: 1.05rem; }
+.section-bordee { border-bottom: 1px solid var(--bordure); background: var(--surface); }
+
+/* Types d'assurance avec leur photo */
+.grille-assurances { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.carte-photo { overflow: hidden; }
+.carte-photo img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; }
+.carte-photo-corps { padding: 16px 18px 20px; }
+.carte-photo-corps h3 { font-size: 1rem; }
+.carte-photo-corps p { margin-top: 4px; color: var(--texte-doux); font-size: .88rem; }
 
 @media (max-width: 960px) {
   .hero { padding: 56px 0 64px; }

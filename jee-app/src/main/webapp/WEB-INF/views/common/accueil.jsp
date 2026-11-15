@@ -91,6 +91,53 @@
       </div>
     </section>
 
+    <%-- Les cinq types d'assurance proposés (database/dump.sql) ; photos : assets/img/CREDITS.md --%>
+    <section class="section section-bordee">
+      <div class="conteneur">
+        <div class="section-entete">
+          <h2>Une assurance pour chaque moment</h2>
+          <p>Choisissez le contrat qui vous correspond, avec les garanties dont vous avez besoin.</p>
+        </div>
+        <div class="grille grille-assurances apparition">
+          <article class="carte carte-photo">
+            <img src="${pageContext.request.contextPath}/assets/img/assurance-automobile.jpg" alt="" width="720" height="480" loading="lazy">
+            <div class="carte-photo-corps">
+              <h3>Automobile</h3>
+              <p>Votre véhicule et ses conducteurs, sur la route comme au garage.</p>
+            </div>
+          </article>
+          <article class="carte carte-photo">
+            <img src="${pageContext.request.contextPath}/assets/img/assurance-habitation.jpg" alt="" width="720" height="480" loading="lazy">
+            <div class="carte-photo-corps">
+              <h3>Habitation</h3>
+              <p>Votre logement, son contenu et ses occupants.</p>
+            </div>
+          </article>
+          <article class="carte carte-photo">
+            <img src="${pageContext.request.contextPath}/assets/img/assurance-sante.jpg" alt="" width="720" height="480" loading="lazy">
+            <div class="carte-photo-corps">
+              <h3>Santé</h3>
+              <p>Vos frais médicaux et d'hospitalisation.</p>
+            </div>
+          </article>
+          <article class="carte carte-photo">
+            <img src="${pageContext.request.contextPath}/assets/img/assurance-voyage.jpg" alt="" width="720" height="480" loading="lazy">
+            <div class="carte-photo-corps">
+              <h3>Voyage</h3>
+              <p>Vos déplacements, en France comme à l'étranger.</p>
+            </div>
+          </article>
+          <article class="carte carte-photo">
+            <img src="${pageContext.request.contextPath}/assets/img/assurance-professionnelle.jpg" alt="" width="720" height="480" loading="lazy">
+            <div class="carte-photo-corps">
+              <h3>Professionnelle</h3>
+              <p>Les locaux, le matériel et l'activité de votre entreprise.</p>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
     <section class="section">
       <div class="conteneur">
         <div class="section-entete">
