@@ -18,8 +18,8 @@
           <h1>Mes contrats</h1>
           <p class="sous-titre">
             <c:choose>
-              <c:when test="${empty contrats}">Aucun contrat pour l'instant.</c:when>
-              <c:otherwise>${fn:length(contrats)} contrat${fn:length(contrats) > 1 ? 's' : ''}, du plus récent au plus ancien.</c:otherwise>
+              <c:when test="${empty contrats and not recherche}">Aucun contrat pour l'instant.</c:when>
+              <c:otherwise>${fn:length(contrats)} contrat${fn:length(contrats) > 1 ? 's' : ''}${recherche ? ' avec ces critères' : ''}.</c:otherwise>
             </c:choose>
           </p>
         </div>
@@ -34,31 +34,36 @@
         <c:remove var="messageErreur" scope="session"/>
       </c:if>
 
+      <%-- Filtres et tri faits par le serveur, en GET ; inutiles pour un client sans contrat --%>
+      <c:if test="${not empty contrats or recherche}">
+        <form class="barre-outils" method="get" action="${pageContext.request.contextPath}/client/contrats">
+          <%@ include file="/WEB-INF/views/common/contrats-filtres.jspf" %>
+          <button type="submit" class="bouton bouton-principal">Filtrer</button>
+          <c:if test="${recherche}">
+            <a class="bouton bouton-fantome" href="${pageContext.request.contextPath}/client/contrats">Effacer</a>
+          </c:if>
+        </form>
+      </c:if>
+
       <c:if test="${empty contrats}">
         <div class="carte vide">
           <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg></span>
-          <h2>Vous n'avez aucun contrat</h2>
-          <p>Vos contrats apparaîtront ici dès qu'un conseiller les aura créés pour vous.</p>
+          <c:choose>
+            <c:when test="${recherche}">
+              <h2>Aucun contrat trouvé</h2>
+              <p>Aucun contrat ne correspond à ces critères.</p>
+            </c:when>
+            <c:otherwise>
+              <h2>Vous n'avez aucun contrat</h2>
+              <p>Vos contrats apparaîtront ici dès qu'un conseiller les aura créés pour vous.</p>
+            </c:otherwise>
+          </c:choose>
         </div>
       </c:if>
 
-      <c:if test="${fn:length(contrats) > 1}">
-        <div class="barre-outils avec-js" data-filtres="#liste-contrats">
-          <div class="puces" role="group" aria-label="Filtrer par statut">
-            <button type="button" class="puce" data-filtre-valeur="" aria-pressed="true">Tous</button>
-            <button type="button" class="puce" data-filtre-valeur="ACTIF" aria-pressed="false">Actifs</button>
-            <button type="button" class="puce" data-filtre-valeur="EN_ATTENTE" aria-pressed="false">En attente</button>
-            <button type="button" class="puce" data-filtre-valeur="SUSPENDU" aria-pressed="false">Suspendus</button>
-            <button type="button" class="puce" data-filtre-valeur="EXPIRE" aria-pressed="false">Expirés</button>
-            <button type="button" class="puce" data-filtre-valeur="RESILIE" aria-pressed="false">Résiliés</button>
-          </div>
-          <span class="compteur" data-filtre-compteur></span>
-        </div>
-      </c:if>
-
-      <div class="pile" id="liste-contrats">
+      <div class="pile">
         <c:forEach var="ct" items="${contrats}">
-          <article class="carte contrat" data-filtre-element data-filtre-cle="${ct.statut}">
+          <article class="carte contrat">
             <div class="contrat-entete">
               <div class="contrat-titre">
                 <span class="pastille ton-primaire"><svg class="icone" aria-hidden="true"><use href="#i-bouclier"/></svg></span>
@@ -109,10 +114,6 @@
             </div>
           </article>
         </c:forEach>
-
-        <div class="carte vide" data-filtre-vide hidden>
-          <p>Aucun contrat avec ce statut.</p>
-        </div>
       </div>
     </div>
   </main>
