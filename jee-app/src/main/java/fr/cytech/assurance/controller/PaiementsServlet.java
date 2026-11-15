@@ -3,6 +3,7 @@ package fr.cytech.assurance.controller;
 import fr.cytech.assurance.model.enums.ModePaiement;
 import fr.cytech.assurance.model.enums.StatutPaiement;
 import fr.cytech.assurance.service.PaiementService;
+import fr.cytech.assurance.util.Validateur;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.annotation.WebServlet;
 import jakarta.servlet.http.HttpServlet;
@@ -21,8 +22,8 @@ public class PaiementsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        StatutPaiement statut = parseEnum(StatutPaiement.class, request.getParameter("statut"));
-        ModePaiement mode = parseEnum(ModePaiement.class, request.getParameter("mode"));
+        StatutPaiement statut = Validateur.enumOuNull(StatutPaiement.class, request.getParameter("statut"));
+        ModePaiement mode = Validateur.enumOuNull(ModePaiement.class, request.getParameter("mode"));
         String tri = request.getParameter("tri");
 
         request.setAttribute("paiements", paiementService.listerTous(statut, mode, tri));
@@ -33,16 +34,5 @@ public class PaiementsServlet extends HttpServlet {
         request.setAttribute("triSelectionne", tri == null ? "echeance_desc" : tri);
 
         request.getRequestDispatcher(VUE).forward(request, response);
-    }
-
-    private <E extends Enum<E>> E parseEnum(Class<E> enumClass, String valeur) {
-        if (valeur == null || valeur.isBlank()) {
-            return null;
-        }
-        try {
-            return Enum.valueOf(enumClass, valeur);
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
     }
 }

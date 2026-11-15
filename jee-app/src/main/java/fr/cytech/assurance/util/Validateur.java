@@ -46,6 +46,16 @@ public class Validateur {
         }
     }
 
+    // Valeur d'énumération facultative lue dans l'adresse (?statut=..., ?mode=...), sans message d'erreur
+    // Renvoie null si elle est absente ou inconnue : le filtre correspondant est alors ignoré
+    public static <E extends Enum<E>> E enumOuNull(Class<E> type, String valeur) {
+        try {
+            return Enum.valueOf(type, nettoyer(valeur));
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
+    }
+
     // Ajoute un message, sauf si le champ a déjà une erreur
     public void erreur(String champ, String message) {
         erreurs.putIfAbsent(champ, message);
