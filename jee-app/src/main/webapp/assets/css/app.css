@@ -839,6 +839,8 @@ a.puce { display: inline-flex; align-items: center; text-decoration: none; }
 .puce:hover { background: var(--survol); color: var(--texte); }
 .puce[aria-pressed="true"], .puce[aria-current="page"] { border-color: var(--texte); background: var(--texte); color: var(--surface); }
 .compteur { margin-left: auto; color: var(--texte-doux); font-size: .85rem; }
+/* Filtres envoyés au serveur (contrats, paiements) : les listes déroulantes gardent leur largeur */
+.barre-outils select.saisie { width: auto; }
 
 /* Étapes de la création d'un contrat */
 .etapes { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin: 0 0 24px; padding: 0; list-style: none; }

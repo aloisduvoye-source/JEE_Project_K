@@ -16,7 +16,7 @@
       <div class="entete-page">
         <div>
           <h1>Contrats</h1>
-          <p class="sous-titre">${fn:length(contrats)} contrat${fn:length(contrats) > 1 ? 's' : ''} au total.</p>
+          <p class="sous-titre">${fn:length(contrats)} contrat${fn:length(contrats) > 1 ? 's' : ''}${recherche ? ' trouvé' : ''}${recherche and fn:length(contrats) > 1 ? 's' : ''}${recherche ? '' : ' au total'}.</p>
         </div>
         <%-- Seul un agent crée des contrats : l'admin consulte cette page sans le bouton --%>
         <c:if test="${sessionScope.utilisateur.role == 'AGENT'}">
@@ -46,7 +46,29 @@
         <c:remove var="messageErreur" scope="session"/>
       </c:if>
 
+      <%-- Recherche, filtres et tri faits par le serveur, en GET : l'adresse peut être gardée ou partagée --%>
+      <form class="barre-outils" method="get" action="${pageContext.request.contextPath}/agent/contrats" role="search">
+        <label class="recherche">
+          <span class="visuellement-cache">Rechercher un contrat</span>
+          <svg class="icone" aria-hidden="true"><use href="#i-recherche"/></svg>
+          <input class="saisie" type="search" name="q" maxlength="100" placeholder="N° de contrat, nom, email…" value="<c:out value='${q}'/>">
+        </label>
+        <%@ include file="/WEB-INF/views/common/contrats-filtres.jspf" %>
+        <button type="submit" class="bouton bouton-principal">Rechercher</button>
+        <c:if test="${recherche}">
+          <a class="bouton bouton-fantome" href="${pageContext.request.contextPath}/agent/contrats">Effacer</a>
+        </c:if>
+      </form>
+
       <c:choose>
+        <c:when test="${empty contrats and recherche}">
+          <div class="carte vide">
+            <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-recherche"/></svg></span>
+            <h2>Aucun contrat trouvé</h2>
+            <p>Aucun contrat ne correspond à la recherche.</p>
+            <a class="bouton bouton-fantome" href="${pageContext.request.contextPath}/agent/contrats">Effacer la recherche</a>
+          </div>
+        </c:when>
         <c:when test="${empty contrats}">
           <div class="carte vide">
             <span class="pastille"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg></span>
@@ -61,23 +83,6 @@
         </c:when>
         <c:otherwise>
           <div>
-            <div class="barre-outils avec-js" data-filtres="#tableau-contrats">
-              <label class="recherche">
-                <span class="visuellement-cache">Rechercher un contrat</span>
-                <svg class="icone" aria-hidden="true"><use href="#i-recherche"/></svg>
-                <input class="saisie" type="search" placeholder="Client, type, numéro…" data-filtre-texte>
-              </label>
-              <div class="puces" role="group" aria-label="Filtrer par statut">
-                <button type="button" class="puce" data-filtre-valeur="" aria-pressed="true">Tous</button>
-                <button type="button" class="puce" data-filtre-valeur="EN_ATTENTE" aria-pressed="false">En attente</button>
-                <button type="button" class="puce" data-filtre-valeur="ACTIF" aria-pressed="false">Actifs</button>
-                <button type="button" class="puce" data-filtre-valeur="SUSPENDU" aria-pressed="false">Suspendus</button>
-                <button type="button" class="puce" data-filtre-valeur="EXPIRE" aria-pressed="false">Expirés</button>
-                <button type="button" class="puce" data-filtre-valeur="RESILIE" aria-pressed="false">Résiliés</button>
-              </div>
-              <span class="compteur" data-filtre-compteur></span>
-            </div>
-
             <div class="tableau-conteneur">
               <table class="tableau" id="tableau-contrats">
                 <thead>
@@ -94,7 +99,7 @@
                 <tbody>
                   <c:forEach var="ct" items="${contrats}">
                     <c:set var="titulaire" value="${ct.client.utilisateur}"/>
-                    <tr data-filtre-element data-filtre-cle="${ct.statut}">
+                    <tr>
                       <td class="nombre"><a class="cellule-principale" href="${pageContext.request.contextPath}/agent/contrats/detail?id=${ct.id}">#<c:out value="${ct.id}"/></a></td>
                       <td>
                         <div class="cellule-personne">
@@ -116,9 +121,6 @@
                       </td>
                     </tr>
                   </c:forEach>
-                  <tr class="ligne-message" data-filtre-vide hidden>
-                    <td colspan="7">Aucun contrat ne correspond à la recherche.</td>
-                  </tr>
                 </tbody>
               </table>
             </div>
