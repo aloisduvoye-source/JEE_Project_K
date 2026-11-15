@@ -76,14 +76,7 @@ public class ContratService {
     }
 
     /**
-     * Conserve la signature existante au cas où un autre appelant l'utilise sans tri.
-     */
-    public List<Contrat> rechercher(String texte, StatutContrat statut, Long idType) {
-        return rechercher(texte, statut, idType, null);
-    }
-
-    /**
-     * Filtre et trie les contrats d'un client donné.
+     * Contrats d'un client, avec leur type et leurs garanties, filtrés et triés. Critères facultatifs (null : ignoré).
      */
     public List<Contrat> listerContratsDuClient(Long idClient, StatutContrat statut, Long idType, String tri) {
         if (idClient == null) {
@@ -120,11 +113,6 @@ public class ContratService {
     // Remboursement de prime versé à la résiliation du contrat, ou null s'il n'y en a pas eu
     public Versement trouverRemboursement(Long idContrat) {
         return versementDao.trouverRemboursement(idContrat);
-    }
-
-    // Contrats d'un client, du plus récent au plus ancien, avec leur type et leurs garanties
-    public List<Contrat> listerContratsDuClient(Long idClient) {
-        return contratDao.listerParClient(idClient);
     }
 
     /**
