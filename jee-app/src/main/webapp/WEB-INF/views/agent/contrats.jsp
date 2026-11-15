@@ -87,8 +87,8 @@
                     <th>Type d'assurance</th>
                     <th>Période</th>
                     <th class="a-droite">Prime annuelle</th>
-                    <th><span class="visuellement-cache">Actions</span></th>
                     <th>Statut</th>
+                    <th><span class="visuellement-cache">Actions</span></th>
                   </tr>
                 </thead>
                 <tbody>
