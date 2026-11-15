@@ -1020,7 +1020,7 @@ a.puce { display: inline-flex; align-items: center; text-decoration: none; }
 .section-bordee { border-bottom: 1px solid var(--bordure); background: var(--surface); }
 
 /* Types d'assurance avec leur photo */
-.grille-assurances { grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); }
+.grille-assurances { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; }
 .carte-photo { overflow: hidden; }
 .carte-photo img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; }
 .carte-photo-corps { padding: 16px 18px 20px; }
