@@ -70,7 +70,10 @@
                 <td><c:out value="${empty p.modePaiement ? '-' : p.modePaiement}"/></td>
                 <td><c:out value="${p.statut}"/></td>
                 <td>
-                    <a href="${pageContext.request.contextPath}/client/contrats/detail?id=${p.contrat.id}">Voir le contrat</a>
+                    <%-- Le formulaire de paiement est sur la fiche du contrat, mêmes conditions que là-bas --%>
+                    <c:set var="aPayer" value="${(p.statut == 'EN_ATTENTE' or p.statut == 'EN_RETARD')
+                                                 and p.contrat.statut != 'RESILIE' and p.contrat.statut != 'EXPIRE'}"/>
+                    <a href="${pageContext.request.contextPath}/client/contrats/detail?id=${p.contrat.id}">${aPayer ? 'Payer' : 'Voir le contrat'}</a>
                 </td>
             </tr>
         </c:forEach>
