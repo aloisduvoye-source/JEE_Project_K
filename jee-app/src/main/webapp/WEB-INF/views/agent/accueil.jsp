@@ -46,24 +46,11 @@
 
   <section id="paiements">
     <h2>Paiements</h2>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Contrat</th>
-          <th>Client</th>
-          <th>Échéance</th>
-          <th>Montant</th>
-          <th>Date de paiement</th>
-          <th>Mode</th>
-          <th>Statut</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colspan="7">Aucun paiement à afficher pour l'instant.</td>
-        </tr>
-      </tbody>
-    </table>
+    <ul>
+      <li><a href="${pageContext.request.contextPath}/agent/paiements?statut=EN_RETARD">Paiements en retard</a></li>
+      <li><a href="${pageContext.request.contextPath}/agent/paiements?statut=EN_ATTENTE">Paiements en attente</a></li>
+      <li><a href="${pageContext.request.contextPath}/agent/paiements">Tous les paiements</a></li>
+    </ul>
   </section>
 
   <section id="garanties">
