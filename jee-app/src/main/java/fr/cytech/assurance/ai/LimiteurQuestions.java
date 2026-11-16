@@ -12,13 +12,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Limite le nombre de questions posées à l'assistant par chaque client.
- * <p>
- * Le quota de l'API d'IA est commun à toute l'application : sans limite, un seul client qui enchaîne
- * les questions l'épuiserait et l'assistant ne répondrait plus à personne.
- * <p>
- * Compteurs en mémoire : ils repartent de zéro au redémarrage de l'application, ce qui suffit ici.
- * Une seule instance pour toute l'application : utiliser {@link #getInstance()}.
+ * Limite les questions de chaque client, pour qu'un seul ne puisse pas épuiser le quota commun de l'API.
+ * Compteurs en mémoire, remis à zéro au redémarrage. Une seule instance : {@link #getInstance()}.
  */
 public final class LimiteurQuestions {
 
@@ -32,18 +27,18 @@ public final class LimiteurQuestions {
     private final Clock horloge;
     private final Map<Long, Compteur> compteurs = new ConcurrentHashMap<>();
 
-    // Horloge en paramètre : un test peut faire avancer le temps sans attendre
+    /** Horloge en paramètre : un test peut faire avancer le temps sans attendre. */
     LimiteurQuestions(Clock horloge) {
         this.horloge = horloge;
     }
 
+    /** Instance unique, partagée par toute l'application. */
     public static LimiteurQuestions getInstance() {
         return INSTANCE;
     }
 
     /**
-     * Compte une question de l'utilisateur, ou la refuse s'il a atteint une limite.
-     * Une question refusée n'est pas comptée.
+     * Compte une question de l'utilisateur, ou la refuse sans la compter s'il a atteint une limite.
      *
      * @throws TropDeQuestionsException si la limite par minute ou par jour est atteinte
      */
@@ -78,6 +73,7 @@ public final class LimiteurQuestions {
         }
     }
 
+    /** Questions d'un client : heures de celles de la dernière minute, et nombre de celles du jour. */
     private static final class Compteur {
         private final Deque<Instant> derniereMinute = new ArrayDeque<>();
         private LocalDate jour;
