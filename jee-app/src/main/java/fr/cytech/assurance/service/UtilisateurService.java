@@ -23,12 +23,26 @@ public class UtilisateurService {
 
     private final UtilisateurDao utilisateurDao = new UtilisateurDao();
     private final ClientDao clientDao = new ClientDao();
-
+    
+    /**
+     * Recherche un utilisateur par son identifiant unique.
+     *
+     * @param id identifiant de l'utilisateur
+     * @return l'utilisateur correspondant, ou null s'il n'existe pas
+     */
     public Utilisateur trouverParId(Long id) {
         return utilisateurDao.trouverParId(id);
     }
 
-    // Renvoie l'utilisateur si l'identifiant et le mot de passe sont bons et le compte actif
+    /**
+     * Vérifie l'identifiant et le mot de passe d'un utilisateur pour autoriser sa connexion.
+     *
+     * @param identifiant identifiant de connexion saisi
+     * @param motDePasse  mot de passe en clair saisi
+     * @return l'utilisateur authentifié si les identifiants sont valides et le compte actif
+     * @throws AuthentificationException si l'identifiant ou le mot de passe est incorrect,
+     *                                   ou si le compte est désactivé
+     */
     public Utilisateur authentifier(String identifiant, String motDePasse) {
         Utilisateur utilisateur = utilisateurDao.trouverParIdentifiant(identifiant);
         // Même message que l'identifiant ou le mot de passe soit faux : on ne révèle pas lequel
@@ -41,38 +55,74 @@ public class UtilisateurService {
         return utilisateur;
     }
 
+    /**
+     * Vérifie si un identifiant de connexion est libre (non encore utilisé).
+     *
+     * @param identifiant identifiant à vérifier
+     * @return true si l'identifiant est disponible, false sinon
+     */
     public boolean identifiantDisponible(String identifiant) {
         return !utilisateurDao.identifiantExiste(identifiant);
     }
 
+    /**
+     * Vérifie si une adresse email est libre (non encore utilisée).
+     *
+     * @param email adresse email à vérifier
+     * @return true si l'email est disponible, false sinon
+     */
     public boolean emailDisponible(String email) {
         return !utilisateurDao.emailExiste(email);
     }
 
-    // Disponible si personne ne l'utilise, ou si c'est déjà l'email de cet utilisateur
+    /**
+     * Vérifie si une adresse email est disponible pour un utilisateur donné
+     * (libre ou déjà associée à ce même utilisateur).
+     *
+     * @param email         adresse email à vérifier
+     * @param idUtilisateur identifiant de l'utilisateur concerné
+     * @return true si l'email peut être utilisé par ce compte, false s'il appartient à un autre compte
+     */    
     public boolean emailDisponiblePour(String email, Long idUtilisateur) {
         return !utilisateurDao.emailExistePourUnAutre(email, idUtilisateur);
     }
 
-    // Crée un compte client : rôle toujours CLIENT, mot de passe haché
-    // Lève UtilisateurDejaExistantException si l'identifiant ou l'email est déjà pris
+    /**
+     * Inscrit un nouveau client en créant son compte utilisateur (rôle CLIENT, mot de passe haché)
+     * ainsi que sa fiche client associée.
+     *
+     * @param utilisateur informations du compte utilisateur à créer
+     * @param client      informations de la fiche client associée
+     * @param motDePasse  mot de passe en clair à hacher avant enregistrement
+     * @throws UtilisateurDejaExistantException si l'identifiant ou l'email est déjà utilisé
+     */
     public void inscrireClient(Utilisateur utilisateur, Client client, String motDePasse) {
         utilisateur.setRole(Role.CLIENT);
         utilisateur.setMotDePasseHash(hacher(motDePasse));
         clientDao.creerAvecUtilisateur(client, utilisateur);
     }
 
-    // Crée un compte agent (par l'administrateur) : rôle toujours AGENT, mot de passe haché, pas de fiche client
-    // Lève UtilisateurDejaExistantException si l'identifiant ou l'email est déjà pris
+    /**
+     * Crée un compte agent (action réservée à l'administrateur) avec le rôle AGENT et un mot de passe haché.
+     *
+     * @param utilisateur informations du compte agent à créer
+     * @param motDePasse  mot de passe en clair à hacher avant enregistrement
+     * @throws UtilisateurDejaExistantException si l'identifiant ou l'email est déjà utilisé
+     */
     public void creerAgent(Utilisateur utilisateur, String motDePasse) {
         utilisateur.setRole(Role.AGENT);
         utilisateur.setMotDePasseHash(hacher(motDePasse));
         utilisateurDao.creerSansDoublon(utilisateur);
     }
 
-    // Désactivation ou réactivation d'un compte par l'administrateur.
-    // Le compte administrateur ne peut pas être désactivé : sinon plus personne ne pourrait gérer l'application
-    // Lève UtilisateurInvalideException si le compte n'existe pas ou est celui de l'administrateur
+    /**
+     * Active ou désactive un compte utilisateur (action réservée à l'administrateur).
+     * Le compte administrateur ne peut pas être désactivé.
+     *
+     * @param id    identifiant du compte utilisateur à modifier
+     * @param actif true pour activer le compte, false pour le désactiver
+     * @throws UtilisateurInvalideException si le compte n'existe pas ou s'il s'agit du compte administrateur
+     */
     public void changerEtat(Long id, boolean actif) {
         Utilisateur utilisateur = utilisateurDao.trouverParId(id);
         if (utilisateur == null) {
@@ -84,10 +134,17 @@ public class UtilisateurService {
         utilisateurDao.changerEtat(id, actif);
     }
 
-    // Suppression de son propre compte (client ou agent), depuis « Mon compte ».
-    // Le mot de passe est exigé : une session laissée ouverte ne suffit pas pour supprimer le compte.
-    // Compte sans historique : effacé (renvoie true). Avec contrats ou sinistres : désactivé (renvoie false)
-    // Lève UtilisateurInvalideException pour l'administrateur, MotDePasseIncorrectException si le mot de passe est faux
+    /**
+     * Supprime le compte de l'utilisateur connecté (client ou agent) après vérification de son mot de passe.
+     * Si le compte n'a aucun historique (contrats ou sinistres), il est supprimé définitivement ;
+     * sinon il est simplement désactivé.
+     *
+     * @param id         identifiant du compte à supprimer
+     * @param motDePasse mot de passe actuel saisi pour confirmer l'opération
+     * @return true si le compte a été définitivement supprimé, false s'il a seulement été désactivé
+     * @throws UtilisateurInvalideException si le compte est introuvable ou s'il s'agit du compte administrateur
+     * @throws MotDePasseIncorrectException si le mot de passe saisi est incorrect
+     */
     public boolean supprimerCompte(Long id, String motDePasse) {
         Utilisateur utilisateur = utilisateurDao.trouverParId(id);   // hash relu en base
         if (utilisateur == null) {
@@ -102,12 +159,25 @@ public class UtilisateurService {
         return utilisateurDao.supprimerSiSansHistorique(id);
     }
 
-    // Utilisateurs triés par nom puis prénom : tous si role est null, sinon ceux de ce rôle
+    /**
+     * Liste les utilisateurs triés par nom puis prénom, éventuellement filtrés par rôle.
+     *
+     * @param role rôle recherché (CLIENT, AGENT, ADMIN), ou null pour récupérer tous les utilisateurs
+     * @return la liste des utilisateurs triés
+     */
     public List<Utilisateur> lister(Role role) {
         return role == null ? utilisateurDao.listerTousTries() : utilisateurDao.listerParRole(role);
     }
 
-    // Lève UtilisateurDejaExistantException si l'email appartient à un autre compte
+    /**
+     * Modifie le nom, le prénom et l'adresse email d'un compte utilisateur.
+     *
+     * @param id     identifiant de l'utilisateur à modifier
+     * @param nom    nouveau nom
+     * @param prenom nouveau prénom
+     * @param email  nouvelle adresse email
+     * @throws UtilisateurDejaExistantException si l'adresse email est déjà utilisée par un autre compte
+     */
     public void modifierProfil(Long id, String nom, String prenom, String email) {
         if (!emailDisponiblePour(email, id)) {
             throw new UtilisateurDejaExistantException("email");
@@ -115,8 +185,14 @@ public class UtilisateurService {
         utilisateurDao.modifierProfil(id, nom, prenom, email);
     }
 
-    // Le mot de passe actuel est exigé : une session laissée ouverte ne suffit pas pour le changer
-    // Lève MotDePasseIncorrectException si le mot de passe actuel est faux
+    /**
+     * Modifie le mot de passe d'un utilisateur après vérification de son mot de passe actuel.
+     *
+     * @param id      identifiant de l'utilisateur
+     * @param actuel  mot de passe actuel en clair
+     * @param nouveau nouveau mot de passe en clair à enregistrer
+     * @throws MotDePasseIncorrectException si le mot de passe actuel est incorrect
+     */
     public void changerMotDePasse(Long id, String actuel, String nouveau) {
         Utilisateur utilisateur = utilisateurDao.trouverParId(id);   // hash relu en base
         if (actuel == null || !BCrypt.checkpw(actuel, utilisateur.getMotDePasseHash())) {
@@ -125,6 +201,12 @@ public class UtilisateurService {
         utilisateurDao.changerMotDePasse(id, hacher(nouveau));
     }
 
+    /**
+     * Hache un mot de passe en clair avec l'algorithme BCrypt.
+     *
+     * @param motDePasse mot de passe en clair
+     * @return le mot de passe haché
+     */
     private static String hacher(String motDePasse) {
         return BCrypt.hashpw(motDePasse, BCrypt.gensalt());
     }

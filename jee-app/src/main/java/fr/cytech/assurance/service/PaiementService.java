@@ -15,8 +15,9 @@ import java.util.List;
 import java.util.stream.Stream;
 
 /**
- * Règles des paiements. Chaque contrat a un seul paiement : la prime entière,
- * créé avec le contrat (ContratDao.creerAvecGaranties), à régler au plus tard à la date de début.
+ * Gère les règles et opérations liées aux paiements des contrats.
+ * Chaque contrat a un seul paiement (la prime entière) créé à la souscription
+ * et à régler au plus tard à la date de début du contrat.
  */
 public class PaiementService {
 
@@ -24,17 +25,25 @@ public class PaiementService {
     private final ContratDao contratDao = new ContratDao();
     private final ContratService contratService = new ContratService();
 
-    // Paiement unique du contrat, ou null s'il n'en a pas (contrat créé avant la règle du paiement unique)
+    /**
+     * Trouve le paiement unique d'un contrat.
+     *
+     * @param idContrat identifiant du contrat
+     * @return le paiement du contrat, ou null s'il n'en a pas
+     */
     public Paiement trouverParContrat(Long idContrat) {
         return paiementDao.listerParContrat(idContrat).stream().findFirst().orElse(null);
     }
 
     /**
-     * Paiement du contrat par son client, à la date du jour, puis mise à jour du statut :
-     * il devient ACTIF tout de suite si sa date de début est atteinte (EN_ATTENTE ou SUSPENDU),
-     * sinon à sa date de début.
-     * Lève PaiementInvalideException (message affichable) si le paiement ne peut pas être enregistré,
-     * notamment si le contrat n'appartient pas à ce client.
+     * Enregistre le paiement d'un contrat par son client à la date du jour,
+     * puis met à jour le statut du contrat (passe à ACTIF si sa date de début est atteinte).
+     *
+     * @param idContrat identifiant du contrat à payer
+     * @param idClient  identifiant du client qui paie
+     * @param mode      mode de paiement choisi (carte, virement, etc.)
+     * @throws PaiementInvalideException si le contrat est introuvable, n'appartient pas au client,
+     *                                   est déjà payé/annulé/résilié, ou si le mode est manquant
      */
     public void payer(Long idContrat, Long idClient, ModePaiement mode) {
         Contrat contrat = idContrat == null ? null : contratDao.trouverParId(idContrat);
@@ -67,6 +76,12 @@ public class PaiementService {
 
     /**
      * Liste les paiements d'un client avec filtrage et tri optionnels.
+     *
+     * @param idClient identifiant du client
+     * @param statut   statut recherché (ou null pour tous les statuts)
+     * @param mode     mode de paiement recherché (ou null pour tous les modes)
+     * @param tri      ordre de tri (echeance_asc, montant_asc, montant_desc, paiement_desc)
+     * @return la liste filtrée et triée des paiements du client
      */
     public List<Paiement> listerPourClient(Long idClient, StatutPaiement statut, ModePaiement mode, String tri) {
         if (idClient == null) {
@@ -76,12 +91,26 @@ public class PaiementService {
     }
 
     /**
-     * Liste tous les paiements (agent/admin) avec filtrage et tri optionnels.
+     * Liste tous les paiements (pour les agents et administrateurs) avec filtrage et tri optionnels.
+     *
+     * @param statut statut recherché (ou null pour tous les statuts)
+     * @param mode   mode de paiement recherché (ou null pour tous les modes)
+     * @param tri    ordre de tri (echeance_asc, montant_asc, montant_desc, paiement_desc)
+     * @return la liste complète des paiements filtrée et triée
      */
     public List<Paiement> listerTous(StatutPaiement statut, ModePaiement mode, String tri) {
         return filtrerEtTrier(paiementDao.listerTousAvecDetails(), statut, mode, tri);
     }
 
+    /**
+     * Filtre une liste de paiements selon le statut et le mode, puis la trie.
+     *
+     * @param paiements liste des paiements à filtrer
+     * @param statut    statut à garder (ignoré si null)
+     * @param mode      mode à garder (ignoré si null)
+     * @param tri       critère de tri choisi
+     * @return la nouvelle liste filtrée et triée
+     */
     private List<Paiement> filtrerEtTrier(List<Paiement> paiements, StatutPaiement statut, ModePaiement mode, String tri) {
         Stream<Paiement> flux = paiements.stream();
 
