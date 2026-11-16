@@ -33,8 +33,6 @@ public class RoleFiltre extends HttpFilter {
             response.sendRedirect(request.getContextPath() + "/connexion");
             return;
         }
-        // La copie en session date de la connexion : l'état du compte est relu en base à chaque page protégée,
-        // pour qu'un compte désactivé par l'administrateur perde l'accès tout de suite, sans attendre la fin de la session
         Utilisateur enBase = utilisateurService.trouverParId(utilisateur.getId());
         if (enBase == null || !enBase.isActif()) {
             SessionUtilisateur.deconnecter(request);

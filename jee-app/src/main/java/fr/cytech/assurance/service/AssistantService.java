@@ -94,7 +94,6 @@ public class AssistantService {
         List<Garantie> catalogue = garantieDao.listerParNom();
         Client client = clientDao.trouverParUtilisateur(utilisateur.getId());
         if (client == null) {
-            // Compte CLIENT sans fiche client : l'assistant répond sans données personnelles
             return ContexteAssistant.instructions(utilisateur, List.of(), List.of(), List.of(), List.of(), catalogue,
                     LocalDate.now());
         }

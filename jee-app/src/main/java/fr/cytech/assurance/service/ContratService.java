@@ -142,14 +142,13 @@ public class ContratService {
         if (type == null) {
             throw new ContratInvalideException("Type d'assurance inconnu.");
         }
-        // Un type archivé n'est plus proposé : il reste seulement lié aux contrats déjà existants
         if (!type.isActif()) {
             throw new ContratInvalideException("Ce type d'assurance est archivé : il n'est plus proposé.");
         }
 
         verifierGarantiesDateEtPrime(type, idsGaranties, dateDebut, prime, true);
 
-        Contrat contrat = new Contrat();   // statut EN_ATTENTE par défaut
+        Contrat contrat = new Contrat();
         contrat.setDateDebut(dateDebut);
         contrat.setDateFin(dateFin(dateDebut));
         contrat.setPrime(prime);
@@ -173,8 +172,6 @@ public class ContratService {
             throw new ContratInvalideException("Ce contrat a été payé : il ne peut plus être modifié.");
         }
         TypeAssurance type = typeAssuranceDao.trouverAvecGaranties(contrat.getTypeAssurance().getId());
-        // Prix de base vérifié seulement si la prime change : une hausse du prix de base
-        // ne s'applique qu'aux nouveaux contrats (page de modification d'un type d'assurance)
         verifierGarantiesDateEtPrime(type, idsGaranties, dateDebut, prime, prime != null
                 && prime.compareTo(contrat.getPrime()) != 0);
 
@@ -200,11 +197,9 @@ public class ContratService {
      */
     private static void verifierGarantiesDateEtPrime(TypeAssurance type, Set<Long> idsGaranties,
                                                      LocalDate dateDebut, BigDecimal prime, boolean verifierPrixBase) {
-        // Le sujet : un contrat contient une ou plusieurs garanties
         if (idsGaranties == null || idsGaranties.isEmpty()) {
             throw new ContratInvalideException("Choisissez au moins une garantie.");
         }
-        // Seules les garanties proposées par ce type d'assurance sont acceptées
         Set<Long> disponibles = type.getGaranties().stream().map(Garantie::getId).collect(Collectors.toSet());
         if (!disponibles.containsAll(idsGaranties)) {
             throw new ContratInvalideException("Une des garanties choisies n'est pas proposée pour l'"
@@ -214,7 +209,6 @@ public class ContratService {
         if (dateDebut == null) {
             throw new ContratInvalideException("La date de début est obligatoire.");
         }
-        // Un contrat commencé et pas encore payé serait suspendu dès sa création
         if (dateDebut.isBefore(LocalDate.now())) {
             throw new ContratInvalideException("La date de début ne peut pas être dans le passé.");
         }
@@ -222,7 +216,7 @@ public class ContratService {
         if (prime == null || prime.signum() <= 0) {
             throw new ContratInvalideException("La prime doit être supérieure à zéro.");
         }
-        // Le prix de base du type est un minimum : l'agent peut l'augmenter (garanties, profil), pas le baisser
+
         if (verifierPrixBase && prime.compareTo(type.getPrixBase()) < 0) {
             throw new ContratInvalideException("La prime ne peut pas être inférieure au prix de base de l'"
                     + type.getNom().toLowerCase() + " (" + type.getPrixBase().toPlainString() + " €).");
@@ -247,7 +241,6 @@ public class ContratService {
      */
     public void resilierParClient(Long idContrat, Long idClient, String motif) {
         Contrat contrat = idContrat == null ? null : contratDao.trouverParId(idContrat);
-        // Même message pour un contrat d'un autre client : on ne révèle pas qu'il existe
         resilier(contrat != null && contrat.getClient().getId().equals(idClient) ? contrat : null, motif, null);
     }
 
@@ -383,7 +376,7 @@ public class ContratService {
         LocalDate aujourdhui = LocalDate.now();
         LocalDate debut = ancien.getDateFin().isBefore(aujourdhui) ? aujourdhui : ancien.getDateFin();
 
-        Contrat nouveau = new Contrat();   // statut EN_ATTENTE par défaut
+        Contrat nouveau = new Contrat();
         nouveau.setDateDebut(debut);
         nouveau.setDateFin(dateFin(debut));
         nouveau.setPrime(ancien.getPrime().max(type.getPrixBase()));
@@ -391,7 +384,6 @@ public class ContratService {
             return contratDao.creerAvecGaranties(nouveau, ancien.getClient().getId(), type.getId(), garanties,
                     ancien.getId());
         } catch (PersistenceException e) {
-            // Renouvelé au même moment par quelqu'un d'autre : la colonne id_contrat_precedent est unique
             throw new ContratInvalideException("Ce contrat a déjà été renouvelé.");
         }
     }
@@ -406,7 +398,6 @@ public class ContratService {
         if (!aujourdhui.isBefore(contrat.getDateFin())) {
             return StatutContrat.EXPIRE;
         }
-        // Suspension décidée par un agent : seul un agent la lève (leverSuspension)
         if (contrat.getDateSuspension() != null) {
             return StatutContrat.SUSPENDU;
         }
@@ -416,7 +407,6 @@ public class ContratService {
         if (paye) {
             return StatutContrat.ACTIF;
         }
-        // Non payé : le jour de début est le dernier jour pour payer
         return aujourdhui.isAfter(contrat.getDateDebut()) ? StatutContrat.SUSPENDU : StatutContrat.EN_ATTENTE;
     }
 

@@ -61,7 +61,6 @@ public class AnalyseStatistiquesService {
                 dateDerniereAnalyse = maintenant;
                 return derniereAnalyse;
             } catch (AssistantIndisponibleException e) {
-                // Pas gardée en cache : on peut réessayer tout de suite
                 return e.getMessage();
             }
         }
