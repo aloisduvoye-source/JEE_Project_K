@@ -24,19 +24,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Assistant IA des clients : répond à une question à partir des données du client connecté,
- * et conserve la conversation en base.
- * <p>
- * Le modèle n'a pas de mémoire : à chaque question, on lui renvoie les instructions (avec les données
- * du client, relues en base pour être à jour) et les derniers messages de la conversation.
+ * Assistant IA des clients : répond à partir des données du client connecté et conserve la conversation en base.
+ * Le modèle n'a pas de mémoire : chaque question lui renvoie les données du client et les derniers messages.
  */
 public class AssistantService {
 
-    // Longueur maximale d'une question (évite d'envoyer un texte énorme à l'API)
+    /** Longueur maximale d'une question envoyée à l'API. */
     public static final int LONGUEUR_MAX_QUESTION = 1000;
 
-    // Nombre de messages précédents renvoyés au modèle pour qu'il suive la conversation
-    // (pair : chaque échange enregistré est une question suivie de sa réponse)
+    /** Nombre de messages précédents renvoyés au modèle (pair : une question puis sa réponse). */
     private static final int MESSAGES_DE_CONTEXTE = 10;
 
     private final ClientGemini clientIA = ClientGemini.getInstance();
@@ -49,21 +45,20 @@ public class AssistantService {
     private final VersementDao versementDao = new VersementDao();
     private final GarantieDao garantieDao = new GarantieDao();
 
-    // Toute la conversation de l'utilisateur, du plus ancien message au plus récent
+    /**
+     * @return toute la conversation de l'utilisateur, du plus ancien message au plus récent
+     */
     public List<MessageAssistant> historique(Long idUtilisateur) {
         return messageDao.listerParUtilisateur(idUtilisateur);
     }
 
     /**
-     * Pose une question à l'assistant et enregistre la question et sa réponse.
-     * <p>
-     * Rien n'est enregistré si l'assistant ne répond pas : le client peut reposer sa question
-     * sans qu'elle apparaisse deux fois dans l'historique.
+     * Pose une question à l'assistant ; la question et la réponse ne sont enregistrées que si l'assistant répond.
      *
      * @param utilisateur client connecté
-     * @param question    question déjà nettoyée et validée (non vide, au plus LONGUEUR_MAX_QUESTION caractères)
+     * @param question    question déjà nettoyée et validée
      * @return la réponse enregistrée
-     * @throws TropDeQuestionsException      si le client a posé trop de questions (par minute ou par jour)
+     * @throws TropDeQuestionsException       si le client a posé trop de questions
      * @throws AssistantIndisponibleException si l'API d'IA ne répond pas
      */
     public MessageAssistant poserQuestion(Utilisateur utilisateur, String question) {
@@ -87,11 +82,14 @@ public class AssistantService {
         return messageDao.ajouter(utilisateur.getId(), AuteurMessage.ASSISTANT, reponse);
     }
 
-    // Efface toute la conversation : l'assistant repart de zéro
+    /** Efface toute la conversation : l'assistant repart de zéro. */
     public void effacerHistorique(Long idUtilisateur) {
         messageDao.supprimerHistorique(idUtilisateur);
     }
 
+    /**
+     * @return les instructions du modèle, avec les données du client relues en base
+     */
     private String construireInstructions(Utilisateur utilisateur) {
         List<Garantie> catalogue = garantieDao.listerParNom();
         Client client = clientDao.trouverParUtilisateur(utilisateur.getId());
