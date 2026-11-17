@@ -6,23 +6,31 @@ import fr.cytech.assurance.model.Client;
 import java.util.Comparator;
 import java.util.List;
 
-// Règles et lectures concernant les clients
+/**
+ * Règles et lectures concernant les clients.
+ */
 public class ClientService {
 
     private final ClientDao clientDao = new ClientDao();
 
-    // Tous les clients (comptes actifs ou désactivés), triés par nom puis prénom, avec leur compte déjà chargé
+    /**
+     * @return tous les clients, actifs ou désactivés, triés par nom puis prénom, avec leur compte chargé
+     */
     public List<Client> lister() {
         return clientDao.listerAvecUtilisateur();
     }
 
-    // Clients dont le nom, le prénom ou l'email contient le mot-clé (sans tenir compte des majuscules) ;
-    // tous les clients si le mot-clé est vide
+    /**
+     * @param motCle texte cherché dans le nom, le prénom ou l'email, sans tenir compte des majuscules
+     * @return les clients correspondants, ou tous si le mot-clé est vide
+     */
     public List<Client> rechercher(String motCle) {
         return motCle.isEmpty() ? lister() : clientDao.rechercher(motCle);
     }
 
-    // Clients dont le compte est actif, triés par nom puis prénom
+    /**
+     * @return les clients dont le compte est actif, triés par nom puis prénom
+     */
     public List<Client> listerActifs() {
         return clientDao.listerTous().stream()
                 .filter(c -> c.getUtilisateur().isActif())
@@ -31,7 +39,9 @@ public class ClientService {
                 .toList();
     }
 
-    // Fiche client de l'utilisateur connecté, ou null s'il n'est pas client
+    /**
+     * @return la fiche client de cet utilisateur, ou null s'il n'est pas client
+     */
     public Client trouverParUtilisateur(Long idUtilisateur) {
         return clientDao.trouverParUtilisateur(idUtilisateur);
     }

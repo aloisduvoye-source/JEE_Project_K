@@ -11,33 +11,26 @@ import java.util.regex.Pattern;
 
 /**
  * Vérification des saisies d'un formulaire, commune à toutes les servlets.
- * Chaque méthode ajoute un message au champ concerné ; seule la première erreur d'un champ est gardée.
- *
- * <pre>{@code
- *   Validateur v = new Validateur();
- *   v.obligatoire("nom", nom, "Le nom", 100);
- *   v.email("email", email);
- *   if (!v.aErreur("email") && emailDejaPris) {v.erreur("email", "Cet email est déjà utilisé.");}
- *   if (!v.estValide()) {request.setAttribute("erreurs", v.getErreurs()); ...}
- * }</pre>
+ * Chaque méthode ajoute un message au champ concerné, qui commence par son libellé (« Le nom »...) ;
+ * seule la première erreur d'un champ est gardée.
  */
 public class Validateur {
 
     public static final int LONGUEUR_MIN_MOT_DE_PASSE = 8;
-    // Les montants sont en DECIMAL(12,2) dans la base : au plus 10 chiffres avant la virgule
+
+    /** Montants en DECIMAL(12,2) en base : au plus 10 chiffres avant la virgule. */
     private static final int CHIFFRES_ENTIERS_MAX_MONTANT = 10;
     private static final Pattern FORMAT_EMAIL = Pattern.compile("^[^@\\s]+@[^@\\s]+\\.[^@\\s]+$");
     private static final Pattern FORMAT_TELEPHONE = Pattern.compile("^[0-9 +.()-]{6,20}$");
 
     private final Map<String, String> erreurs = new HashMap<>();
 
-    // Paramètre de formulaire sans espaces autour, jamais null
+    /** Paramètre de formulaire sans espaces autour, jamais null. */
     public static String nettoyer(String valeur) {
         return valeur == null ? "" : valeur.trim();
     }
 
-    // Identifiant facultatif lu dans l'adresse (?id=..., ?type=...), sans message d'erreur
-    // Renvoie null s'il est absent ou non numérique : la servlet décide quoi afficher
+    /** Identifiant facultatif lu dans l'adresse (?id=...), ou null s'il est absent ou non numérique, sans erreur. */
     public static Long idOuNull(String valeur) {
         try {
             return Long.valueOf(nettoyer(valeur));
@@ -46,8 +39,7 @@ public class Validateur {
         }
     }
 
-    // Valeur d'énumération facultative lue dans l'adresse (?statut=..., ?mode=...), sans message d'erreur
-    // Renvoie null si elle est absente ou inconnue : le filtre correspondant est alors ignoré
+    /** Valeur d'énumération facultative lue dans l'adresse (?statut=...), ou null si elle est absente ou inconnue. */
     public static <E extends Enum<E>> E enumOuNull(Class<E> type, String valeur) {
         try {
             return Enum.valueOf(type, nettoyer(valeur));
@@ -56,18 +48,21 @@ public class Validateur {
         }
     }
 
-    // Ajoute un message, sauf si le champ a déjà une erreur
+    /** Ajoute un message, sauf si le champ a déjà une erreur. */
     public void erreur(String champ, String message) {
         erreurs.putIfAbsent(champ, message);
     }
 
+    /** Vrai si le champ a déjà une erreur. */
     public boolean aErreur(String champ) {return erreurs.containsKey(champ);}
 
+    /** Vrai si aucune erreur n'a été ajoutée. */
     public boolean estValide() {return erreurs.isEmpty();}
 
+    /** Messages d'erreur par nom de champ. */
     public Map<String, String> getErreurs() {return erreurs;}
 
-    // Texte obligatoire, de longueur limitée. libelle : "Le nom", "L'identifiant"...
+    /** Texte obligatoire, de longueur limitée. */
     public void obligatoire(String champ, String valeur, String libelle, int longueurMax) {
         if (valeur.isEmpty()) {
             erreur(champ, libelle + " est obligatoire.");
@@ -76,14 +71,14 @@ public class Validateur {
         }
     }
 
-    // Texte facultatif : seule la longueur est vérifiée
+    /** Texte facultatif : seule la longueur est vérifiée. */
     public void longueur(String champ, String valeur, String libelle, int longueurMax) {
         if (valeur.length() > longueurMax) {
             erreur(champ, libelle + " ne doit pas dépasser " + longueurMax + " caractères.");
         }
     }
 
-    // Email obligatoire et bien formé
+    /** Email obligatoire et bien formé. */
     public void email(String champ, String valeur) {
         if (valeur.isEmpty()) {
             erreur(champ, "L'email est obligatoire.");
@@ -92,15 +87,14 @@ public class Validateur {
         }
     }
 
-    // Téléphone facultatif
+    /** Téléphone facultatif, bien formé s'il est renseigné. */
     public void telephone(String champ, String valeur) {
         if (!valeur.isEmpty() && !FORMAT_TELEPHONE.matcher(valeur).matches()) {
             erreur(champ, "Le numéro de téléphone n'est pas valide.");
         }
     }
 
-    // Date facultative, qui ne peut pas être dans le futur (ex. date de naissance)
-    // Renvoie la date lue, ou null si le champ est vide ou invalide
+    /** Date facultative, pas dans le futur (date de naissance) : la date lue, ou null si elle est vide ou invalide. */
     public LocalDate datePassee(String champ, String valeur, String libelle) {
         if (valeur.isEmpty()) {
             return null;
@@ -117,8 +111,7 @@ public class Validateur {
         }
     }
 
-    // Identifiant choisi dans une liste (client, type d'assurance...) : obligatoire et numérique
-    // Renvoie l'identifiant lu, ou null s'il est absent ou invalide
+    /** Identifiant obligatoire choisi dans une liste : l'identifiant lu, ou null s'il est absent ou invalide. */
     public Long identifiant(String champ, String valeur, String libelle) {
         if (valeur.isEmpty()) {
             erreur(champ, libelle + " est obligatoire.");
@@ -132,8 +125,7 @@ public class Validateur {
         }
     }
 
-    // Identifiants des cases cochées (request.getParameterValues : null si aucune case n'est cochée)
-    // Renvoie les identifiants valides lus, ensemble vide si rien n'est coché ; une valeur non numérique ajoute une erreur
+    /** Identifiants des cases cochées (valeurs null si aucune) : les identifiants valides, vide si rien n'est coché. */
     public Set<Long> identifiants(String champ, String[] valeurs, String libelle) {
         Set<Long> ids = new HashSet<>();
         if (valeurs != null) {
@@ -147,8 +139,7 @@ public class Validateur {
         return ids;
     }
 
-    // Date obligatoire (au format du champ HTML type="date" : AAAA-MM-JJ)
-    // Renvoie la date lue, ou null si le champ est vide ou invalide
+    /** Date obligatoire au format AAAA-MM-JJ : la date lue, ou null si elle est vide ou invalide. */
     public LocalDate date(String champ, String valeur, String libelle) {
         if (valeur.isEmpty()) {
             erreur(champ, libelle + " est obligatoire.");
@@ -162,9 +153,7 @@ public class Validateur {
         }
     }
 
-    // Montant obligatoire, avec au plus 2 décimales (virgule ou point acceptés)
-    // et au plus 10 chiffres avant la virgule (taille des colonnes en base)
-    // Renvoie le montant lu, ou null si le champ est vide ou invalide
+    /** Montant obligatoire (virgule ou point, 2 décimales au plus) : le montant lu, ou null s'il est vide ou invalide. */
     public BigDecimal montant(String champ, String valeur, String libelle) {
         if (valeur.isEmpty()) {
             erreur(champ, libelle + " est obligatoire.");
@@ -188,8 +177,7 @@ public class Validateur {
         }
     }
 
-    // Montant obligatoire et strictement positif (prix, prime...), avec au plus 2 décimales
-    // Renvoie le montant lu, ou null si le champ est vide, invalide, nul ou négatif
+    /** Montant obligatoire et strictement positif (prix, prime...), ou null s'il est vide, invalide, nul ou négatif. */
     public BigDecimal montantPositif(String champ, String valeur, String libelle) {
         BigDecimal montant = montant(champ, valeur, libelle);
         if (montant != null && montant.signum() <= 0) {
@@ -199,8 +187,7 @@ public class Validateur {
         return montant;
     }
 
-    // Montant facultatif, positif ou nul (plafond, franchise...) : mêmes règles de format que montant()
-    // Renvoie null si le champ est vide, invalide ou négatif
+    /** Montant facultatif, positif ou nul (plafond, franchise...), ou null s'il est vide, invalide ou négatif. */
     public BigDecimal montantFacultatif(String champ, String valeur, String libelle) {
         if (valeur.isEmpty()) {
             return null;
@@ -213,7 +200,7 @@ public class Validateur {
         return montant;
     }
 
-    // Nouveau mot de passe : longueur minimale, puis confirmation identique
+    /** Nouveau mot de passe : longueur minimale, puis confirmation identique. */
     public void nouveauMotDePasse(String champ, String valeur, String libelle,
                                   String champConfirmation, String confirmation) {
         if (valeur == null || valeur.length() < LONGUEUR_MIN_MOT_DE_PASSE) {

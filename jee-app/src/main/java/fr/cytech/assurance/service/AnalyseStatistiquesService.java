@@ -13,35 +13,37 @@ import java.util.stream.Collectors;
 
 /**
  * Synthèse des statistiques globales rédigée par l'IA (Gemini), pour les agents et l'administrateur.
- * <p>
  * Seuls des chiffres agrégés sont envoyés à l'API : aucune donnée personnelle de client.
  */
 public class AnalyseStatistiquesService {
 
-    // Évolutions envoyées : les 12 derniers mois suffisent pour dégager une tendance
+    /** Nombre de mois d'évolution envoyés au modèle, assez pour dégager une tendance. */
     private static final int MOIS_ENVOYES = 12;
 
+    /** Consignes de rédaction envoyées au modèle. */
     private static final String INSTRUCTIONS = "Tu es un analyste décisionnel pour une compagnie d'assurance. "
             + "Réponds en français, de façon claire et concise (maximum 150 mots), "
             + "structurée en 3 points : 1) Bilan global, 2) Point de vigilance, 3) Recommandation concrète. "
             + "Base-toi uniquement sur les chiffres fournis. "
             + "Écris en texte brut, sans Markdown (pas d'astérisques, de dièses ni de tirets de liste).";
 
-    // Une analyse sert pendant cette durée à tous les agents : le quota de l'API est partagé avec
-    // l'assistant des clients, qu'un agent qui clique plusieurs fois ne doit pas pouvoir épuiser
+    /** Durée de réutilisation d'une analyse, pour ne pas épuiser le quota partagé avec l'assistant client. */
     private static final Duration DUREE_CACHE = Duration.ofMinutes(10);
 
-    // Dernière analyse réussie (commune à toute l'application) et son heure, protégées par VERROU
+    /** Protège la dernière analyse et sa date. */
     private static final Object VERROU = new Object();
+
+    /** Dernière analyse réussie, commune à toute l'application. */
     private static String derniereAnalyse;
+
+    /** Heure de la dernière analyse réussie. */
     private static LocalDateTime dateDerniereAnalyse;
 
     private final ClientGemini clientGemini = ClientGemini.getInstance();
     private final StatistiqueService statistiqueService = new StatistiqueService();
 
     /**
-     * Synthèse des statistiques actuelles par l'IA. Une synthèse de moins de DUREE_CACHE est réutilisée
-     * sans appeler l'API ; deux demandes simultanées n'en génèrent qu'une.
+     * Synthèse des statistiques actuelles par l'IA, réutilisée pendant {@link #DUREE_CACHE}.
      *
      * @return le texte de la synthèse, ou un message expliquant pourquoi elle n'est pas disponible
      */
@@ -59,13 +61,14 @@ public class AnalyseStatistiquesService {
                 dateDerniereAnalyse = maintenant;
                 return derniereAnalyse;
             } catch (AssistantIndisponibleException e) {
-                // Pas gardée en cache : on peut réessayer tout de suite
                 return e.getMessage();
             }
         }
     }
 
-    // Toutes les statistiques de la page, en texte
+    /**
+     * @return toutes les statistiques de la page, en texte, pour le modèle
+     */
     private String donnees() {
         BigDecimal ratio = statistiqueService.calculerRatioIndemnisations();
         return "Voici les statistiques actuelles de l'assurance.\n"
@@ -90,7 +93,10 @@ public class AnalyseStatistiquesService {
                 + derniersMois(statistiqueService.evolutionFinancesParMois()) + ".";
     }
 
-    // Lignes {"MM/AAAA", valeur, ...} des MOIS_ENVOYES derniers mois -> "MM/AAAA : valeur / ... ; ..."
+    /**
+     * @param lignes lignes {"MM/AAAA", valeur, ...}, de la plus ancienne à la plus récente
+     * @return les {@link #MOIS_ENVOYES} derniers mois sur une ligne : "MM/AAAA : valeur / ... ; ..."
+     */
     private static String derniersMois(List<Object[]> lignes) {
         return lignes.stream()
                 .skip(Math.max(0, lignes.size() - MOIS_ENVOYES))

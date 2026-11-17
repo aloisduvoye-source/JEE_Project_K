@@ -19,40 +19,29 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 /**
- * Client de l'API Google Gemini (generateContent) : envoie une conversation, renvoie la réponse du modèle.
- * <p>
- * Ne contient aucune logique métier : le service de l'assistant construit les instructions
- * (données du client, procédures) et l'historique, cette classe ne fait que l'appel HTTP.
- * <p>
- * Configuration (fichier .env ou variables d'environnement du docker-compose.yml) :
- * <ul>
- *     <li>AI_API_KEY : clé de l'API, obligatoire (créée sur https://aistudio.google.com/api-keys)</li>
- *     <li>AI_MODEL : modèle principal, facultatif</li>
- *     <li>AI_MODEL_SECOURS : modèle utilisé si le principal est surchargé, facultatif</li>
- * </ul>
- * Les modèles par défaut sont des alias « latest » : Google les fait pointer vers la version courante,
- * le code ne casse donc pas quand une ancienne version est retirée.
- * <p>
- * Une seule instance suffit pour toute l'application (HttpClient est thread-safe) : utiliser {@link #getInstance()}.
+ * Client de l'API Google Gemini : envoie une conversation et renvoie la réponse du modèle, sans logique métier.
+ * Configuré par AI_API_KEY (obligatoire), AI_MODEL et AI_MODEL_SECOURS (.env). Une seule instance : {@link #getInstance()}.
  */
 public final class ClientGemini {
 
     private static final Logger LOG = Logger.getLogger(ClientGemini.class.getName());
 
     private static final String URL_API = "https://generativelanguage.googleapis.com/v1beta/models/%s:generateContent";
-    // Version « lite » en principal : quelques secondes par réponse et rarement surchargée,
-    // ce qui suffit pour répondre à partir des données fournies. La version complète sert de secours.
+
+    /** Modèle principal : version « lite », rapide et rarement surchargée (alias « latest » : version courante). */
     private static final String MODELE_PAR_DEFAUT = "gemini-flash-lite-latest";
+
+    /** Modèle de secours, si le principal ne répond pas. */
     private static final String MODELE_SECOURS_PAR_DEFAUT = "gemini-flash-latest";
 
-    // Le modèle principal est réessayé une fois avant de passer au modèle de secours
+    /** Essais de chaque modèle avant de passer au suivant. */
     private static final int TENTATIVES_PAR_MODELE = 2;
     private static final Duration ATTENTE_ENTRE_TENTATIVES = Duration.ofSeconds(1);
-    // Un modèle surchargé peut mettre très longtemps avant de répondre (ou d'échouer) :
-    // mieux vaut abandonner vite et essayer le suivant que faire attendre le client
+
+    /** Délai court : un modèle surchargé peut mettre très longtemps, mieux vaut passer au suivant. */
     private static final Duration DELAI_REPONSE = Duration.ofSeconds(15);
 
-    // Réponses courtes et factuelles : un assistant d'assurance ne doit pas inventer
+    /** Température faible : réponses factuelles, l'assistant ne doit pas inventer. */
     private static final double TEMPERATURE = 0.3;
     private static final int TOKENS_MAX = 2048;
 
@@ -64,8 +53,7 @@ public final class ClientGemini {
 
     private ClientGemini() {
         Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
-        // Pas d'exception si la clé manque : le reste de l'application doit fonctionner sans l'assistant.
-        // L'erreur est signalée au premier appel.
+        // Clé absente : pas d'exception, l'application fonctionne sans l'assistant (erreur au premier appel)
         this.cleApi = valeurOuNull(dotenv.get("AI_API_KEY"));
         this.modeles = List.of(
                 valeurOuDefaut(dotenv.get("AI_MODEL"), MODELE_PAR_DEFAUT),
@@ -75,19 +63,20 @@ public final class ClientGemini {
                 .build();
     }
 
+    /** Instance unique, partagée par toute l'application (HttpClient est thread-safe). */
     public static ClientGemini getInstance() {
         return INSTANCE;
     }
 
-    // true si une clé est configurée (ne garantit pas qu'elle soit valide)
+    /** Vrai si une clé est configurée, sans garantir qu'elle soit valide. */
     public boolean estConfigure() {
         return cleApi != null;
     }
 
     /**
-     * Envoie la conversation au modèle et renvoie sa réponse.
+     * Envoie la conversation au modèle principal, puis au modèle de secours s'il échoue.
      *
-     * @param instructions consignes et contexte donnés au modèle (rôle, données du client, procédures)
+     * @param instructions consignes et contexte donnés au modèle
      * @param conversation messages dans l'ordre chronologique, le dernier étant la question du client
      * @return le texte de la réponse
      * @throws AssistantIndisponibleException si aucune réponse n'a pu être obtenue
@@ -109,18 +98,15 @@ public final class ClientGemini {
                 try {
                     return appeler(modele, corps);
                 } catch (ErreurTemporaire e) {
-                    // Surcharge (503), quota par minute (429), délai dépassé ou réseau : on réessaie puis on change de modèle
                     LOG.log(Level.WARNING, "Gemini " + modele + " indisponible (tentative " + tentative + ") : "
                             + e.getMessage());
                     derniereErreur = new AssistantIndisponibleException(
                             "L'assistant est momentanément surchargé, veuillez réessayer dans quelques instants.", e);
-                    // Pas d'attente avant de changer de modèle : seul un nouvel essai du même modèle en a besoin
                     if (tentative < TENTATIVES_PAR_MODELE) {
                         attendre();
                     }
                 } catch (ErreurQuotaJournalier e) {
-                    // Quota du jour épuisé pour ce modèle : inutile de le réessayer avant demain,
-                    // mais le quota est compté par modèle, le modèle de secours peut encore répondre
+                    // Quota compté par modèle : le modèle de secours peut encore répondre
                     LOG.warning("Quota journalier de l'API Gemini épuisé pour le modèle " + modele + " : "
                             + e.getMessage());
                     derniereErreur = new AssistantIndisponibleException(
@@ -128,8 +114,6 @@ public final class ClientGemini {
                                     + "Veuillez réessayer demain.", e);
                     break;
                 } catch (ErreurModele e) {
-                    // Modèle inconnu (404) ou paramètre refusé par ce modèle (400) : le réessayer ne sert à rien,
-                    // mais le modèle de secours peut réussir
                     LOG.severe("Erreur de l'API Gemini avec le modèle " + modele + " : " + e.getMessage());
                     derniereErreur = new AssistantIndisponibleException(
                             "L'assistant est indisponible pour le moment.", e);
@@ -140,8 +124,7 @@ public final class ClientGemini {
         throw derniereErreur;
     }
 
-    // Un appel HTTP au modèle donné. Lève ErreurTemporaire si un nouvel essai a des chances de réussir,
-    // ErreurModele si seul un autre modèle peut réussir, AssistantIndisponibleException si rien ne peut réussir
+    /** Un appel HTTP au modèle ; l'exception levée indique s'il faut réessayer, changer de modèle ou abandonner. */
     private String appeler(String modele, String corps) {
         HttpRequest requete = HttpRequest.newBuilder()
                 .uri(URI.create(String.format(URL_API, modele)))
@@ -158,7 +141,6 @@ public final class ClientGemini {
         } catch (java.net.http.HttpTimeoutException e) {
             throw new ErreurTemporaire("délai de réponse dépassé", e);
         } catch (IOException e) {
-            // Coupure réseau passagère (connexion refusée, réinitialisée...) : un nouvel essai peut réussir
             throw new ErreurTemporaire("problème réseau : " + e.getMessage(), e);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -173,28 +155,20 @@ public final class ClientGemini {
         if (statut == 429 && estQuotaJournalier(reponse.body())) {
             throw new ErreurQuotaJournalier(detail);
         }
-        // 429 restant : quota par minute, un nouvel essai un peu plus tard peut réussir
+        // Autre 429 : quota par minute, passager
         if (statut == 429 || statut == 500 || statut == 503 || statut == 504) {
             throw new ErreurTemporaire(detail, null);
         }
+        // 404 : modèle inconnu ou retiré ; 400 : paramètre refusé par ce modèle
         if (statut == 400 || statut == 404) {
-            // 404 : modèle inconnu (faute dans AI_MODEL, modèle retiré)
-            // 400 : requête refusée par ce modèle (ex. un modèle qui ne permet pas de désactiver le raisonnement)
             throw new ErreurModele(detail);
         }
-        // 401/403 (clé invalide ou sans droits) et autres : aucun modèle ne répondra, inutile d'essayer le secours
+        // 401/403 (clé invalide ou sans droits) et autres : aucun modèle ne répondra
         LOG.severe("Erreur de l'API Gemini avec le modèle " + modele + " : " + detail);
         throw new AssistantIndisponibleException("L'assistant est indisponible pour le moment.");
     }
 
-    /*
-     * Format attendu par l'API :
-     * {
-     *   "systemInstruction": {"parts": [{"text": "..."}]},
-     *   "contents": [{"role": "user" | "model", "parts": [{"text": "..."}]}, ...],
-     *   "generationConfig": {"temperature": 0.3, "maxOutputTokens": 2048, "thinkingConfig": {"thinkingLevel": "low"}}
-     * }
-     */
+    /** Corps JSON de la requête : instructions système, conversation et paramètres de génération. */
     private JsonObject construireRequete(String instructions, List<MessageIA> conversation) {
         JsonObject requete = new JsonObject();
 
@@ -216,10 +190,8 @@ public final class ClientGemini {
         JsonObject configuration = new JsonObject();
         configuration.addProperty("temperature", TEMPERATURE);
         configuration.addProperty("maxOutputTokens", TOKENS_MAX);
-        // Raisonnement interne réduit au minimum : ses tokens sont pris sur maxOutputTokens et peuvent l'épuiser
-        // avant la réponse (réponse vide ou coupée). Inutile ici : la réponse est dans les données fournies.
-        // thinkingLevel et non thinkingBudget : les modèles récents (vers lesquels pointent les alias « latest »)
-        // refusent thinkingBudget = 0 (HTTP 400). « low » est accepté par la version lite comme par la complète.
+        // Raisonnement minimal : ses tokens sont pris sur maxOutputTokens et pourraient couper la réponse.
+        // thinkingLevel et non thinkingBudget = 0, refusé (HTTP 400) par les modèles récents
         JsonObject raisonnement = new JsonObject();
         raisonnement.addProperty("thinkingLevel", "low");
         configuration.add("thinkingConfig", raisonnement);
@@ -228,6 +200,7 @@ public final class ClientGemini {
         return requete;
     }
 
+    /** Tableau « parts » de l'API, avec ce seul texte. */
     private JsonArray parties(String texte) {
         JsonObject partie = new JsonObject();
         partie.addProperty("text", texte);
@@ -236,20 +209,19 @@ public final class ClientGemini {
         return parties;
     }
 
-    // Réponse : {"candidates": [{"content": {"parts": [{"text": "..."}, ...]}, "finishReason": "STOP"}]}
-    // Visible dans le paquetage pour les tests
+    /** Texte de la réponse, sans le raisonnement du modèle (visible dans le paquetage pour les tests). */
     static String extraireTexte(String modele, String json) {
         try {
             JsonObject racine = JsonParser.parseString(json).getAsJsonObject();
             journaliserConsommation(modele, racine);
             JsonArray candidats = racine.getAsJsonArray("candidates");
             if (candidats == null || candidats.isEmpty()) {
-                // Question bloquée par les filtres de sécurité : promptFeedback.blockReason est renseigné
+                // Question bloquée par les filtres de sécurité
                 LOG.warning("Réponse Gemini sans candidat : " + json);
                 throw new AssistantIndisponibleException("L'assistant n'a pas pu répondre à cette question.");
             }
             JsonObject candidat = candidats.get(0).getAsJsonObject();
-            // STOP = réponse complète ; MAX_TOKENS = coupée faute de place ; SAFETY... = bloquée par un filtre
+            // STOP : réponse complète ; MAX_TOKENS : coupée faute de place ; SAFETY : bloquée par un filtre
             String finPrevue = candidat.has("finishReason") ? candidat.get("finishReason").getAsString() : "STOP";
             if (!"STOP".equals(finPrevue)) {
                 LOG.warning("Réponse Gemini interrompue (finishReason = " + finPrevue + ") : " + json);
@@ -278,12 +250,7 @@ public final class ClientGemini {
         }
     }
 
-    /*
-     * Tokens consommés par l'appel, pour suivre l'utilisation du quota :
-     * "usageMetadata": {"promptTokenCount": 2650, "cachedContentTokenCount": 2048,
-     *                   "candidatesTokenCount": 120, "thoughtsTokenCount": 35, "totalTokenCount": 2805}
-     * Les tokens en cache sont la partie des instructions identique à un appel récent (facturée moins cher).
-     */
+    /** Journalise les tokens consommés par l'appel, pour suivre l'utilisation du quota. */
     private static void journaliserConsommation(String modele, JsonObject racine) {
         JsonObject usage = racine.getAsJsonObject("usageMetadata");
         if (usage == null) {
@@ -295,16 +262,12 @@ public final class ClientGemini {
                 + entier(usage, "thoughtsTokenCount") + " de raisonnement)");
     }
 
+    /** Valeur entière du champ, ou 0 s'il est absent. */
     private static int entier(JsonObject objet, String champ) {
         return objet.has(champ) ? objet.get(champ).getAsInt() : 0;
     }
 
-    /*
-     * Un 429 peut venir du quota par minute (passager) ou du quota par jour (épuisé jusqu'au lendemain).
-     * Le quota dépassé est nommé dans les détails de l'erreur :
-     * "details": [{"@type": "...QuotaFailure", "violations": [{"quotaId": "GenerateRequestsPerDayPerProjectPerModel-FreeTier"}]}]
-     */
-    // Visible dans le paquetage pour les tests
+    /** Vrai si l'erreur 429 vient du quota par jour et non par minute (visible dans le paquetage pour les tests). */
     static boolean estQuotaJournalier(String json) {
         try {
             JsonArray details = JsonParser.parseString(json).getAsJsonObject()
@@ -330,7 +293,7 @@ public final class ClientGemini {
         }
     }
 
-    // Erreur : {"error": {"code": 503, "message": "...", "status": "UNAVAILABLE"}}
+    /** Message d'une réponse d'erreur de l'API, ou la réponse entière s'il est illisible. */
     private String messageErreur(String json) {
         try {
             return JsonParser.parseString(json).getAsJsonObject()
@@ -348,6 +311,7 @@ public final class ClientGemini {
         }
     }
 
+    /** Valeur sans espaces autour, ou null si elle est vide. */
     private static String valeurOuNull(String valeur) {
         return valeur == null || valeur.isBlank() ? null : valeur.trim();
     }
@@ -357,21 +321,21 @@ public final class ClientGemini {
         return nettoyee != null ? nettoyee : defaut;
     }
 
-    // Erreur passagère (surcharge, quota, délai, réseau) : un nouvel essai ou un autre modèle peut réussir
+    /** Erreur passagère (surcharge, quota par minute, délai, réseau) : un nouvel essai peut réussir. */
     private static final class ErreurTemporaire extends RuntimeException {
         ErreurTemporaire(String message, Throwable cause) {
             super(message, cause);
         }
     }
 
-    // Quota journalier du modèle épuisé : seul un autre modèle peut réussir avant demain
+    /** Quota du jour du modèle épuisé : seul un autre modèle peut réussir avant demain. */
     private static final class ErreurQuotaJournalier extends RuntimeException {
         ErreurQuotaJournalier(String message) {
             super(message);
         }
     }
 
-    // Erreur propre au modèle appelé (inconnu, paramètre refusé) : seul un autre modèle peut réussir
+    /** Erreur propre au modèle appelé (inconnu, paramètre refusé) : seul un autre modèle peut réussir. */
     private static final class ErreurModele extends RuntimeException {
         ErreurModele(String message) {
             super(message);

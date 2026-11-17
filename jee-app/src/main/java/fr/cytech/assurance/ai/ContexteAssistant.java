@@ -23,22 +23,17 @@ import java.util.Locale;
 import java.util.stream.Collectors;
 
 /**
- * Construit les instructions envoyées au modèle d'IA : son rôle, les règles à respecter,
- * les connaissances générales (procédures, documents) et les données du client connecté.
- * <p>
- * Le modèle ne connaît pas la base : il ne peut répondre « Quels sont mes contrats actifs ? »
- * que parce que ses contrats sont écrits ici, en texte. Seules les données du client connecté
- * y figurent : il ne peut donc rien apprendre sur les autres clients.
- * <p>
- * Classe sans accès à la base : le service lui passe les données déjà chargées.
+ * Construit les instructions du modèle d'IA : rôle, règles, connaissances générales et données du client connecté.
+ * Seules les données de ce client y figurent : le modèle ne peut rien apprendre sur les autres. Sans accès à la base.
  */
 public final class ContexteAssistant {
 
     private static final String FICHIER_CONNAISSANCES = "/assistant/connaissances.txt";
+
+    /** Procédures et documents à fournir, communs à tous les clients. */
     private static final String CONNAISSANCES = chargerConnaissances();
 
-    // Paiements réglés ou annulés plus anciens que ça : non envoyés au modèle. Ils s'accumulent d'année
-    // en année et alourdiraient chaque question, alors que le client demande presque toujours les récents.
+    /** Paiements réglés ou annulés plus anciens : non envoyés, ils alourdiraient chaque question. */
     static final int MOIS_DE_PAIEMENTS = 12;
 
     private static final DateTimeFormatter FORMAT_DATE = DateTimeFormatter.ofPattern("dd/MM/yyyy");
@@ -70,14 +65,11 @@ public final class ContexteAssistant {
     }
 
     /**
-     * @param utilisateur compte du client connecté
-     * @param contrats    ses contrats, avec leur type et leurs garanties chargés
-     * @param paiements   ses paiements, avec leur contrat chargé
-     * @param sinistres   ses sinistres, avec leur contrat et son type chargés
-     * @param versements  les versements qu'il a reçus (indemnisations, remboursements), avec leur contrat chargé
-     * @param catalogue   toutes les garanties proposées par la compagnie (pour comparer deux garanties,
-     *                    même si le client ne les a pas souscrites)
-     * @param aujourdhui  date du jour (pour que le modèle sache si une date est passée)
+     * Instructions complètes du modèle. Les entités doivent avoir leurs relations déjà chargées.
+     *
+     * @param versements indemnisations et remboursements reçus par le client
+     * @param catalogue  toutes les garanties de la compagnie, pour en comparer deux même non souscrites
+     * @param aujourdhui date du jour, pour que le modèle sache si une date est passée
      * @return le texte des instructions
      */
     public static String instructions(Utilisateur utilisateur, List<Contrat> contrats,
@@ -111,7 +103,7 @@ public final class ContexteAssistant {
         }
     }
 
-    // "Vol (plafond : 20 000,00 €, franchise : 150,00 €) : Vol ou tentative de vol des biens assurés."
+    /** Une garantie sur une ligne : nom, plafond, franchise et description. */
     private static void decrireGarantie(StringBuilder texte, Garantie garantie) {
         texte.append(garantie.getNom())
                 .append(" (plafond : ").append(montantOuNonPrecise(garantie.getPlafond()))
@@ -198,7 +190,7 @@ public final class ContexteAssistant {
         }
     }
 
-    // Un paiement en attente ou en retard est toujours envoyé, quelle que soit son échéance
+    /** Vrai si le paiement est récent, ou en attente ou en retard quelle que soit son échéance. */
     private static boolean estAEnvoyer(Paiement paiement, LocalDate limite) {
         if (paiement.getStatut() == StatutPaiement.EN_ATTENTE || paiement.getStatut() == StatutPaiement.EN_RETARD) {
             return true;
@@ -262,7 +254,7 @@ public final class ContexteAssistant {
         }
     }
 
-    // EN_ANALYSE -> "en analyse", DEGATS_DES_EAUX -> "dégâts des eaux"
+    /** Libellé lisible d'une valeur d'énumération : en minuscules, sans soulignés, accentué. */
     private static String libelle(Enum<?> valeur) {
         if (valeur == null) {return "non précisé";}
         String texte = valeur.name().toLowerCase(Locale.FRENCH).replace('_', ' ');
@@ -286,7 +278,7 @@ public final class ContexteAssistant {
         return date == null ? "date non précisée" : date.format(FORMAT_DATE);
     }
 
-    // 1234.5 -> "1 234,50 €"
+    /** Montant au format français (1 234,50 €). */
     private static String montant(BigDecimal montant) {
         return NumberFormat.getCurrencyInstance(Locale.FRANCE).format(montant);
     }
@@ -295,11 +287,12 @@ public final class ContexteAssistant {
         return montant == null ? "non précisé" : montant(montant);
     }
 
-    // Une description sur plusieurs lignes casserait la mise en forme de la liste
+    /** Met le texte sur une ligne : un retour à la ligne casserait la mise en forme de la liste. */
     private static String surUneLigne(String texte) {
         return texte.replaceAll("\\s+", " ").trim();
     }
 
+    /** Lit le fichier des connaissances, sans ses lignes de commentaire (« # »). */
     private static String chargerConnaissances() {
         try (InputStream flux = ContexteAssistant.class.getResourceAsStream(FICHIER_CONNAISSANCES)) {
             if (flux == null) {
