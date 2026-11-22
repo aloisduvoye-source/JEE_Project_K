@@ -26,22 +26,7 @@
 
   <section id="garanties">
     <h2>Mes garanties</h2>
-    <table border="1">
-      <thead>
-        <tr>
-          <th>Contrat</th>
-          <th>Garantie</th>
-          <th>Description</th>
-          <th>Plafond</th>
-          <th>Franchise</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td colspan="5">Aucune garantie à afficher pour l'instant.</td>
-        </tr>
-      </tbody>
-    </table>
+    <p><a href="${pageContext.request.contextPath}/client/garanties">Voir mes garanties</a></p>
   </section>
 
   <section id="paiements">

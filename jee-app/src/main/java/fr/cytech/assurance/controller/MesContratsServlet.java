@@ -17,10 +17,8 @@ import java.io.IOException;
 import java.util.List;
 
 // Contrats du client connecté, avec leurs garanties, filtrables et triables : il ne voit que les siens
-@WebServlet("/client/contrats")
+@WebServlet({ "/client/contrats", "/client/garanties" })
 public class MesContratsServlet extends HttpServlet {
-
-    private static final String VUE = "/WEB-INF/views/client/contrats.jsp";
 
     private final ClientService clientService = new ClientService();
     private final ContratService contratService = new ContratService();
@@ -29,7 +27,8 @@ public class MesContratsServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
-        // Le client vient de la session, jamais de l'adresse : impossible de voir les contrats d'un autre
+        // Le client vient de la session, jamais de l'adresse : impossible de voir les
+        // contrats d'un autre
         Client client = clientService.trouverParUtilisateur(SessionUtilisateur.connecte(request).getId());
 
         StatutContrat statut = statut(request.getParameter("statut"));
@@ -45,7 +44,7 @@ public class MesContratsServlet extends HttpServlet {
         request.setAttribute("statuts", StatutContrat.values());
         request.setAttribute("types", typeAssuranceService.listerAvecGaranties());
         request.setAttribute("recherche", statut != null || idType != null);
-        request.getRequestDispatcher(VUE).forward(request, response);
+        request.getRequestDispatcher("/WEB-INF/views" + request.getServletPath() + ".jsp").forward(request, response);
     }
 
     private StatutContrat statut(String valeur) {
