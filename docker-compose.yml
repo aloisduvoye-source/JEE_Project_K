@@ -27,7 +27,11 @@ services:
       retries: 20
 
   tomcat:
-    build: .
+    build:
+      context: .
+      args:
+        # Version déployée : jee-app (par défaut) ou spring-app (APP=spring-app docker compose up -d --build)
+        APP: ${APP:-jee-app}
     container_name: tomcat_app
     ports:
       - "8080:8080"
