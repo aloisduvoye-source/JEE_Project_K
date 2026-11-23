@@ -57,6 +57,13 @@
       <artifactId>jakarta.servlet.jsp.jstl</artifactId>
     </dependency>
 
+    <!-- Lecture du .env (DB_URL, AI_API_KEY...), avec les mêmes règles que jee-app et Docker Compose -->
+    <dependency>
+      <groupId>io.github.cdimascio</groupId>
+      <artifactId>dotenv-java</artifactId>
+      <version>3.0.0</version>
+    </dependency>
+
     <!-- Lecture et écriture du JSON échangé avec l'API d'IA (Gemini) -->
     <dependency>
       <groupId>com.google.code.gson</groupId>
