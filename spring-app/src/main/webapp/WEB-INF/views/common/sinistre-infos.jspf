@@ -1,3 +1,4 @@
+<%@ page pageEncoding="UTF-8" %>
 <%--
   Informations d'un sinistre, communes à la fiche du client et à celle de l'agent :
   étapes du traitement (avec leur date), contrat, déclaration et indemnisation (sans formulaire).

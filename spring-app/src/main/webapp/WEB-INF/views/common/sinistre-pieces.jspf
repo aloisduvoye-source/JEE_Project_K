@@ -1,3 +1,4 @@
+<%@ page pageEncoding="UTF-8" %>
 <%--
   Pièces justificatives d'un sinistre, communes à la fiche du client et à celle de l'agent.
   Formulaire d'ajout affiché au client et aux agents tant que le dossier n'est pas clos ; l'admin consulte.
