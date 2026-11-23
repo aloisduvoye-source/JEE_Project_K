@@ -41,10 +41,19 @@
       <scope>runtime</scope>
     </dependency>
 
-    <!-- Compilation des JSP par le Tomcat embarqué -->
+    <!--
+      Tomcat embarqué et compilation des JSP, en provided : absents de WEB-INF/lib pour ne pas entrer
+      en conflit avec le Tomcat du conteneur Docker, mais gardés pour java -jar et mvn spring-boot:run
+    -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-tomcat</artifactId>
+      <scope>provided</scope>
+    </dependency>
     <dependency>
       <groupId>org.apache.tomcat.embed</groupId>
       <artifactId>tomcat-embed-jasper</artifactId>
+      <scope>provided</scope>
     </dependency>
 
     <!-- JSTL (<c:if>, <c:choose>, <c:out>...) -->
@@ -86,8 +95,8 @@
   </dependencies>
 
   <build>
-    <!-- Produit target/assurance-spring.war, lancé par java -jar ou mvn spring-boot:run -->
-    <finalName>assurance-spring</finalName>
+    <!-- Produit target/assurance.war, comme jee-app : le Dockerfile copie l'un ou l'autre -->
+    <finalName>assurance</finalName>
     <plugins>
       <plugin>
         <groupId>org.springframework.boot</groupId>
