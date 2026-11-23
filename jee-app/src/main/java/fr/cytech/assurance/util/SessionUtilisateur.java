@@ -5,35 +5,34 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 /**
- * Seul endroit qui manipule l'utilisateur connecté dans la session.
- * Les servlets et les filtres passent par ces méthodes plutôt que par getAttribute("utilisateur").
- * Dans les JSP, l'utilisateur connecté reste accessible avec ${sessionScope.utilisateur}.
+ * Seul endroit qui manipule l'utilisateur connecté dans la session : servlets et filtres passent par ici.
  */
 public final class SessionUtilisateur {
 
-    // Nom de l'attribut de session (le même que dans les JSP : ${sessionScope.utilisateur})
+    /** Nom de l'attribut de session, le même que dans les JSP (${sessionScope.utilisateur}). */
     public static final String ATTRIBUT = "utilisateur";
 
     private SessionUtilisateur() {
     }
 
-    // Utilisateur connecté, ou null si personne ne l'est (ne crée pas de session)
+    /** Utilisateur connecté, ou null si personne ne l'est (ne crée pas de session). */
     public static Utilisateur connecte(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         return session == null ? null : (Utilisateur) session.getAttribute(ATTRIBUT);
     }
 
-    // Connexion : nouvelle session à chaque fois (protège contre la fixation de session)
+    /** Connecte l'utilisateur dans une nouvelle session, pour se protéger de la fixation de session. */
     public static void connecter(HttpServletRequest request, Utilisateur utilisateur) {
         deconnecter(request);
         request.getSession(true).setAttribute(ATTRIBUT, utilisateur);
     }
 
-    // Remplace la copie en session (après une modification du profil, par exemple)
+    /** Remplace la copie en session, après une modification du profil par exemple. */
     public static void mettreAJour(HttpServletRequest request, Utilisateur utilisateur) {
         request.getSession().setAttribute(ATTRIBUT, utilisateur);
     }
 
+    /** Ferme la session, s'il y en a une. */
     public static void deconnecter(HttpServletRequest request) {
         HttpSession session = request.getSession(false);
         if (session != null) {

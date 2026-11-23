@@ -17,7 +17,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Statistiques globales de la page Statistiques (agents et administrateur) : clients, contrats et finances.
+ * Calcule les statistiques globales affichées sur la page Statistiques (pour les agents et l'administrateur) :
+ * suivi des clients, des contrats et des indicateurs financiers.
  */
 public class StatistiqueService {
 
@@ -27,6 +28,8 @@ public class StatistiqueService {
     private final StatistiqueDao statistiqueDao = new StatistiqueDao();
 
     /**
+     * Compte le nombre total de clients enregistrés sur la plateforme.
+     *
      * @return le nombre total de clients
      */
     public int compterTotalClients() {
@@ -34,7 +37,9 @@ public class StatistiqueService {
     }
 
     /**
-     * @return le nombre de clients inscrits depuis le 1er du mois en cours
+     * Compte le nombre de nouveaux clients inscrits depuis le 1er jour du mois en cours.
+     *
+     * @return le nombre de nouveaux clients du mois
      */
     public int compterNouveauxClients() {
         LocalDateTime debutMois = LocalDate.now().withDayOfMonth(1).atStartOfDay();
@@ -42,13 +47,17 @@ public class StatistiqueService {
     }
 
     /**
-     * @return lignes {nom du type, nombre de clients ayant un contrat actif de ce type}
+     * Calcule la répartition des clients ayant au moins un contrat actif selon le type d'assurance.
+     *
+     * @return une liste de lignes contenant {nom du type d'assurance, nombre de clients actifs}
      */
     public List<Object[]> repartitionClientsParType() {
         return statistiqueDao.repartitionClientsParType();
     }
 
     /**
+     * Compte le nombre de contrats actuellement actifs.
+     *
      * @return le nombre de contrats actifs
      */
     public int compterContratsActifs() {
@@ -56,6 +65,8 @@ public class StatistiqueService {
     }
 
     /**
+     * Compte le nombre de contrats expirés.
+     *
      * @return le nombre de contrats expirés
      */
     public int compterContratsExpires() {
@@ -63,6 +74,8 @@ public class StatistiqueService {
     }
 
     /**
+     * Compte le nombre de contrats résiliés.
+     *
      * @return le nombre de contrats résiliés
      */
     public int compterContratsResilies() {
@@ -70,10 +83,10 @@ public class StatistiqueService {
     }
 
     /**
-     * Nombre de contrats actifs en même temps, mois par mois : ceux actifs le dernier jour du mois
-     * (aujourd'hui pour le mois en cours), du mois du premier contrat jusqu'au mois en cours.
+     * Calcule l'évolution du nombre de contrats actifs mois par mois (au dernier jour de chaque mois,
+     * ou à la date du jour pour le mois en cours), du premier contrat jusqu'à aujourd'hui.
      *
-     * @return lignes {"MM/AAAA", nombre de contrats actifs (Long)}, de la plus ancienne à la plus récente
+     * @return une liste de lignes {"MM/AAAA", nombre de contrats actifs (Long)}, de la plus ancienne à la plus récente
      */
     public List<Object[]> evolutionContratsParMois() {
         List<Object[]> periodes = statistiqueDao.periodesContrats();
@@ -92,8 +105,14 @@ public class StatistiqueService {
         return resultat;
     }
 
-    // Actif à cette date : commencé, pas encore fini, payé, ni résilié ni suspendu par un agent avant
-    // (même règle que ContratService.statutAttendu ; une suspension déjà levée n'est plus connue)
+    /**
+     * Vérifie si un contrat était actif à une date donnée (commencé, non terminé, payé,
+     * et ni résilié ni suspendu avant cette date).
+     *
+     * @param periode tableau contenant les dates du contrat {debut, fin, resiliation, suspension, paiement}
+     * @param date    date à vérifier
+     * @return true si le contrat était actif à cette date, false sinon
+     */
     private static boolean actifLe(Object[] periode, LocalDate date) {
         LocalDate debut = (LocalDate) periode[0];
         LocalDate fin = (LocalDate) periode[1];
@@ -107,45 +126,55 @@ public class StatistiqueService {
     }
 
     /**
-     * @return la somme des paiements effectués, avant remboursements
+     * Calcule le chiffre d'affaires brut (somme des paiements effectués, avant remboursements).
+     *
+     * @return le montant total des paiements encaissés
      */
     public BigDecimal calculerChiffreAffaires() {
         return statistiqueDao.calculerChiffreAffaires();
     }
 
     /**
-     * @return la somme des primes annuelles des contrats actifs
+     * Calcule la somme des primes annuelles de tous les contrats actuellement actifs.
+     *
+     * @return le montant total des primes actives
      */
     public BigDecimal calculerTotalPrimes() {
         return statistiqueDao.calculerTotalPrimes();
     }
 
     /**
-     * @return la somme des indemnisations de sinistres versées
+     * Calcule le montant total des indemnisations versées aux clients suite à des sinistres.
+     *
+     * @return la somme des indemnisations versées
      */
     public BigDecimal calculerTotalIndemnisations() {
         return statistiqueDao.calculerTotalIndemnisations();
     }
 
     /**
-     * @return la somme des remboursements de prime versés à la résiliation
+     * Calcule le montant total des remboursements de prime versés lors des résiliations.
+     *
+     * @return la somme des remboursements versés
      */
     public BigDecimal calculerTotalRemboursements() {
         return statistiqueDao.calculerTotalRemboursements();
     }
 
     /**
-     * @return le chiffre d'affaires net : paiements effectués moins remboursements
+     * Calcule le chiffre d'affaires net (paiements encaissés moins les remboursements versés).
+     *
+     * @return le chiffre d'affaires net
      */
     public BigDecimal calculerChiffreAffairesNet() {
         return calculerChiffreAffaires().subtract(calculerTotalRemboursements());
     }
 
     /**
-     * Part des primes encaissées (chiffre d'affaires net) reversée en indemnisations, en pourcentage.
-     * Au-dessus de 100 %, l'assurance a versé plus qu'elle n'a gardé de primes.
+     * Calcule le pourcentage des primes encaissées (chiffre d'affaires net) reversé en indemnisations.
+     * Au-dessus de 100 %, l'assurance a versé plus qu'elle n'a encaissé.
      *
-     * @return le ratio arrondi à 0,1 %, ou null s'il n'y a encore aucune prime encaissée
+     * @return le ratio en pourcentage arrondi à 0,1 %, ou null s'il n'y a aucune prime encaissée
      */
     public BigDecimal calculerRatioIndemnisations() {
         BigDecimal net = calculerChiffreAffairesNet();
@@ -157,9 +186,10 @@ public class StatistiqueService {
     }
 
     /**
-     * Argent encaissé et versé par mois, sans trou entre le premier et le dernier mois (0 pour un mois sans rien).
+     * Calcule l'évolution mensuelle des revenus encaissés, des indemnisations et des remboursements,
+     * en comblant les mois sans activité par 0 entre le premier et le dernier mois.
      *
-     * @return lignes {"MM/AAAA", encaissé, indemnisations, remboursements} (montants en BigDecimal),
+     * @return une liste de lignes {"MM/AAAA", encaissé, indemnisations, remboursements} en BigDecimal,
      *         de la plus ancienne à la plus récente
      */
     public List<Object[]> evolutionFinancesParMois() {
@@ -181,7 +211,13 @@ public class StatistiqueService {
         return resultat;
     }
 
-    // Range les lignes {année, mois, montant} du DAO dans la colonne "colonne" de chaque mois
+    /**
+     * Range les résultats mensuels issus du DAO dans la colonne correspondante de la carte par mois.
+     *
+     * @param montants carte associant chaque mois à un tableau de 3 montants
+     * @param lignes   lignes brutes {année, mois, montant} renvoyées par le DAO
+     * @param colonne  index de la colonne à remplir (0 = encaissé, 1 = indemnisations, 2 = remboursements)
+     */
     private static void ajouterParMois(Map<YearMonth, BigDecimal[]> montants, List<Object[]> lignes, int colonne) {
         for (Object[] ligne : lignes) {
             if (ligne[0] != null && ligne[1] != null) {
@@ -191,6 +227,11 @@ public class StatistiqueService {
         }
     }
 
+    /**
+     * Crée un tableau initialisé avec trois montants à zéro (0.00) pour un mois donné.
+     *
+     * @return un tableau de trois BigDecimal égaux à 0.00
+     */
     private static BigDecimal[] nouveauxMontants() {
         BigDecimal zero = BigDecimal.ZERO.setScale(2);
         return new BigDecimal[]{zero, zero, zero};

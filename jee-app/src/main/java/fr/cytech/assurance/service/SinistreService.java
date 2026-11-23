@@ -45,27 +45,44 @@ public class SinistreService {
 
     // ---------- Consultation ----------
 
-    // Sinistres du client, du plus récent au plus ancien
+    /**
+     * Liste les sinistres d'un client, du plus récent au plus ancien.
+     *
+     * @param idClient identifiant du client
+     * @return la liste des sinistres du client
+     */
     public List<Sinistre> listerDuClient(Long idClient) {
         return sinistreDao.listerParClient(idClient);
     }
 
-    // Sinistre avec ses détails s'il appartient à ce client, sinon null (inexistant ou d'un autre client)
+    /**
+     * Recherche un sinistre avec ses détails uniquement s'il appartient bien au client donné.
+     *
+     * @param idSinistre identifiant du sinistre
+     * @param idClient   identifiant du client
+     * @return le sinistre avec ses détails, ou null s'il n'existe pas ou appartient à un autre client
+     */
     public Sinistre trouverDuClient(Long idSinistre, Long idClient) {
         Sinistre sinistre = sinistreDao.trouverAvecDetails(idSinistre);
         return sinistre != null && sinistre.getContrat().getClient().getId().equals(idClient) ? sinistre : null;
     }
 
-    // Sinistre avec ses détails (pour un agent ou l'admin), ou null s'il n'existe pas
+    /**
+     * Recherche un sinistre avec tous ses détails (pour un agent ou un administrateur).
+     *
+     * @param idSinistre identifiant du sinistre
+     * @return le sinistre avec ses détails, ou null s'il n'existe pas
+     */
     public Sinistre trouverAvecDetails(Long idSinistre) {
         return sinistreDao.trouverAvecDetails(idSinistre);
     }
 
     /**
-     * Sinistres pour la liste des agents.
+     * Liste les sinistres pour les agents avec filtres optionnels.
      *
-     * @param statut  seulement ce statut (du plus ancien au plus récent : ordre de traitement), ou null pour tous
-     * @param idAgent seulement les dossiers de cet agent, ou null pour tous
+     * @param statut  statut recherché (du plus ancien au plus récent), ou null pour tous
+     * @param idAgent identifiant de l'agent responsable, ou null pour tous les dossiers
+     * @return la liste des sinistres correspondants
      */
     public List<Sinistre> lister(StatutSinistre statut, Long idAgent) {
         List<Sinistre> sinistres = idAgent != null ? sinistreDao.listerParAgent(idAgent)
@@ -77,17 +94,32 @@ public class SinistreService {
         return sinistres;
     }
 
-    // Discussion du sinistre, du plus ancien message au plus récent
+    /**
+     * Récupère les messages de la discussion d'un sinistre, du plus ancien au plus récent.
+     *
+     * @param idSinistre identifiant du sinistre
+     * @return la liste des commentaires du sinistre
+     */
     public List<CommentaireSinistre> discussion(Long idSinistre) {
         return commentaireDao.listerParSinistre(idSinistre);
     }
 
-    // Indemnisation versée pour ce sinistre, ou null s'il n'a pas été indemnisé
+    /**
+     * Récupère le versement d'indemnisation effectué pour un sinistre.
+     *
+     * @param idSinistre identifiant du sinistre
+     * @return le versement associé, ou null si le sinistre n'a pas été indemnisé
+     */
     public Versement indemnisation(Long idSinistre) {
         return versementDao.trouverParSinistre(idSinistre);
     }
 
-    // REFUSE et INDEMNISE sont définitifs : plus d'action ni de message possible
+    /**
+     * Indique si un sinistre est définitivement clos (statut REFUSE ou INDEMNISE).
+     *
+     * @param sinistre sinistre à vérifier
+     * @return true si le dossier est clos, false sinon
+     */
     public static boolean estClos(Sinistre sinistre) {
         return sinistre.getStatut() == StatutSinistre.REFUSE || sinistre.getStatut() == StatutSinistre.INDEMNISE;
     }
@@ -95,9 +127,11 @@ public class SinistreService {
     // ---------- Déclaration par le client ----------
 
     /**
-     * Contrats sur lesquels le client peut déclarer un sinistre : payés et déjà commencés
-     * (un contrat expiré ou résilié reste proposé, pour un sinistre survenu pendant sa période de couverture).
-     * Les contrats actifs sont en premier.
+     * Liste les contrats sur lesquels un client peut déclarer un sinistre (payés et déjà commencés).
+     * Les contrats actifs sont placés en premier, suivis des contrats expirés ou résiliés.
+     *
+     * @param idClient identifiant du client
+     * @return la liste des contrats éligibles à une déclaration
      */
     public List<Contrat> contratsDeclarables(Long idClient) {
         Set<Long> payes = paiementDao.idsContratsPayes();
@@ -109,15 +143,17 @@ public class SinistreService {
     }
 
     /**
-     * Déclare un sinistre sur l'un des contrats du client.
+     * Déclare un nouveau sinistre sur l'un des contrats du client.
      *
-     * @param idClient      client connecté (vient de la session)
-     * @param idContrat     contrat concerné
-     * @param dateSinistre  date à laquelle le sinistre a eu lieu
+     * @param idClient      identifiant du client connecté
+     * @param idContrat     identifiant du contrat concerné
+     * @param dateSinistre  date à laquelle le sinistre s'est produit
      * @param type          type de sinistre
-     * @param description   circonstances, déjà nettoyées et de longueur vérifiée
-     * @param montantEstime estimation des dommages, ou null
-     * @return le sinistre enregistré, avec son numéro
+     * @param description   description des circonstances
+     * @param montantEstime montant estimé des dommages (ou null)
+     * @return le sinistre enregistré avec son numéro
+     * @throws SinistreInvalideException si le contrat est introuvable ou non payé,
+     *                                   si la date est dans le futur, ou si le contrat ne couvrait pas cette date
      */
     public Sinistre declarer(Long idClient, Long idContrat, LocalDate dateSinistre, TypeSinistre type,
                              String description, BigDecimal montantEstime) {
@@ -150,11 +186,23 @@ public class SinistreService {
         return sinistreDao.declarer(sinistre, contrat.getId());
     }
 
-    // Un contrat couvre du jour de début jusqu'à la veille de sa fin, ou jusqu'au jour de sa résiliation
+    /**
+     * Vérifie si un contrat couvre une date donnée (entre la date de début et la fin de couverture).
+     *
+     * @param contrat contrat à vérifier
+     * @param date    date du sinistre
+     * @return true si le contrat était actif à cette date, false sinon
+     */
     static boolean couvre(Contrat contrat, LocalDate date) {
         return !date.isBefore(contrat.getDateDebut()) && !date.isAfter(finDeCouverture(contrat));
     }
 
+    /**
+     * Détermine le dernier jour de couverture d'un contrat (veille de la date de fin ou date de résiliation).
+     *
+     * @param contrat contrat concerné
+     * @return la date de fin effective de couverture
+     */
     private static LocalDate finDeCouverture(Contrat contrat) {
         LocalDate veilleDeFin = contrat.getDateFin().minusDays(1);
         LocalDate resiliation = contrat.getDateResiliation();
@@ -164,18 +212,44 @@ public class SinistreService {
     // ---------- Traitement par un agent ----------
 
     // DECLARE → EN_ANALYSE : l'agent devient responsable du dossier
+
+    /**
+     * Fait passer un sinistre de DECLARE à EN_ANALYSE et attribue le dossier à l'agent.
+     *
+     * @param idSinistre identifiant du sinistre
+     * @param agent      agent qui prend en charge le dossier
+     * @throws SinistreInvalideException si l'utilisateur n'est pas un agent ou si le sinistre n'est pas en statut DECLARE
+     */
     public void prendreEnCharge(Long idSinistre, Utilisateur agent) {
         faireAvancer(idSinistre, agent, StatutSinistre.DECLARE, StatutSinistre.EN_ANALYSE, null,
                 "Seul un sinistre déclaré peut être pris en charge.");
     }
 
     // EN_ANALYSE → ACCEPTE : le sinistre est couvert, l'indemnisation reste à enregistrer
+
+    /**
+     * Fait passer un sinistre de EN_ANALYSE à ACCEPTE (l'indemnisation restera ensuite à calculer).
+     *
+     * @param idSinistre identifiant du sinistre
+     * @param agent      agent qui accepte le dossier
+     * @throws SinistreInvalideException si l'utilisateur n'est pas un agent ou si le sinistre n'est pas en analyse
+     */
     public void accepter(Long idSinistre, Utilisateur agent) {
         faireAvancer(idSinistre, agent, StatutSinistre.EN_ANALYSE, StatutSinistre.ACCEPTE, null,
                 "Seul un sinistre en analyse peut être accepté.");
     }
 
     // EN_ANALYSE → REFUSE, définitif : le motif est obligatoire et ajouté à la discussion, pour que le client le lise
+    
+    /**
+     * Fait passer définitivement un sinistre de EN_ANALYSE à REFUSE et ajoute le motif à la discussion.
+     *
+     * @param idSinistre identifiant du sinistre
+     * @param agent      agent qui refuse le dossier
+     * @param motif      raison du refus (obligatoire, visible par le client)
+     * @throws SinistreInvalideException si le motif est vide, si l'utilisateur n'est pas un agent
+     *                                   ou si le sinistre n'est pas en analyse
+     */
     public void refuser(Long idSinistre, Utilisateur agent, String motif) {
         if (motif == null || motif.isBlank()) {
             throw new SinistreInvalideException("Le motif du refus est obligatoire.");
@@ -186,16 +260,17 @@ public class SinistreService {
     }
 
     /**
-     * ACCEPTE → INDEMNISE, définitif : calcule l'indemnisation et enregistre le versement au client, daté du jour.
-     * <p>
-     * L'agent ne choisit pas le montant : il choisit la garantie qui s'applique (parmi celles du contrat)
-     * et le dommage retenu (après examen des pièces). Le montant en découle :
-     * <pre>indemnisation = min(dommage retenu - franchise, plafond)</pre>
-     * On ne rembourse jamais plus que le dommage (principe indemnitaire) ni plus que le plafond.
-     * Un dommage qui ne dépasse pas la franchise ne donne rien à verser : le sinistre doit alors être refusé.
+     * Fait passer définitivement un sinistre de ACCEPTE à INDEMNISE, calcule le montant
+     * selon la garantie choisie (dommage - franchise, limité au plafond) et enregistre le versement.
      *
-     * @param idGarantie garantie appliquée, qui doit faire partie du contrat du sinistre
-     * @param dommage    dommage retenu par l'agent, strictement positif (vérifié par le Validateur)
+     * @param idSinistre identifiant du sinistre accepté
+     * @param agent      agent qui valide l'indemnisation
+     * @param idGarantie identifiant de la garantie du contrat appliquée
+     * @param dommage    montant du dommage retenu par l'agent (strictement positif)
+     * @return le versement enregistré
+     * @throws SinistreInvalideException si l'utilisateur n'est pas un agent, si le dommage est invalide
+     *                                   ou inférieur à la franchise, si le sinistre n'est pas accepté,
+     *                                   ou si la garantie n'appartient pas au contrat
      */
     public Versement indemniser(Long idSinistre, Utilisateur agent, Long idGarantie, BigDecimal dommage) {
         verifierAgent(agent);
@@ -235,8 +310,10 @@ public class SinistreService {
     }
 
     /**
-     * Garanties du contrat du sinistre, chacune avec l'indemnisation que donnerait le montant estimé par le client
-     * (null s'il n'a rien estimé). Sert à l'agent pour choisir la garantie à appliquer.
+     * Calcule pour chaque garantie du contrat l'indemnisation estimée à partir du montant déclaré par le client.
+     *
+     * @param sinistre sinistre concerné
+     * @return la liste des garanties associées au montant d'indemnisation calculé (ou null si non estimé)
      */
     public List<Proposition> propositions(Sinistre sinistre) {
         BigDecimal estime = sinistre.getMontantEstime();
@@ -247,7 +324,13 @@ public class SinistreService {
                 .toList();
     }
 
-    // min(dommage - franchise, plafond), jamais négatif : seule règle de calcul d'une indemnisation
+    /**
+     * Calcule le montant de l'indemnisation selon la formule : min(dommage - franchise, plafond), jamais négatif.
+     *
+     * @param dommage  montant du dommage
+     * @param garantie garantie appliquée (contenant franchise et plafond)
+     * @return le montant final à indemniser
+     */
     static BigDecimal calculer(BigDecimal dommage, Garantie garantie) {
         BigDecimal montant = garantie.getFranchise() == null ? dommage : dommage.subtract(garantie.getFranchise());
         if (garantie.getPlafond() != null && montant.compareTo(garantie.getPlafond()) > 0) {
@@ -256,6 +339,17 @@ public class SinistreService {
         return montant.max(BigDecimal.ZERO);
     }
 
+    /**
+     * Vérifie que l'utilisateur est un agent et fait évoluer le statut du sinistre en base.
+     *
+     * @param idSinistre          identifiant du sinistre
+     * @param agent               agent effectuant l'action
+     * @param attendu             statut actuel requis
+     * @param nouveau             nouveau statut à appliquer
+     * @param commentaire         message optionnel à ajouter à la discussion
+     * @param messageSiImpossible message d'erreur si la transition échoue
+     * @throws SinistreInvalideException si l'utilisateur n'est pas un agent ou si le changement de statut est impossible
+     */
     private void faireAvancer(Long idSinistre, Utilisateur agent, StatutSinistre attendu, StatutSinistre nouveau,
                               String commentaire, String messageSiImpossible) {
         verifierAgent(agent);
@@ -264,7 +358,12 @@ public class SinistreService {
         }
     }
 
-    // Seul un agent traite les sinistres : l'admin les consulte seulement
+    /**
+     * Vérifie que l'utilisateur connecté possède bien le rôle AGENT.
+     *
+     * @param utilisateur utilisateur à contrôler
+     * @throws SinistreInvalideException si l'utilisateur est null ou n'est pas un agent
+     */
     private static void verifierAgent(Utilisateur utilisateur) {
         if (utilisateur == null || utilisateur.getRole() != Role.AGENT) {
             throw new SinistreInvalideException("Seul un agent peut traiter un sinistre.");
@@ -274,12 +373,14 @@ public class SinistreService {
     // ---------- Discussion ----------
 
     /**
-     * Ajoute un message à la discussion d'un sinistre.
-     * Le client n'écrit que sur ses propres sinistres, un agent sur tous ; l'admin ne fait que lire.
-     * Un dossier clos (refusé ou indemnisé) n'accepte plus de message.
+     * Ajoute un message dans la discussion d'un sinistre ouvert (client titulaire ou agent uniquement).
      *
-     * @param idClient client connecté si l'auteur est un client (vient de la session), sinon ignoré
-     * @param contenu  message déjà nettoyé, non vide et de longueur vérifiée
+     * @param idSinistre identifiant du sinistre
+     * @param auteur     utilisateur qui écrit le message
+     * @param idClient   identifiant du client connecté (si l'auteur est un client), sinon ignoré
+     * @param contenu    texte du message à publier
+     * @return le commentaire enregistré
+     * @throws SinistreInvalideException si le sinistre est introuvable, non autorisé ou déjà clos
      */
     public CommentaireSinistre commenter(Long idSinistre, Utilisateur auteur, Long idClient, String contenu) {
         Sinistre sinistre = ouvertEnEcriture(idSinistre, auteur, idClient, "la discussion est fermée");
@@ -287,13 +388,14 @@ public class SinistreService {
     }
 
     /**
-     * Sinistre que cet utilisateur peut compléter (message, pièce justificative) : règle commune à la discussion
-     * et aux pièces. Le client ne complète que ses propres sinistres, un agent tous ; l'admin ne fait que lire.
+     * Vérifie qu'un sinistre existe, qu'il est encore ouvert et que l'utilisateur a le droit de le modifier.
      *
-     * @param idClient  client connecté si l'utilisateur est un client (vient de la session), sinon ignoré
-     * @param siClos    fin du message d'erreur si le dossier est clos ("la discussion est fermée"...)
+     * @param idSinistre  identifiant du sinistre
+     * @param utilisateur utilisateur connecté
+     * @param idClient    identifiant du client connecté (si l'utilisateur est un client), sinon ignoré
+     * @param siClos      fin du message d'erreur affiché si le dossier est clos
      * @return le sinistre avec ses détails
-     * @throws SinistreInvalideException si le sinistre est inconnu, n'est pas accessible ou est clos
+     * @throws SinistreInvalideException si le sinistre est inconnu, inaccessible ou clos
      */
     public Sinistre ouvertEnEcriture(Long idSinistre, Utilisateur utilisateur, Long idClient, String siClos) {
         Sinistre sinistre = idSinistre == null ? null : sinistreDao.trouverAvecDetails(idSinistre);
@@ -312,7 +414,9 @@ public class SinistreService {
         return sinistre;
     }
 
-    // Indemnisation suggérée pour une garantie (classe et non record : lisible par l'EL des JSP de Tomcat 10)
+    /**
+     * Représente une proposition d'indemnisation associant une garantie au montant estimé.
+     */
     public static final class Proposition {
         private final Garantie garantie;
         private final BigDecimal montant;

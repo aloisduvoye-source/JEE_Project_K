@@ -35,21 +35,29 @@ public class PieceJustificativeService {
     private final PieceJustificativeDao pieceDao = new PieceJustificativeDao();
     private final SinistreService sinistreService = new SinistreService();
 
-    // Pièces du sinistre, de la plus ancienne à la plus récente
+    /**
+     * Liste les pièces justificatives d'un sinistre, de la plus ancienne à la plus récente.
+     *
+     * @param idSinistre identifiant du sinistre
+     * @return la liste des pièces justificatives associées au sinistre
+     */
     public List<PieceJustificative> lister(Long idSinistre) {
         return pieceDao.listerParSinistre(idSinistre);
     }
 
     /**
-     * Joint un fichier à un sinistre.
+     * Joint un fichier (PDF, JPG ou PNG de 5 Mo maximum) à un sinistre.
      *
-     * @param idClient   client connecté si l'utilisateur est un client (vient de la session), sinon ignoré
+     * @param idSinistre  identifiant du sinistre concerné
+     * @param utilisateur utilisateur qui effectue l'ajout
+     * @param idClient    identifiant du client connecté (si l'utilisateur est un client), sinon ignoré
      * @param nomOriginal nom du fichier sur l'ordinateur de l'utilisateur
-     * @param taille     taille annoncée du fichier, en octets
-     * @param contenu    contenu du fichier (non fermé)
-     * @return la pièce enregistrée
-     * @throws SinistreInvalideException si le sinistre n'est pas accessible ou est clos,
-     *                                   ou si le fichier est vide, trop gros ou d'un type refusé
+     * @param taille      taille annoncée du fichier en octets
+     * @param contenu     flux contenant les données du fichier
+     * @return la pièce justificative enregistrée
+     * @throws SinistreInvalideException si le sinistre est introuvable, non autorisé ou clos,
+     *                                   si le fichier est vide, trop gros (plus de 5 Mo),
+     *                                   d'un format refusé, ou si la limite de 20 pièces est atteinte
      */
     public PieceJustificative ajouter(Long idSinistre, Utilisateur utilisateur, Long idClient,
                                       String nomOriginal, long taille, InputStream contenu) {
@@ -94,10 +102,13 @@ public class PieceJustificativeService {
     }
 
     /**
-     * Pièce à télécharger, si cet utilisateur a le droit de la voir.
+     * Récupère une pièce justificative à télécharger si l'utilisateur a le droit de la voir
+     * et que le fichier existe bien sur le disque.
      *
-     * @param idClient client connecté si l'utilisateur est un client (vient de la session), sinon ignoré
-     * @return la pièce, ou null si elle n'existe pas, n'est pas accessible ou si son fichier a disparu
+     * @param idPiece     identifiant de la pièce justificative
+     * @param utilisateur utilisateur qui demande le téléchargement
+     * @param idClient    identifiant du client connecté (si l'utilisateur est un client), sinon ignoré
+     * @return la pièce justificative, ou null si elle n'existe pas, n'est pas autorisée ou si le fichier est absent
      */
     public PieceJustificative trouverPourTelechargement(Long idPiece, Utilisateur utilisateur, Long idClient) {
         PieceJustificative piece = idPiece == null ? null : pieceDao.trouverAvecProprietaire(idPiece);

@@ -15,20 +15,15 @@ import java.io.IOException;
 import java.util.Set;
 
 /**
- * Protège les pages réservées aux utilisateurs connectés :
- *   /compte/*  : tous les rôles (profil, mot de passe)
- *   /client/*  : CLIENT
- *   /agent/*   : AGENT et ADMIN (l'administrateur consulte aussi contrats et sinistres)
- *   /admin/*   : ADMIN
- * Non connecté : redirection vers la connexion. Mauvais rôle : erreur 403.
- * Compte désactivé ou supprimé depuis la connexion : déconnexion, puis redirection vers la connexion.
- * Une nouvelle page est donc protégée automatiquement si son URL commence par l'un de ces préfixes.
+ * Protège les pages /compte, /client, /agent et /admin : toute page dont l'URL commence par l'un de ces préfixes.
+ * Non connecté ou compte désactivé : retour à la connexion. Mauvais rôle : erreur 403.
  */
 @WebFilter(urlPatterns = {"/compte/*", "/client/*", "/agent/*", "/admin/*"})
 public class RoleFiltre extends HttpFilter {
 
     private final UtilisateurService utilisateurService = new UtilisateurService();
 
+    /** Laisse passer la requête si l'utilisateur est connecté, actif et a un rôle autorisé. */
     @Override
     protected void doFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain)
             throws IOException, ServletException {
@@ -38,8 +33,6 @@ public class RoleFiltre extends HttpFilter {
             response.sendRedirect(request.getContextPath() + "/connexion");
             return;
         }
-        // La copie en session date de la connexion : l'état du compte est relu en base à chaque page protégée,
-        // pour qu'un compte désactivé par l'administrateur perde l'accès tout de suite, sans attendre la fin de la session
         Utilisateur enBase = utilisateurService.trouverParId(utilisateur.getId());
         if (enBase == null || !enBase.isActif()) {
             SessionUtilisateur.deconnecter(request);
@@ -53,7 +46,9 @@ public class RoleFiltre extends HttpFilter {
         chain.doFilter(request, response);
     }
 
-    // Seul endroit où sont définis les rôles autorisés pour chaque espace
+    /**
+     * @return les rôles autorisés pour ce chemin (seul endroit où ils sont définis)
+     */
     static Set<Role> rolesAutorises(String chemin) {
         if (chemin.startsWith("/compte")) {return Set.of(Role.values());}
         if (chemin.startsWith("/client")) {return Set.of(Role.CLIENT);}

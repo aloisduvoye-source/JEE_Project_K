@@ -13,16 +13,8 @@ import java.util.Arrays;
 import java.util.UUID;
 
 /**
- * Enregistrement des pièces justificatives sur le disque, hors du .war (écrasé à chaque déploiement).
- * <p>
- * Dossier : variable DOSSIER_PIECES (/data/pieces dans Docker, sur un volume qui survit aux redémarrages),
- * ou à défaut un dossier temporaire de la machine.
- * <p>
- * Chaque fichier est enregistré sous un nom aléatoire (UUID) : le nom choisi par le client, gardé en base,
- * n'est jamais utilisé comme chemin, ce qui évite les collisions et les noms piégés comme "../../web.xml".
- * <p>
- * Le type est reconnu d'après le contenu (signature au début du fichier) et non d'après l'extension,
- * qu'il suffit de renommer pour falsifier.
+ * Pièces justificatives sur le disque, hors du .war : dossier DOSSIER_PIECES, ou à défaut un dossier temporaire.
+ * Nom aléatoire (UUID) et type reconnu d'après le contenu : un nom ou une extension piégés sont sans effet.
  */
 public final class StockagePieces {
 
@@ -31,7 +23,7 @@ public final class StockagePieces {
     private StockagePieces() {
     }
 
-    // Types acceptés : type MIME renvoyé au navigateur, extension sur le disque, signature du contenu
+    /** Types acceptés : type MIME renvoyé au navigateur, extension sur le disque, signature du contenu. */
     public enum TypeFichier {
         PDF("application/pdf", ".pdf", new byte[]{'%', 'P', 'D', 'F', '-'}),
         PNG("image/png", ".png", new byte[]{(byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1A, '\n'}),
@@ -49,7 +41,7 @@ public final class StockagePieces {
 
         public String getTypeMime() {return typeMime;}
 
-        // Type correspondant au début du fichier, ou null s'il n'est pas accepté
+        /** Type correspondant au début du fichier, ou null s'il n'est pas accepté. */
         public static TypeFichier reconnaitre(byte[] debut) {
             for (TypeFichier type : values()) {
                 if (debut.length >= type.signature.length
@@ -62,11 +54,10 @@ public final class StockagePieces {
     }
 
     /**
-     * Enregistre un fichier déjà reconnu.
+     * Enregistre un fichier déjà reconnu, sous un nom aléatoire.
      *
-     * @param contenu flux du fichier envoyé (lu jusqu'au bout, non fermé)
-     * @param type    type reconnu d'après son début
-     * @return le nom du fichier sur le disque (à garder dans la colonne "chemin")
+     * @param contenu flux du fichier, lu jusqu'au bout mais non fermé
+     * @return le nom du fichier sur le disque (colonne "chemin")
      */
     public static String enregistrer(InputStream contenu, TypeFichier type) {
         String nom = UUID.randomUUID() + type.extension;
@@ -78,18 +69,13 @@ public final class StockagePieces {
         }
     }
 
-    /**
-     * Chemin d'un fichier enregistré. Refuse tout nom qui sortirait du dossier des pièces.
-     *
-     * @param nom valeur de la colonne "chemin"
-     * @return le chemin du fichier, ou null si le nom est invalide
-     */
+    /** Chemin d'un fichier enregistré, ou null si le nom sortirait du dossier des pièces. */
     public static Path chemin(String nom) {
         Path chemin = DOSSIER.resolve(nom).normalize();
         return chemin.getParent().equals(DOSSIER) ? chemin : null;
     }
 
-    // Supprime un fichier enregistré (si l'enregistrement en base a échoué, par exemple). Sans erreur s'il n'existe pas
+    /** Supprime un fichier enregistré, sans erreur s'il n'existe pas. */
     public static void supprimer(String nom) {
         Path chemin = chemin(nom);
         try {
@@ -101,6 +87,7 @@ public final class StockagePieces {
         }
     }
 
+    /** Dossier des pièces, créé s'il n'existe pas. */
     private static Path dossier() {
         String valeur = Dotenv.configure().ignoreIfMissing().load().get("DOSSIER_PIECES");
         Path dossier = (valeur == null || valeur.isBlank()

@@ -8,15 +8,16 @@ import jakarta.persistence.Persistence;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Fabrique unique des EntityManager, configurée par DB_URL, DB_USER et DB_PASSWORD (.env ou docker-compose.yml).
+ */
 public class JpaUtil {
     private static final EntityManagerFactory emf = buildEntityManagerFactory();
 
     private static EntityManagerFactory buildEntityManagerFactory() {
         try {
-            // Charger le fichier .env à la racine du projet
             Dotenv dotenv = Dotenv.configure().ignoreIfMissing().load();
 
-            // Variables du .env ou de l'environnement (docker-compose.yml) : obligatoires
             Map<String, String> properties = new HashMap<>();
             properties.put("jakarta.persistence.jdbc.url", variableObligatoire(dotenv, "DB_URL"));
             properties.put("jakarta.persistence.jdbc.user", variableObligatoire(dotenv, "DB_USER"));
@@ -30,7 +31,7 @@ public class JpaUtil {
         }
     }
 
-    // Message clair si une variable manque, au lieu d'une erreur de connexion difficile à comprendre
+    /** Valeur de la variable, avec un message clair si elle manque plutôt qu'une erreur de connexion obscure. */
     private static String variableObligatoire(Dotenv dotenv, String nom) {
         String valeur = dotenv.get(nom);
         if (valeur == null || valeur.isBlank()) {
@@ -39,10 +40,12 @@ public class JpaUtil {
         return valeur;
     }
 
+    /** Nouvel EntityManager, à fermer après usage. */
     public static EntityManager getEntityManager() {
         return emf.createEntityManager();
     }
 
+    /** Ferme la fabrique et ses connexions, à l'arrêt de l'application. */
     public static void shutdown() {
         if (emf != null && emf.isOpen()) {
             emf.close();
