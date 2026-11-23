@@ -1,0 +1,26 @@
+<%--
+  Formulaire de résiliation d'un contrat, commun à la fiche de l'agent et à celle du client.
+  Affiché seulement pour un contrat en cours (EN_ATTENTE, ACTIF, SUSPENDU), et pas à l'admin.
+  Envoie vers /client/contrats/resilier ou /agent/contrats/resilier selon le rôle connecté.
+  Attend les attributs "contrat" et "remboursementSiResiliation" (montant remboursé si résilié aujourd'hui).
+--%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<c:if test="${sessionScope.utilisateur.role != 'ADMIN'
+              and contrat.statut != 'RESILIE' and contrat.statut != 'EXPIRE'}">
+  <h2>Résilier le contrat</h2>
+  <p>La résiliation est définitive. Un paiement pas encore réglé est annulé.</p>
+  <%-- Montant calculé pour une résiliation aujourd'hui (ContratService.remboursement) --%>
+  <c:if test="${remboursementSiResiliation.signum() > 0}">
+    <p>La part de la prime correspondant à la période non couverte sera remboursée :
+      <strong><c:out value="${remboursementSiResiliation}"/> €</strong> si le contrat est résilié aujourd'hui.</p>
+  </c:if>
+  <form method="post" action="${pageContext.request.contextPath}/${sessionScope.utilisateur.role == 'CLIENT' ? 'client' : 'agent'}/contrats/resilier"
+        onsubmit="return confirm('Résilier ce contrat ? Cette action est définitive.');">
+    <input type="hidden" name="id" value="${contrat.id}">
+    <p>
+      <label for="motif">Motif (facultatif)</label>
+      <input type="text" id="motif" name="motif" maxlength="255">
+    </p>
+    <button type="submit">Résilier le contrat</button>
+  </form>
+</c:if>
