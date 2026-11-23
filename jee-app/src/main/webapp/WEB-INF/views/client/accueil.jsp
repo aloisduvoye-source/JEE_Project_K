@@ -35,7 +35,7 @@
             </div>
             <span class="tuile-lien">Consulter <svg class="icone" aria-hidden="true"><use href="#i-fleche-droite"/></svg></span>
           </a>
-          <a class="tuile" href="${pageContext.request.contextPath}/client/contrats">
+          <a class="tuile" href="${pageContext.request.contextPath}/client/garanties">
             <span class="pastille ton-succes"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg></span>
             <div>
               <h3>Mes garanties</h3>
