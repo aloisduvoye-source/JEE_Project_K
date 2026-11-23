@@ -116,6 +116,20 @@ Comptes de test :
 
 > Toujours utiliser `clean package` : sans `clean`, une classe supprimée ou renommée peut rester dans le `.war` et provoquer des erreurs incompréhensibles.
 
+### Lancer la version Spring Boot (`spring-app/`)
+Même base, même adresse, même `.env` : seule change la variable `APP`, qui choisit le `.war` déployé dans Tomcat.
+```bash
+mvn -f spring-app/pom.xml clean package       # construit spring-app/target/assurance.war
+APP=spring-app docker compose up -d --build   # remplace jee-app par spring-app dans le conteneur Tomcat
+```
+Pour revenir à `jee-app` : `docker compose up -d --build` (sans `APP`, c'est `jee-app` qui est déployé).
+Pour utiliser `spring-app` par défaut, ajouter `APP=spring-app` dans son `.env`.
+
+Sans Docker pour Tomcat (seulement `docker compose up -d db`), depuis `spring-app/` :
+```bash
+DB_URL=jdbc:mysql://localhost:3307/assurance mvn spring-boot:run
+```
+
 ## Tuto Docker rapide
 
 | Commande | Effet |
@@ -187,5 +201,5 @@ docker exec mysql_db sh -c 'mysqldump -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" --no-c
 ## En cas de problème
 - `permission denied while trying to connect to the docker API` : la session n'a pas encore le groupe `docker`. Se déconnecter puis se reconnecter.
 - `port is already allocated` : un autre programme utilise le port 8080 ou 3307 (par exemple un Tomcat installé localement). Le trouver avec `ss -ltnp | grep 8080`.
-- `assurance.war: not found` pendant le `build` : lancer d'abord `mvn -f jee-app/pom.xml clean package`.
+- `assurance.war: not found` pendant le `build` : lancer d'abord `mvn -f jee-app/pom.xml clean package` (ou `spring-app/pom.xml` avec `APP=spring-app`).
 - `Access denied for user` ou `Schema-validation` dans `docker compose logs tomcat` : la base ne correspond pas au `.env` ou à `schema.sql`. La recréer avec `docker compose down -v` puis `docker compose up -d --build`.
