@@ -1,5 +1,6 @@
 # CI du projet : à chaque push sur main et à chaque Pull Request, compile les deux versions
-# (jee-app et spring-app), puis lance chacune avec MySQL dans Docker et vérifie qu'elle répond.
+# (jee-app et spring-app) avec chacune des deux interfaces (frontend et frontend-epure),
+# puis lance chaque combinaison avec MySQL dans Docker et vérifie qu'elle répond.
 # Java 17, comme le Tomcat du projet (tomcat:11.0-jdk17).
 
 name: CI
@@ -13,11 +14,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     strategy:
-      # Un échec sur une version n'arrête pas le test de l'autre
+      # Un échec sur une combinaison n'arrête pas le test des autres
       fail-fast: false
       matrix:
         app: [jee-app, spring-app]
-    name: ${{ matrix.app }}
+        front: [frontend, frontend-epure]
+    name: ${{ matrix.app }} + ${{ matrix.front }}
     steps:
       - name: Recuperer le code
         uses: actions/checkout@v5
@@ -29,7 +31,7 @@ jobs:
           java-version: '17'
 
       - name: Compiler (mvn clean package)
-        run: mvn -f ${{ matrix.app }}/pom.xml clean package
+        run: mvn -f ${{ matrix.app }}/pom.xml clean package -Dfront=${{ matrix.front }}
 
       - name: Fichier .env factice
         run: printf 'DB_USER=ci\nDB_PASSWORD=ci\nAI_API_KEY=\n' > .env
