@@ -1,3 +1,4 @@
+<%@ page pageEncoding="UTF-8" %>
 <%--
   Barre de navigation commune à toutes les pages. À inclure juste après <body> :
     <%@ include file="/WEB-INF/views/common/header.jspf" %>

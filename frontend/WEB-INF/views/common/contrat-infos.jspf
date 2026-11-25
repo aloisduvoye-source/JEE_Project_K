@@ -1,3 +1,4 @@
+<%@ page pageEncoding="UTF-8" %>
 <%--
   Informations d'un contrat, communes à la fiche de l'agent et à celle du client :
   client, type, dates, prime, statut, garanties (colonne principale de la fiche).

@@ -1,3 +1,4 @@
+<%@ page pageEncoding="UTF-8" %>
 <%--
   Déclaration d'un sinistre, commune à la fiche du client et à celle de l'agent (colonne principale) :
   type, statut, contrat, dates, montant estimé, agent et description.

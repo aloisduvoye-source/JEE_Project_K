@@ -1,3 +1,4 @@
+<%@ page pageEncoding="UTF-8" %>
 <%--
   Listes déroulantes du filtre et du tri des paiements, communes à la liste de l'agent et à celle du client.
   À inclure dans un <form method="get" class="barre-outils">, avant le bouton d'envoi.

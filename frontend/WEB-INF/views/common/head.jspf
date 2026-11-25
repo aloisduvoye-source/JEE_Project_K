@@ -1,3 +1,4 @@
+<%@ page pageEncoding="UTF-8" %>
 <%--
   Début commun de <head>, à inclure dans chaque page juste après <head> :
     <%@ include file="/WEB-INF/views/common/head.jspf" %>

@@ -1,3 +1,4 @@
+<%@ page pageEncoding="UTF-8" %>
 <%--
   Icônes de l'application (sprite SVG), incluses une seule fois par header.jspf.
   Utilisation dans une page :

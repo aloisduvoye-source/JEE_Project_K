@@ -1,3 +1,4 @@
+<%@ page pageEncoding="UTF-8" %>
 <%--
   Messages de la fiche d'un contrat : confirmations (?paye, ?modifie, ?resilie, ?renouvele, ?suspendu, ?reactive ajoutés par la servlet
   après la redirection) et erreur enregistrée avant la redirection (MessageFlash), affichée une seule fois.

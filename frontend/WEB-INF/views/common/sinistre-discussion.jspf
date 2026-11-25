@@ -1,3 +1,4 @@
+<%@ page pageEncoding="UTF-8" %>
 <%--
   Discussion d'un sinistre entre le client et les agents, commune à la fiche du client et à celle de l'agent.
   Les messages de l'utilisateur connecté sont à droite, ceux des autres à gauche.

@@ -1,3 +1,4 @@
+<%@ page pageEncoding="UTF-8" %>
 <%--
   Paiement d'un contrat (sans formulaire), commun à la fiche de l'agent et à celle du client.
   Attend l'attribut "paiement" (peut être vide).

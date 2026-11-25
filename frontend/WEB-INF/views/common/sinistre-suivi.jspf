@@ -1,3 +1,4 @@
+<%@ page pageEncoding="UTF-8" %>
 <%--
   Suivi d'un sinistre, commun à la fiche du client et à celle de l'agent (colonne de droite) :
   étapes du traitement avec leur date, puis le détail de l'indemnisation une fois versée.

@@ -1,3 +1,4 @@
+<%@ page pageEncoding="UTF-8" %>
 <%--
   Pied de page commun. À inclure juste avant </body> :
     <%@ include file="/WEB-INF/views/common/footer.jspf" %>
