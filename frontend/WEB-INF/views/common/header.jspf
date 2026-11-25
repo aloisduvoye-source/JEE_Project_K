@@ -1,0 +1,93 @@
+<%@ page pageEncoding="UTF-8" %>
+<%--
+  Barre de navigation commune à toutes les pages. À inclure juste après <body> :
+    <%@ include file="/WEB-INF/views/common/header.jspf" %>
+  Les liens dépendent du rôle de l'utilisateur connecté. Seules les pages qui existent déjà
+  y figurent : ajouter ici le lien d'une nouvelle page (dans le bloc du bon rôle).
+  Le lien de la page courante est mis en évidence par app.js (attribut data-nav).
+--%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
+<%@ include file="/WEB-INF/views/common/icones.jspf" %>
+<c:set var="utilisateurConnecte" value="${sessionScope.utilisateur}"/>
+<a class="lien-evitement" href="#contenu">Aller au contenu</a>
+<header class="barre">
+  <div class="conteneur barre-interieur">
+    <a class="logo" href="${pageContext.request.contextPath}/">
+      <span class="logo-icone"><svg class="icone" aria-hidden="true"><use href="#i-bouclier"/></svg></span>
+      <span>Billy <span class="logo-suite">Assurance</span></span>
+    </a>
+
+    <nav class="nav" id="menu-principal" aria-label="Navigation principale" data-nav>
+      <c:choose>
+        <c:when test="${utilisateurConnecte.role == 'CLIENT'}">
+          <a href="${pageContext.request.contextPath}/client/accueil"><svg class="icone" aria-hidden="true"><use href="#i-grille"/></svg>Tableau de bord</a>
+          <a href="${pageContext.request.contextPath}/client/contrats"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg>Mes contrats</a>
+          <a href="${pageContext.request.contextPath}/client/paiements"><svg class="icone" aria-hidden="true"><use href="#i-carte"/></svg>Mes paiements</a>
+          <a href="${pageContext.request.contextPath}/client/sinistres"><svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg>Mes sinistres</a>
+          <a href="${pageContext.request.contextPath}/client/assistant"><svg class="icone" aria-hidden="true"><use href="#i-etincelles"/></svg>Assistant</a>
+        </c:when>
+        <c:when test="${utilisateurConnecte.role == 'AGENT'}">
+          <a href="${pageContext.request.contextPath}/agent/accueil"><svg class="icone" aria-hidden="true"><use href="#i-grille"/></svg>Tableau de bord</a>
+          <a href="${pageContext.request.contextPath}/agent/contrats"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg>Contrats</a>
+          <a href="${pageContext.request.contextPath}/agent/paiements"><svg class="icone" aria-hidden="true"><use href="#i-carte"/></svg>Paiements</a>
+          <a href="${pageContext.request.contextPath}/agent/sinistres"><svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg>Sinistres</a>
+          <a href="${pageContext.request.contextPath}/agent/clients"><svg class="icone" aria-hidden="true"><use href="#i-utilisateurs"/></svg>Clients</a>
+          <a href="${pageContext.request.contextPath}/agent/garanties"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg>Garanties</a>
+          <a href="${pageContext.request.contextPath}/agent/statistiques"><svg class="icone" aria-hidden="true"><use href="#i-stats"/></svg>Statistiques</a>
+        </c:when>
+        <c:when test="${utilisateurConnecte.role == 'ADMIN'}">
+          <a href="${pageContext.request.contextPath}/admin/accueil"><svg class="icone" aria-hidden="true"><use href="#i-grille"/></svg>Tableau de bord</a>
+          <a href="${pageContext.request.contextPath}/admin/utilisateurs"><svg class="icone" aria-hidden="true"><use href="#i-utilisateurs"/></svg>Utilisateurs</a>
+          <a href="${pageContext.request.contextPath}/admin/types-assurance"><svg class="icone" aria-hidden="true"><use href="#i-couches"/></svg>Types d'assurance</a>
+          <a href="${pageContext.request.contextPath}/agent/garanties"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg>Garanties</a>
+          <a href="${pageContext.request.contextPath}/agent/contrats"><svg class="icone" aria-hidden="true"><use href="#i-contrat"/></svg>Contrats</a>
+          <a href="${pageContext.request.contextPath}/agent/statistiques"><svg class="icone" aria-hidden="true"><use href="#i-stats"/></svg>Statistiques</a>
+        </c:when>
+        <c:otherwise>
+          <a href="${pageContext.request.contextPath}/"><svg class="icone" aria-hidden="true"><use href="#i-maison"/></svg>Accueil</a>
+          <a class="seulement-mobile" href="${pageContext.request.contextPath}/connexion"><svg class="icone" aria-hidden="true"><use href="#i-cadenas"/></svg>Se connecter</a>
+          <a class="seulement-mobile" href="${pageContext.request.contextPath}/inscription"><svg class="icone" aria-hidden="true"><use href="#i-utilisateur"/></svg>Créer un compte</a>
+        </c:otherwise>
+      </c:choose>
+      <c:if test="${not empty utilisateurConnecte}">
+        <a class="seulement-mobile" href="${pageContext.request.contextPath}/compte"><svg class="icone" aria-hidden="true"><use href="#i-utilisateur"/></svg>Mon compte</a>
+      </c:if>
+    </nav>
+
+    <div class="barre-droite">
+      <button type="button" class="bouton-icone avec-js" data-basculer-theme
+              aria-label="Basculer entre le thème clair et le thème sombre" title="Thème clair / sombre">
+        <svg class="icone icone-lune" aria-hidden="true"><use href="#i-lune"/></svg>
+        <svg class="icone icone-soleil" aria-hidden="true"><use href="#i-soleil"/></svg>
+      </button>
+
+      <c:choose>
+        <c:when test="${not empty utilisateurConnecte}">
+          <a class="profil" href="${pageContext.request.contextPath}/compte" title="Mon compte">
+            <span class="avatar"><c:out value="${fn:toUpperCase(fn:substring(utilisateurConnecte.prenom, 0, 1))}${fn:toUpperCase(fn:substring(utilisateurConnecte.nom, 0, 1))}"/></span>
+            <span class="profil-texte">
+              <strong><c:out value="${utilisateurConnecte.prenom} ${utilisateurConnecte.nom}"/></strong>
+              <small>${utilisateurConnecte.role == 'ADMIN' ? 'Administrateur' : (utilisateurConnecte.role == 'AGENT' ? 'Agent' : 'Client')}</small>
+            </span>
+          </a>
+          <%-- Formulaire en POST : DeconnexionServlet ne déconnecte pas sur un simple lien (GET) --%>
+          <form method="post" action="${pageContext.request.contextPath}/deconnexion">
+            <button type="submit" class="bouton-icone" aria-label="Se déconnecter" title="Se déconnecter">
+              <svg class="icone" aria-hidden="true"><use href="#i-deconnexion"/></svg>
+            </button>
+          </form>
+        </c:when>
+        <c:otherwise>
+          <a class="bouton bouton-fantome masquer-mobile" href="${pageContext.request.contextPath}/connexion">Se connecter</a>
+          <a class="bouton bouton-principal masquer-mobile" href="${pageContext.request.contextPath}/inscription">Créer un compte</a>
+        </c:otherwise>
+      </c:choose>
+
+      <button type="button" class="bouton-icone bouton-menu" data-menu-bouton
+              aria-controls="menu-principal" aria-expanded="false" aria-label="Menu">
+        <svg class="icone" aria-hidden="true"><use href="#i-menu"/></svg>
+      </button>
+    </div>
+  </div>
+</header>

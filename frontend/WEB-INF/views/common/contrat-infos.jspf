@@ -1,0 +1,137 @@
+<%@ page pageEncoding="UTF-8" %>
+<%--
+  Informations d'un contrat, communes à la fiche de l'agent et à celle du client :
+  client, type, dates, prime, statut, garanties (colonne principale de la fiche).
+  Attend l'attribut "contrat" (avec client, type et garanties chargés),
+  et, facultatifs, "remboursement" (Versement à la résiliation) et "renouvellement" (contrat qui le renouvelle).
+  À inclure avec : <%@ include file="/WEB-INF/views/common/contrat-infos.jspf" %>
+  Le paiement est affiché à part par contrat-paiement.jspf.
+--%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
+<%@ taglib prefix="app" tagdir="/WEB-INF/tags" %>
+<c:set var="titulaire" value="${contrat.client.utilisateur}"/>
+<section class="carte contrat">
+  <div class="contrat-entete">
+    <div class="contrat-titre">
+      <span class="pastille ton-primaire"><svg class="icone" aria-hidden="true"><use href="#i-bouclier"/></svg></span>
+      <div>
+        <h2><c:out value="${contrat.typeAssurance.nom}"/></h2>
+        <p>Contrat n° <c:out value="${contrat.id}"/></p>
+      </div>
+    </div>
+    <app:statutContrat valeur="${contrat.statut}"/>
+  </div>
+
+  <div class="contrat-infos">
+    <span>
+      <svg class="icone" aria-hidden="true"><use href="#i-calendrier"/></svg>
+      Du <strong><app:date valeur="${contrat.dateDebut}"/></strong> au <strong><app:date valeur="${contrat.dateFin}"/></strong>
+    </span>
+    <span>
+      <svg class="icone" aria-hidden="true"><use href="#i-euro"/></svg>
+      Prime annuelle <strong class="nombre"><app:euros valeur="${contrat.prime}"/></strong>
+    </span>
+  </div>
+
+  <c:if test="${contrat.suspenduParAgent}">
+    <div class="alerte ton-attention" role="note">
+      <svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg>
+      <div class="alerte-texte">Pendant la suspension, le contrat ne couvre pas les sinistres.</div>
+    </div>
+  </c:if>
+
+  <%-- Part de la période déjà écoulée : calculée par app.js à partir des deux dates --%>
+  <c:if test="${contrat.statut == 'ACTIF'}">
+    <div class="progression-zone avec-js" data-periode data-debut="${contrat.dateDebut}" data-fin="${contrat.dateFin}">
+      <div class="progression-libelle"><span data-periode-texte></span><span data-periode-part></span></div>
+      <div class="progression"><span></span></div>
+    </div>
+  </c:if>
+
+  <dl class="liste-infos">
+    <div>
+      <dt>Client</dt>
+      <dd>
+        <div class="cellule-personne">
+          <span class="avatar"><c:out value="${fn:toUpperCase(fn:substring(titulaire.prenom, 0, 1))}${fn:toUpperCase(fn:substring(titulaire.nom, 0, 1))}"/></span>
+          <div>
+            <div class="cellule-principale"><c:out value="${titulaire.prenom} ${titulaire.nom}"/></div>
+            <div class="cellule-secondaire"><c:out value="${titulaire.email}"/></div>
+          </div>
+        </div>
+      </dd>
+    </div>
+    <div><dt>Type d'assurance</dt><dd><c:out value="${contrat.typeAssurance.nom}"/></dd></div>
+    <c:if test="${contrat.statut == 'RESILIE'}">
+      <div>
+        <dt>Résiliation</dt>
+        <dd>
+          Le <app:date valeur="${contrat.dateResiliation}"/>
+          <c:if test="${not empty contrat.motifResiliation}"><div class="cellule-secondaire"><c:out value="${contrat.motifResiliation}"/></div></c:if>
+        </dd>
+      </div>
+      <%-- Part de la prime payée qui n'était plus couverte (ContratService.remboursement) --%>
+      <c:if test="${not empty remboursement}">
+        <div>
+          <dt>Remboursement</dt>
+          <dd>
+            <strong class="nombre"><app:euros valeur="${remboursement.montant}"/></strong> le <app:date valeur="${remboursement.dateVersement}"/>
+            <div class="cellule-secondaire">Part de la prime correspondant à la période non couverte.</div>
+          </dd>
+        </div>
+      </c:if>
+    </c:if>
+    <%-- Suspension décidée par un agent : sans date, le contrat est suspendu faute de paiement --%>
+    <c:if test="${contrat.suspenduParAgent}">
+      <div>
+        <dt>Suspension</dt>
+        <dd>
+          Par un agent depuis le <app:date valeur="${contrat.dateSuspension}"/>
+          <div class="cellule-secondaire"><c:out value="${contrat.motifSuspension}"/></div>
+        </dd>
+      </div>
+    </c:if>
+    <c:if test="${contrat.statut == 'SUSPENDU' and not contrat.suspenduParAgent}">
+      <div><dt>Suspension</dt><dd>Faute de paiement : il sera actif dès que la prime sera payée.</dd></div>
+    </c:if>
+    <%-- Lien entre un contrat et son renouvellement, dans les deux sens --%>
+    <c:set var="espaceContrats" value="${sessionScope.utilisateur.role == 'CLIENT' ? 'client' : 'agent'}"/>
+    <c:if test="${not empty contrat.contratPrecedent}">
+      <div>
+        <dt>Renouvelle</dt>
+        <dd><a href="${pageContext.request.contextPath}/${espaceContrats}/contrats/detail?id=${contrat.contratPrecedent.id}">Contrat n° <c:out value="${contrat.contratPrecedent.id}"/></a></dd>
+      </div>
+    </c:if>
+    <c:if test="${not empty renouvellement}">
+      <div>
+        <dt>Renouvelé par</dt>
+        <dd>
+          <a href="${pageContext.request.contextPath}/${espaceContrats}/contrats/detail?id=${renouvellement.id}">Contrat n° <c:out value="${renouvellement.id}"/></a>
+          <div class="cellule-secondaire">Du <app:date valeur="${renouvellement.dateDebut}"/> au <app:date valeur="${renouvellement.dateFin}"/></div>
+        </dd>
+      </div>
+    </c:if>
+  </dl>
+</section>
+
+<section class="carte">
+  <div class="carte-entete">
+    <div>
+      <h2>Garanties</h2>
+      <p>${fn:length(contrat.garanties)} garantie${fn:length(contrat.garanties) > 1 ? 's' : ''} souscrite${fn:length(contrat.garanties) > 1 ? 's' : ''}.</p>
+    </div>
+  </div>
+  <div class="garanties">
+    <c:forEach var="g" items="${contrat.garanties}">
+      <div class="garantie">
+        <span class="garantie-nom"><svg class="icone" aria-hidden="true"><use href="#i-bouclier-ok"/></svg><c:out value="${g.nom}"/></span>
+        <c:if test="${not empty g.description}"><p><c:out value="${g.description}"/></p></c:if>
+        <div class="garantie-chiffres">
+          <span>Plafond<b class="nombre"><app:euros valeur="${g.plafond}" vide="Aucun"/></b></span>
+          <span>Franchise<b class="nombre"><app:euros valeur="${g.franchise}" vide="Aucune"/></b></span>
+        </div>
+      </div>
+    </c:forEach>
+  </div>
+</section>

@@ -7,8 +7,10 @@ Sujet : [doc/projet2026_2027.pdf](doc/projet2026_2027.pdf)
 |---|---|
 | `jee-app/` | Version 1 : Servlets + JSP + Hibernate |
 | `spring-app/` | Version 2 : Spring Boot + JSP + Spring Data JPA |
+| `frontend/` | Interface complète (refonte) : JSP, tags, CSS, JS et images |
+| `frontend-epure/` | Interface épurée : JSP sans mise en forme |
 
-Les deux versions utilisent la même base MySQL, le même `.env` et la même adresse.
+Les deux versions utilisent la même base MySQL, le même `.env` et la même adresse. Chacune peut être construite avec l'une ou l'autre interface : le dossier choisi est copié dans le `.war` au moment du `mvn package` (`frontend/` par défaut).
 
 ## Démarrage rapide
 
@@ -25,16 +27,15 @@ Puis remplir dans `.env` :
 Le `.env` n'est jamais commité.
 
 **2. Lancer**, depuis la racine du dépôt :
-```bash
-# Version 1 (par défaut)
-mvn -f jee-app/pom.xml clean package
-docker compose up -d --build
 
-# Version 2
-mvn -f spring-app/pom.xml clean package
-APP=spring-app docker compose up -d --build
-```
-Pour utiliser `spring-app` par défaut, ajouter `APP=spring-app` dans le `.env`.
+| Version | Commandes |
+|---|---|
+| Servlets, interface complète (par défaut) | `mvn -f jee-app/pom.xml clean package`<br>`docker compose up -d --build` |
+| Servlets, interface épurée | `mvn -f jee-app/pom.xml clean package -Dfront=frontend-epure`<br>`docker compose up -d --build` |
+| Spring Boot, interface complète | `mvn -f spring-app/pom.xml clean package`<br>`APP=spring-app docker compose up -d --build` |
+| Spring Boot, interface épurée | `mvn -f spring-app/pom.xml clean package -Dfront=frontend-epure`<br>`APP=spring-app docker compose up -d --build` |
+
+`mvn` choisit l'interface, `APP` choisit la version déployée. Pour utiliser `spring-app` par défaut, ajouter `APP=spring-app` dans le `.env`.
 
 **3. Ouvrir http://localhost:8080/** avec un compte de test :
 
@@ -48,9 +49,9 @@ Au premier lancement, MySQL crée les tables (`database/schema.sql`) et insère 
 
 ## Au quotidien
 
-**Après une modification du code Java ou des JSP** : reconstruire le `.war` puis Tomcat seulement.
+**Après une modification du code Java ou d'une interface** : reconstruire le `.war` puis Tomcat seulement.
 ```bash
-mvn -f jee-app/pom.xml clean package               # ou spring-app/pom.xml
+mvn -f jee-app/pom.xml clean package               # ou spring-app/pom.xml, avec -Dfront=frontend-epure pour l'épurée
 docker compose up -d --build tomcat                # avec APP=spring-app pour la version 2
 ```
 Toujours utiliser `clean` : sinon une classe supprimée ou renommée peut rester dans le `.war`.
@@ -64,8 +65,10 @@ docker compose up -d --build
 **Lancer spring-app sans Docker pour Tomcat** (MySQL seul dans Docker), depuis `spring-app/` :
 ```bash
 docker compose up -d db
-DB_URL=jdbc:mysql://localhost:3307/assurance mvn spring-boot:run
+mvn clean package
+DB_URL=jdbc:mysql://localhost:3307/assurance java -jar target/assurance.war
 ```
+(`mvn spring-boot:run` ne trouve pas les JSP, qui sont dans `frontend/` ou `frontend-epure/` et non dans `spring-app/src/main/webapp`.)
 
 | Commande Docker | Effet |
 |---|---|
@@ -102,7 +105,7 @@ jee-app/src/main/
     ai/                  Client de l'API d'IA (assistant)
     util/                Validation des saisies, connexion JPA, stockage des pièces...
   resources/             persistence.xml, connaissances de l'assistant
-  webapp/WEB-INF/views/  JSP par profil : auth/, compte/, client/, agent/, admin/, common/
+  webapp/WEB-INF/        web.xml
 spring-app/src/main/
   java/fr/cytech/assurance/
     model/, exception/   Identiques à jee-app
@@ -113,8 +116,14 @@ spring-app/src/main/
     config/              Configuration Spring : .env, page 403, intercepteur, mise à jour des statuts
     ai/, util/           Comme dans jee-app, en composants Spring
   resources/             application.properties (remplace persistence.xml et web.xml)
-  webapp/WEB-INF/views/  Mêmes JSP que jee-app
+frontend/                Interface complète (refonte)
+  WEB-INF/views/         JSP par profil : auth/, compte/, client/, agent/, admin/, common/
+  WEB-INF/tags/          Balises JSP (dates, montants, statuts...)
+  assets/                css/, js/, img/
+frontend-epure/          Interface épurée
+  WEB-INF/views/         Mêmes pages, sans mise en forme
 ```
+Une page doit recevoir les mêmes attributs dans les deux versions, et chaque interface doit fonctionner avec les deux : toute modification d'un contrôleur ou d'une servlet qui change ce qu'une JSP affiche doit être faite des deux côtés, et vérifiée avec les deux interfaces (la CI teste les 4 combinaisons).
 
 ## Fonctionnement
 

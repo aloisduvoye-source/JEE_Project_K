@@ -1,0 +1,11 @@
+<%@ page pageEncoding="UTF-8" %>
+<%--
+  Pied de page commun. À inclure juste avant </body> :
+    <%@ include file="/WEB-INF/views/common/footer.jspf" %>
+--%>
+<footer class="pied">
+  <div class="conteneur">
+    <span>© Billy Assurance</span>
+    <span>Projet JEE · Groupe K</span>
+  </div>
+</footer>

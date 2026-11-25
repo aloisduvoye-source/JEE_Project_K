@@ -1,0 +1,61 @@
+<%@ page pageEncoding="UTF-8" %>
+<%--
+  Déclaration d'un sinistre, commune à la fiche du client et à celle de l'agent (colonne principale) :
+  type, statut, contrat, dates, montant estimé, agent et description.
+  Attend l'attribut "sinistre" (avec contrat, client, type d'assurance et agent chargés).
+  À inclure avec : <%@ include file="/WEB-INF/views/common/sinistre-infos.jspf" %>
+  Les étapes du traitement et l'indemnisation sont affichées à part par sinistre-suivi.jspf.
+--%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
+<%@ taglib prefix="app" tagdir="/WEB-INF/tags" %>
+<c:set var="assure" value="${sinistre.contrat.client.utilisateur}"/>
+<section class="carte contrat">
+  <div class="contrat-entete">
+    <div class="contrat-titre">
+      <span class="pastille ton-orange"><svg class="icone" aria-hidden="true"><use href="#i-alerte"/></svg></span>
+      <div>
+        <h2><app:typeSinistre valeur="${sinistre.typeSinistre}"/></h2>
+        <p>Sinistre n° <c:out value="${sinistre.id}"/> · survenu le <app:date valeur="${sinistre.dateSinistre}"/></p>
+      </div>
+    </div>
+    <app:statutSinistre valeur="${sinistre.statut}"/>
+  </div>
+
+  <dl class="liste-infos">
+    <%-- Le client sait qui il est : l'assuré n'est affiché qu'aux agents et à l'admin --%>
+    <c:if test="${sessionScope.utilisateur.role != 'CLIENT'}">
+      <div>
+        <dt>Assuré</dt>
+        <dd>
+          <div class="cellule-personne">
+            <span class="avatar"><c:out value="${fn:toUpperCase(fn:substring(assure.prenom, 0, 1))}${fn:toUpperCase(fn:substring(assure.nom, 0, 1))}"/></span>
+            <div>
+              <div class="cellule-principale"><c:out value="${assure.prenom} ${assure.nom}"/></div>
+              <div class="cellule-secondaire"><c:out value="${assure.email}"/></div>
+            </div>
+          </div>
+        </dd>
+      </div>
+    </c:if>
+    <div>
+      <dt>Contrat</dt>
+      <dd>
+        <a href="${pageContext.request.contextPath}/${sessionScope.utilisateur.role == 'CLIENT' ? 'client' : 'agent'}/contrats/detail?id=${sinistre.contrat.id}">n° <c:out value="${sinistre.contrat.id}"/></a>
+        <div class="cellule-secondaire"><c:out value="${sinistre.contrat.typeAssurance.nom}"/></div>
+      </dd>
+    </div>
+    <div><dt>Déclaré le</dt><dd><app:dateHeure valeur="${sinistre.dateDeclaration}"/></dd></div>
+    <div><dt>Montant estimé</dt><dd class="nombre"><app:euros valeur="${sinistre.montantEstime}" vide="Non précisé"/></dd></div>
+    <div>
+      <dt>Agent</dt>
+      <dd><c:out value="${empty sinistre.agent ? 'Pas encore attribué' : sinistre.agent.prenom.concat(' ').concat(sinistre.agent.nom)}"/></dd>
+    </div>
+  </dl>
+
+  <div class="carte-corps">
+    <p class="libelle" style="margin-bottom:6px">Circonstances</p>
+    <%-- c:out empêche toute injection de HTML ; bulle-texte garde les retours à la ligne --%>
+    <p class="bulle-texte"><c:out value="${sinistre.description}"/></p>
+  </div>
+</section>

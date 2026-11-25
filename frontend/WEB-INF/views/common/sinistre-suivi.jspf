@@ -1,0 +1,89 @@
+<%@ page pageEncoding="UTF-8" %>
+<%--
+  Suivi d'un sinistre, commun à la fiche du client et à celle de l'agent (colonne de droite) :
+  étapes du traitement avec leur date, puis le détail de l'indemnisation une fois versée.
+  Attend les attributs "sinistre" et "indemnisation" (le Versement, vide tant que le sinistre n'est pas indemnisé).
+  À inclure avec : <%@ include file="/WEB-INF/views/common/sinistre-suivi.jspf" %>
+
+  Chaque étape est "faite" (coche verte), "active" (celle qui est en cours), "refusee" ou "a-venir".
+--%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="app" tagdir="/WEB-INF/tags" %>
+<c:set var="st" value="${sinistre.statut}"/>
+<section class="carte">
+  <div class="carte-entete"><div><h2>Suivi du dossier</h2><p>${sessionScope.utilisateur.role == 'CLIENT' ? 'Les étapes du traitement de votre sinistre.' : 'Les étapes du traitement du dossier.'}</p></div></div>
+  <ol class="frise">
+    <li class="faite">
+      <span class="frise-point"><svg class="icone" aria-hidden="true"><use href="#i-coche"/></svg></span>
+      <div><strong>Déclaré</strong><span class="detail"><app:dateHeure valeur="${sinistre.dateDeclaration}"/></span></div>
+    </li>
+
+    <li class="${st == 'DECLARE' ? 'active' : 'faite'}">
+      <span class="frise-point"><svg class="icone" aria-hidden="true"><use href="#i-${st == 'DECLARE' ? 'horloge' : 'coche'}"/></svg></span>
+      <div>
+        <strong>Pris en charge par un agent</strong>
+        <span class="detail">
+          <c:choose>
+            <c:when test="${st == 'DECLARE'}">En attente d'un agent</c:when>
+            <c:otherwise><app:dateHeure valeur="${sinistre.datePriseEnCharge}"/></c:otherwise>
+          </c:choose>
+        </span>
+      </div>
+    </li>
+
+    <c:choose>
+      <c:when test="${st == 'REFUSE'}">
+        <li class="refusee">
+          <span class="frise-point"><svg class="icone" aria-hidden="true"><use href="#i-fermer"/></svg></span>
+          <div><strong>Refusé</strong><span class="detail"><app:dateHeure valeur="${sinistre.dateDecision}"/> · le motif est dans la discussion</span></div>
+        </li>
+      </c:when>
+      <c:otherwise>
+        <li class="${st == 'DECLARE' ? 'a-venir' : (st == 'EN_ANALYSE' ? 'active' : 'faite')}">
+          <span class="frise-point"><c:if test="${st != 'DECLARE'}"><svg class="icone" aria-hidden="true"><use href="#i-${st == 'EN_ANALYSE' ? 'horloge' : 'coche'}"/></svg></c:if></span>
+          <div>
+            <strong>${empty sinistre.dateDecision ? 'Décision' : 'Accepté'}</strong>
+            <span class="detail">
+              <c:choose>
+                <c:when test="${not empty sinistre.dateDecision}"><app:dateHeure valeur="${sinistre.dateDecision}"/></c:when>
+                <c:when test="${st == 'EN_ANALYSE'}">Analyse en cours</c:when>
+                <c:otherwise>Décision à venir</c:otherwise>
+              </c:choose>
+            </span>
+          </div>
+        </li>
+        <li class="${st == 'INDEMNISE' ? 'faite' : (st == 'ACCEPTE' ? 'active' : 'a-venir')}">
+          <span class="frise-point"><c:if test="${st == 'ACCEPTE' or st == 'INDEMNISE'}"><svg class="icone" aria-hidden="true"><use href="#i-${st == 'ACCEPTE' ? 'horloge' : 'coche'}"/></svg></c:if></span>
+          <div>
+            <strong>Indemnisé</strong>
+            <span class="detail">
+              <c:choose>
+                <c:when test="${not empty indemnisation}"><app:euros valeur="${indemnisation.montant}"/> le <app:date valeur="${indemnisation.dateVersement}"/></c:when>
+                <c:when test="${st == 'ACCEPTE'}">Calcul de l'indemnisation en cours</c:when>
+                <c:otherwise>Après l'acceptation</c:otherwise>
+              </c:choose>
+            </span>
+          </div>
+        </li>
+      </c:otherwise>
+    </c:choose>
+  </ol>
+
+  <%-- Détail du calcul, avec la franchise et le plafond en vigueur au moment du versement --%>
+  <c:if test="${not empty indemnisation}">
+    <div class="carte-corps" style="padding-top:0">
+      <dl class="calcul">
+        <div><dt>Garantie appliquée</dt><dd><c:out value="${indemnisation.garantie.nom}"/></dd></div>
+        <div><dt>Dommage retenu</dt><dd class="nombre"><app:euros valeur="${indemnisation.montantDommage}"/></dd></div>
+        <div><dt>Franchise</dt><dd class="nombre">− <app:euros valeur="${indemnisation.franchiseAppliquee}"/></dd></div>
+        <c:if test="${indemnisation.plafonne}">
+          <div><dt>Limité au plafond</dt><dd class="nombre"><app:euros valeur="${indemnisation.plafondApplique}"/></dd></div>
+        </c:if>
+        <div class="recap-total"><dt>Versé</dt><dd class="nombre"><app:euros valeur="${indemnisation.montant}"/></dd></div>
+      </dl>
+      <c:if test="${not empty sinistre.montantEstime and indemnisation.montantDommage.compareTo(sinistre.montantEstime) != 0}">
+        <p class="aide" style="margin-top:10px">Montant estimé à la déclaration : <app:euros valeur="${sinistre.montantEstime}"/>.</p>
+      </c:if>
+    </div>
+  </c:if>
+</section>

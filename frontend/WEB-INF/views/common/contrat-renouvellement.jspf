@@ -1,0 +1,39 @@
+<%@ page pageEncoding="UTF-8" %>
+<%--
+  Renouvellement d'un contrat, commun à la fiche de l'agent et à celle du client (pas à l'admin).
+  Affiché seulement si le contrat peut être renouvelé (attribut "renouvelable", calculé par
+  ContratService.raisonNonRenouvelable) : actif ou expiré, payé, pas encore renouvelé, type toujours proposé.
+  Envoie vers /client/contrats/renouveler ou /agent/contrats/renouveler selon le rôle connecté.
+  Attend les attributs "contrat" et "renouvelable".
+--%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="app" tagdir="/WEB-INF/tags" %>
+<c:if test="${renouvelable and sessionScope.utilisateur.role != 'ADMIN'}">
+  <section class="carte">
+    <div class="carte-entete">
+      <div>
+        <h2>Renouveler le contrat</h2>
+        <p>
+          Un nouveau contrat de 12 mois, avec les mêmes garanties, à partir
+          <c:choose>
+            <c:when test="${contrat.statut == 'EXPIRE'}">du jour du renouvellement</c:when>
+            <c:otherwise>du <app:date valeur="${contrat.dateFin}"/></c:otherwise>
+          </c:choose>.
+          Sa prime est à payer avant sa date de début.
+        </p>
+      </div>
+    </div>
+    <form class="carte-corps formulaire" method="post"
+          action="${pageContext.request.contextPath}/${sessionScope.utilisateur.role == 'CLIENT' ? 'client' : 'agent'}/contrats/renouveler"
+          data-confirmer="Renouveler ce contrat pour 12 mois ?"
+          data-confirmer-texte="Un nouveau contrat sera créé, sa prime sera à payer avant sa date de début."
+          data-confirmer-bouton="Renouveler">
+      <input type="hidden" name="id" value="${contrat.id}">
+      <div class="actions-formulaire">
+        <button type="submit" class="bouton bouton-principal bouton-bloc">
+          <svg class="icone" aria-hidden="true"><use href="#i-restaurer"/></svg>Renouveler le contrat
+        </button>
+      </div>
+    </form>
+  </section>
+</c:if>

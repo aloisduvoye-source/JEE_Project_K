@@ -1,0 +1,45 @@
+<%@ page pageEncoding="UTF-8" %>
+<%--
+  Listes déroulantes du filtre et du tri des contrats, communes à la liste de l'agent et à celle du client.
+  À inclure dans un <form method="get" class="barre-outils">, avant le bouton d'envoi.
+  Attend les attributs "statuts", "statutChoisi", "types", "typeChoisi" et "triChoisi".
+--%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<label>
+  <span class="visuellement-cache">Statut</span>
+  <select class="saisie" name="statut">
+    <option value="">Tous les statuts</option>
+    <c:forEach var="st" items="${statuts}">
+      <option value="${st}" ${st == statutChoisi ? 'selected' : ''}>
+        <c:choose>
+          <c:when test="${st == 'EN_ATTENTE'}">En attente</c:when>
+          <c:when test="${st == 'ACTIF'}">Actifs</c:when>
+          <c:when test="${st == 'SUSPENDU'}">Suspendus</c:when>
+          <c:when test="${st == 'EXPIRE'}">Expirés</c:when>
+          <c:when test="${st == 'RESILIE'}">Résiliés</c:when>
+          <c:otherwise><c:out value="${st}"/></c:otherwise>
+        </c:choose>
+      </option>
+    </c:forEach>
+  </select>
+</label>
+<label>
+  <span class="visuellement-cache">Type d'assurance</span>
+  <select class="saisie" name="type">
+    <option value="">Tous les types</option>
+    <c:forEach var="t" items="${types}">
+      <option value="${t.id}" ${t.id == typeChoisi ? 'selected' : ''}><c:out value="${t.nom}"/></option>
+    </c:forEach>
+  </select>
+</label>
+<label>
+  <span class="visuellement-cache">Trier par</span>
+  <select class="saisie" name="tri">
+    <option value="debut_desc" ${triChoisi == 'debut_desc' ? 'selected' : ''}>Début (plus récent)</option>
+    <option value="debut_asc" ${triChoisi == 'debut_asc' ? 'selected' : ''}>Début (plus ancien)</option>
+    <option value="fin_asc" ${triChoisi == 'fin_asc' ? 'selected' : ''}>Fin (plus proche)</option>
+    <option value="fin_desc" ${triChoisi == 'fin_desc' ? 'selected' : ''}>Fin (plus lointaine)</option>
+    <option value="prime_desc" ${triChoisi == 'prime_desc' ? 'selected' : ''}>Prime (décroissante)</option>
+    <option value="prime_asc" ${triChoisi == 'prime_asc' ? 'selected' : ''}>Prime (croissante)</option>
+  </select>
+</label>

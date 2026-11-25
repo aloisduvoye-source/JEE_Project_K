@@ -8,6 +8,13 @@
 
     <!-- Les servlets sont déclarées avec l'annotation @WebServlet dans le package controller -->
 
+    <!-- Montants affichés en français (1 250,00 €) quelle que soit la langue du navigateur :
+         utilisé par <fmt:formatNumber>, donc par le tag <app:euros> (WEB-INF/tags/euros.tag) -->
+    <context-param>
+        <param-name>jakarta.servlet.jsp.jstl.fmt.locale</param-name>
+        <param-value>fr_FR</param-value>
+    </context-param>
+
     <!-- Les JSP et les fragments inclus (.jspf, comme l'en-tête) sont en UTF-8 -->
     <jsp-config>
         <jsp-property-group>

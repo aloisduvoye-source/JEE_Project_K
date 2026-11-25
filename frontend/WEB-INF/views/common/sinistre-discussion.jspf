@@ -1,0 +1,67 @@
+<%@ page pageEncoding="UTF-8" %>
+<%--
+  Discussion d'un sinistre entre le client et les agents, commune à la fiche du client et à celle de l'agent.
+  Les messages de l'utilisateur connecté sont à droite, ceux des autres à gauche.
+  Formulaire affiché au client et aux agents tant que le dossier n'est pas clos (refusé ou indemnisé) ;
+  l'admin lit seulement. Envoie vers /client/sinistres/commenter ou /agent/sinistres/commenter selon le rôle.
+  Attend les attributs "sinistre", "commentaires" (du plus ancien au plus récent) et "clos".
+  À inclure avec : <%@ include file="/WEB-INF/views/common/sinistre-discussion.jspf" %>
+--%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="app" tagdir="/WEB-INF/tags" %>
+<section class="carte" id="discussion">
+  <div class="carte-entete">
+    <div style="display:flex;align-items:center;gap:12px">
+      <span class="pastille pastille-petite ton-primaire"><svg class="icone" aria-hidden="true"><use href="#i-message"/></svg></span>
+      <div>
+        <h2>Discussion</h2>
+        <p>${sessionScope.utilisateur.role == 'CLIENT' ? 'Échangez avec l\'agent qui traite votre dossier.' : 'Échanges avec l\'assuré, visibles par lui.'}</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="fil" style="border-top:1px solid var(--bordure)">
+    <c:if test="${empty commentaires}">
+      <p class="texte-doux">Aucun message pour l'instant.</p>
+    </c:if>
+    <c:forEach var="m" items="${commentaires}">
+      <c:set var="deMoi" value="${m.auteur.id == sessionScope.utilisateur.id}"/>
+      <div class="bulle ${deMoi ? 'bulle-moi' : ''}">
+        <div class="bulle-auteur">
+          <strong>
+            <c:choose>
+              <c:when test="${deMoi}">Vous</c:when>
+              <c:when test="${m.auteur.role == 'CLIENT'}"><c:out value="${m.auteur.prenom} ${m.auteur.nom}"/> (assuré)</c:when>
+              <c:otherwise><c:out value="${m.auteur.prenom} ${m.auteur.nom}"/> (agent)</c:otherwise>
+            </c:choose>
+          </strong>
+          <span><app:dateHeure valeur="${m.dateCommentaire}"/></span>
+        </div>
+        <%-- c:out empêche toute injection de HTML ; bulle-texte garde les retours à la ligne --%>
+        <p class="bulle-texte"><c:out value="${m.contenu}"/></p>
+      </div>
+    </c:forEach>
+  </div>
+
+  <c:choose>
+    <c:when test="${clos}">
+      <div class="fil-saisie"><p class="aide">Le dossier est clos : la discussion est fermée.</p></div>
+    </c:when>
+    <c:when test="${sessionScope.utilisateur.role != 'ADMIN'}">
+      <form class="fil-saisie" method="post"
+            action="${pageContext.request.contextPath}/${sessionScope.utilisateur.role == 'CLIENT' ? 'client' : 'agent'}/sinistres/commenter">
+        <input type="hidden" name="id" value="${sinistre.id}">
+        <div class="champ">
+          <label class="visuellement-cache" for="contenu">Votre message</label>
+          <textarea class="saisie" id="contenu" name="contenu" rows="3" maxlength="2000" required data-compteur
+                    placeholder="Votre message…"></textarea>
+        </div>
+        <div class="actions-formulaire">
+          <button type="submit" class="bouton bouton-principal">
+            <svg class="icone" aria-hidden="true"><use href="#i-message"/></svg>Envoyer
+          </button>
+        </div>
+      </form>
+    </c:when>
+  </c:choose>
+</section>
