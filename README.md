@@ -7,8 +7,9 @@ Sujet : [doc/projet2026_2027.pdf](doc/projet2026_2027.pdf)
 |---|---|
 | `jee-app/` | Version 1 : Servlets + JSP + Hibernate |
 | `spring-app/` | Version 2 : Spring Boot + JSP + Spring Data JPA |
+| `frontend/` | Interface commune aux deux versions : JSP, tags, CSS, JS et images |
 
-Les deux versions utilisent la même base MySQL, le même `.env` et la même adresse.
+Les deux versions utilisent la même base MySQL, le même `.env`, la même adresse et la même interface : `frontend/` est copié dans le `.war` de chacune au moment du `mvn package`.
 
 ## Démarrage rapide
 
@@ -48,7 +49,7 @@ Au premier lancement, MySQL crée les tables (`database/schema.sql`) et insère 
 
 ## Au quotidien
 
-**Après une modification du code Java ou des JSP** : reconstruire le `.war` puis Tomcat seulement.
+**Après une modification du code Java ou de `frontend/`** : reconstruire le `.war` puis Tomcat seulement.
 ```bash
 mvn -f jee-app/pom.xml clean package               # ou spring-app/pom.xml
 docker compose up -d --build tomcat                # avec APP=spring-app pour la version 2
@@ -64,8 +65,10 @@ docker compose up -d --build
 **Lancer spring-app sans Docker pour Tomcat** (MySQL seul dans Docker), depuis `spring-app/` :
 ```bash
 docker compose up -d db
-DB_URL=jdbc:mysql://localhost:3307/assurance mvn spring-boot:run
+mvn clean package
+DB_URL=jdbc:mysql://localhost:3307/assurance java -jar target/assurance.war
 ```
+(`mvn spring-boot:run` ne trouve pas les JSP, qui sont dans `frontend/` et non dans `spring-app/src/main/webapp`.)
 
 | Commande Docker | Effet |
 |---|---|
@@ -102,7 +105,7 @@ jee-app/src/main/
     ai/                  Client de l'API d'IA (assistant)
     util/                Validation des saisies, connexion JPA, stockage des pièces...
   resources/             persistence.xml, connaissances de l'assistant
-  webapp/WEB-INF/views/  JSP par profil : auth/, compte/, client/, agent/, admin/, common/
+  webapp/WEB-INF/        web.xml
 spring-app/src/main/
   java/fr/cytech/assurance/
     model/, exception/   Identiques à jee-app
@@ -113,8 +116,12 @@ spring-app/src/main/
     config/              Configuration Spring : .env, page 403, intercepteur, mise à jour des statuts
     ai/, util/           Comme dans jee-app, en composants Spring
   resources/             application.properties (remplace persistence.xml et web.xml)
-  webapp/WEB-INF/views/  Mêmes JSP que jee-app
+frontend/
+  WEB-INF/views/         JSP par profil : auth/, compte/, client/, agent/, admin/, common/
+  WEB-INF/tags/          Balises JSP (dates, montants, statuts...)
+  assets/                css/, js/, img/
 ```
+Une page doit recevoir les mêmes attributs dans les deux versions : toute modification d'un contrôleur ou d'une servlet qui change ce qu'une JSP affiche doit être faite des deux côtés.
 
 ## Fonctionnement
 
