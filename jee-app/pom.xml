@@ -85,6 +85,14 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <version>3.4.0</version>
+        <configuration>
+          <!-- Vues, tags et assets partagés avec spring-app (dossier frontend/ à la racine du dépôt) -->
+          <webResources>
+            <resource>
+              <directory>${project.basedir}/../frontend</directory>
+            </resource>
+          </webResources>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>

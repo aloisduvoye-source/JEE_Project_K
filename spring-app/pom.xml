@@ -102,6 +102,18 @@
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+          <!-- Vues, tags et assets partagés avec jee-app (dossier frontend/ à la racine du dépôt) -->
+          <webResources>
+            <resource>
+              <directory>${project.basedir}/../frontend</directory>
+            </resource>
+          </webResources>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
 </project>
