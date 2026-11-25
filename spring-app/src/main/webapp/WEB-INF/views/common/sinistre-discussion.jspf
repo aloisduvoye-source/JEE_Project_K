@@ -1,0 +1,46 @@
+<%@ page pageEncoding="UTF-8" %>
+<%--
+  Discussion d'un sinistre entre le client et les agents, commune à la fiche du client et à celle de l'agent.
+  Formulaire affiché au client et aux agents tant que le dossier n'est pas clos (refusé ou indemnisé) ;
+  l'admin lit seulement. Envoie vers /client/sinistres/commenter ou /agent/sinistres/commenter selon le rôle.
+  Attend les attributs "sinistre", "commentaires" (du plus ancien au plus récent) et "clos".
+  À inclure avec : <%@ include file="/WEB-INF/views/common/sinistre-discussion.jspf" %>
+--%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<h2 id="discussion">Discussion</h2>
+
+<c:if test="${empty commentaires}">
+  <p>Aucun message pour l'instant.</p>
+</c:if>
+<c:forEach var="m" items="${commentaires}">
+  <div style="border: 1px solid #ccc; padding: 0.4em 0.7em; margin: 0.4em 0;
+              ${m.auteur.role == 'CLIENT' ? 'margin-right: 15%' : 'margin-left: 15%; background: #f3f3f3'}">
+    <small>
+      <c:choose>
+        <c:when test="${m.auteur.id == sessionScope.utilisateur.id}">Vous</c:when>
+        <c:when test="${m.auteur.role == 'CLIENT'}">Client</c:when>
+        <c:otherwise>Agent <c:out value="${m.auteur.prenom} ${m.auteur.nom}"/></c:otherwise>
+      </c:choose>,
+      le <c:out value="${m.dateCommentaire.toLocalDate()} à ${m.dateCommentaire.toLocalTime().withSecond(0).withNano(0)}"/>
+    </small>
+    <%-- white-space: pre-wrap garde les retours à la ligne ; c:out empêche toute injection de HTML --%>
+    <p style="margin: 0.3em 0 0; white-space: pre-wrap"><c:out value="${m.contenu}"/></p>
+  </div>
+</c:forEach>
+
+<c:choose>
+  <c:when test="${clos}">
+    <p>Le dossier est clos : la discussion est fermée.</p>
+  </c:when>
+  <c:when test="${sessionScope.utilisateur.role != 'ADMIN'}">
+    <form method="post"
+          action="${pageContext.request.contextPath}/${sessionScope.utilisateur.role == 'CLIENT' ? 'client' : 'agent'}/sinistres/commenter">
+      <input type="hidden" name="id" value="${sinistre.id}">
+      <p>
+        <label for="contenu">Votre message</label><br>
+        <textarea id="contenu" name="contenu" rows="3" cols="70" maxlength="2000" required></textarea>
+      </p>
+      <button type="submit">Envoyer</button>
+    </form>
+  </c:when>
+</c:choose>

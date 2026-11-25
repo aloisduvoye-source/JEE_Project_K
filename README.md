@@ -1,55 +1,173 @@
 # JEE_Project_K
-Le projet de JEE du groupe K : plateforme web de gestion d'assurance (clients, contrats, garanties, sinistres, paiements, assistant IA, statistiques).
+Projet JEE du groupe K : plateforme web de gestion d'assurance (clients, contrats, garanties, sinistres, paiements, assistant IA, statistiques).
 
 Sujet : [doc/projet2026_2027.pdf](doc/projet2026_2027.pdf)
 
-## Organisation du dépôt
+| Dossier | Version |
+|---|---|
+| `jee-app/` | Version 1 : Servlets + JSP + Hibernate |
+| `spring-app/` | Version 2 : Spring Boot + JSP + Spring Data JPA |
 
-```
-doc/                     Sujet + conception (MCD / diagramme de classes dans doc/conception/)
-database/                Scripts SQL : création des tables, données de test
-jee-app/                 Version 1 : Servlets + JSP + Hibernate/JDBC (Tomcat)
-  src/main/java/fr/cytech/assurance/
-    model/               Entités (Client, Contrat, Garantie, Sinistre, Paiement, ...)
-    model/enums/         Statuts (StatutContrat, StatutSinistre, ...) et rôles
-    dao/                 Accès aux données (Hibernate / JDBC)
-    service/             Logique métier (règles, hachage des mots de passe...), appelée par les servlets
-    controller/          Servlets
-    filter/              Filtre d'accès par rôle (RoleFiltre)
-    listener/            Actions au démarrage et à l'arrêt de l'application (initialisation d'Hibernate)
-    exception/           Exceptions métier (ex. UtilisateurDejaExistantException)
-    ai/                  Client de l'API d'IA (assistant)
-    util/                Outils partagés (validation des saisies, connexion JPA, ...)
-  src/main/resources/    META-INF/persistence.xml (configuration Hibernate / JPA)
-  src/main/webapp/
-    WEB-INF/views/       JSP par profil : auth/, compte/, client/, agent/, admin/, common/
-    assets/              css/, js/, img/
-```
+Les deux versions utilisent la même base MySQL, le même `.env` et la même adresse.
 
-## Travailler à plusieurs (branches et Pull Requests)
+## Démarrage rapide
 
-On ne travaille jamais directement sur `main` : chaque mission part de `main` à jour dans sa propre branche, puis revient via une Pull Request relue par un autre membre.
+**Prérequis** : Java 17 ou plus, Maven et Docker avec Docker Compose (voir [Installer Docker](#installer-docker)).
 
+**1. Configurer** (une seule fois) :
 ```bash
-# 1. Repartir de main à jour et créer sa branche (une mission = une branche)
-git switch main
-git pull origin main
-git switch -c nom_de_la_branche
+cp .env.example .env
+```
+Puis remplir dans `.env` :
+- `DB_USER` et `DB_PASSWORD` : utilisateur MySQL créé dans le conteneur (pas `root`) ;
+- `AI_API_KEY` : clé Google Gemini pour l'assistant, à créer sur https://aistudio.google.com/api-keys (facultatif : sans clé, l'assistant indique qu'il n'est pas configuré).
 
-# 2. Travailler, puis committer. Ne JAMAIS committer sans compiler :
-mvn -f jee-app/pom.xml clean package    # doit afficher BUILD SUCCESS
+Le `.env` n'est jamais commité.
 
-# 3. Publier la branche puis ouvrir la Pull Request sur GitHub
-git push -u origin nom_de_la_branche
+**2. Lancer**, depuis la racine du dépôt :
+```bash
+# Version 1 (par défaut)
+mvn -f jee-app/pom.xml clean package
+docker compose up -d --build
+
+# Version 2
+mvn -f spring-app/pom.xml clean package
+APP=spring-app docker compose up -d --build
+```
+Pour utiliser `spring-app` par défaut, ajouter `APP=spring-app` dans le `.env`.
+
+**3. Ouvrir http://localhost:8080/** avec un compte de test :
+
+| Rôle | Identifiant | Mot de passe |
+|---|---|---|
+| Administrateur | `admin` | `admin123` |
+| Agent | `agent` | `agent123` |
+| Client | `client` | `client123` |
+
+Au premier lancement, MySQL crée les tables (`database/schema.sql`) et insère les données de test (`database/dump.sql`).
+
+## Au quotidien
+
+**Après une modification du code Java ou des JSP** : reconstruire le `.war` puis Tomcat seulement.
+```bash
+mvn -f jee-app/pom.xml clean package               # ou spring-app/pom.xml
+docker compose up -d --build tomcat                # avec APP=spring-app pour la version 2
+```
+Toujours utiliser `clean` : sinon une classe supprimée ou renommée peut rester dans le `.war`.
+
+**Après une modification de `schema.sql` ou `dump.sql`** (ou un `git pull` qui les modifie) : les scripts ne s'exécutent qu'à la création de la base, il faut la recréer.
+```bash
+docker compose down -v
+docker compose up -d --build
 ```
 
-## Prérequis
-- **Java 17** ou plus (`java -version`) et **Maven** (`mvn -version`) : pour construire l'application
-- **Docker** avec **Docker Compose** : MySQL et Tomcat tournent dans des conteneurs, rien d'autre à installer
+**Lancer spring-app sans Docker pour Tomcat** (MySQL seul dans Docker), depuis `spring-app/` :
+```bash
+docker compose up -d db
+DB_URL=jdbc:mysql://localhost:3307/assurance mvn spring-boot:run
+```
 
-## Installer Docker (une seule fois)
+| Commande Docker | Effet |
+|---|---|
+| `docker compose up -d --build` | lance (ou relance) MySQL et Tomcat en arrière-plan |
+| `docker compose ps` | état des conteneurs |
+| `docker compose logs -f tomcat` | journaux de Tomcat en direct (`Ctrl+C` pour quitter) |
+| `docker compose down` | arrête les conteneurs, **les données sont conservées** |
+| `docker compose down -v` | arrête et **supprime la base et les pièces justificatives** |
 
-### Ubuntu / Linux Mint
+### Branches et Pull Requests
+On ne travaille jamais directement sur `main` : une mission = une branche, qui revient par une Pull Request relue par un autre membre.
+```bash
+git switch main && git pull origin main
+git switch -c nom_de_la_branche
+# ... travailler, puis vérifier que ça compile avant chaque commit (BUILD SUCCESS) :
+mvn -f jee-app/pom.xml clean package               # ou spring-app/pom.xml
+git push -u origin nom_de_la_branche               # puis ouvrir la Pull Request sur GitHub
+```
+
+## Organisation du code
+
+```
+doc/                     Sujet et conception (MCD, diagramme de classes)
+database/                schema.sql (tables) et dump.sql (données de test)
+jee-app/src/main/
+  java/fr/cytech/assurance/
+    model/, model/enums/ Entités, statuts et rôles
+    dao/                 Accès aux données (Hibernate)
+    service/             Règles métier, appelées par les servlets
+    controller/          Servlets
+    filter/              Contrôle d'accès par rôle (RoleFiltre)
+    listener/            Démarrage et arrêt (Hibernate, mise à jour des statuts)
+    exception/           Exceptions métier
+    ai/                  Client de l'API d'IA (assistant)
+    util/                Validation des saisies, connexion JPA, stockage des pièces...
+  resources/             persistence.xml, connaissances de l'assistant
+  webapp/WEB-INF/views/  JSP par profil : auth/, compte/, client/, agent/, admin/, common/
+spring-app/src/main/
+  java/fr/cytech/assurance/
+    model/, exception/   Identiques à jee-app
+    repository/          Accès aux données (Spring Data JPA, remplace dao/)
+    service/             Règles métier (@Service, @Transactional)
+    controller/          Contrôleurs Spring MVC (remplacent les servlets)
+    web/                 Contrôle d'accès par rôle (RoleIntercepteur, remplace RoleFiltre)
+    config/              Configuration Spring : .env, page 403, intercepteur, mise à jour des statuts
+    ai/, util/           Comme dans jee-app, en composants Spring
+  resources/             application.properties (remplace persistence.xml et web.xml)
+  webapp/WEB-INF/views/  Mêmes JSP que jee-app
+```
+
+## Fonctionnement
+
+### Contrôle d'accès
+Chaque rôle a son espace, protégé d'après le début de l'URL :
+
+| Préfixe d'URL | Rôles autorisés | Page d'accueil |
+|---|---|---|
+| `/client/...` | CLIENT | `/client/accueil` |
+| `/agent/...` | AGENT, ADMIN | `/agent/accueil` |
+| `/admin/...` | ADMIN | `/admin/accueil` |
+| `/compte/...` | tout utilisateur connecté | `/compte` |
+
+Non connecté : redirection vers `/connexion`. Mauvais rôle : page « Accès refusé » (403). Après la connexion, chacun arrive sur l'accueil de son rôle.
+
+**Pour toute nouvelle page**, l'URL doit commencer par le préfixe du rôle concerné (par exemple `/client/contrats`) : elle est alors protégée sans code de sécurité dans le contrôleur. Une page sans préfixe est accessible à tous.
+
+### Pièces justificatives
+Les fichiers envoyés avec un sinistre (PDF, JPG ou PNG, 5 Mo maximum chacun) sont stockés dans le volume Docker `pieces_data` (`/data/pieces`, variable `DOSSIER_PIECES`), et non dans le `.war`, qui est écrasé à chaque déploiement. La base ne garde que leur nom d'origine et leur nom aléatoire sur le disque.
+
+Ils ne sont jamais servis directement : `/client/sinistres/piece?id=...` et `/agent/sinistres/piece?id=...` vérifient les droits de l'utilisateur.
+
+## Base de données
+
+**Console MySQL** (mot de passe : `DB_PASSWORD`) :
+```bash
+docker exec -it mysql_db mysql -u assurance_user -p assurance
+```
+**Interface graphique** (DBeaver, MySQL Workbench...) : hôte `127.0.0.1` (et non `localhost`), port **3307**, base `assurance`, identifiants du `.env`. Le port 3307 évite le conflit avec un MySQL installé sur la machine.
+
+### Modifier les données de test (`dump.sql`)
+- **À la main** : écrire les `INSERT` dans `database/dump.sql`, dans l'ordre des clés étrangères (utilisateurs et types d'assurance, puis contrats, puis sinistres et paiements).
+- **Par export** : remplir la base (via l'application ou un outil graphique), puis exporter uniquement les données :
+  ```bash
+  docker exec mysql_db sh -c 'mysqldump -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" --no-create-info --skip-triggers --complete-insert --no-tablespaces assurance' > database/dump.sql
+  ```
+  (`--no-create-info` : la structure reste dans `schema.sql` ; `--complete-insert` : nom des colonnes dans chaque `INSERT` ; `--no-tablespaces` : évite une erreur de droits avec MySQL 8.)
+
+Après une modification d'une table, mettre à jour `schema.sql` **et** vérifier que `dump.sql` se charge toujours (`docker compose down -v` puis `up`) avant de pousser.
+
+## En cas de problème
+| Message | Solution |
+|---|---|
+| `permission denied while trying to connect to the docker API` | La session n'a pas encore le groupe `docker` : se déconnecter puis se reconnecter. |
+| `port is already allocated` | Un autre programme utilise le port 8080 ou 3307 (un Tomcat local par exemple) : `ss -ltnp \| grep 8080`. |
+| `assurance.war: not found` pendant le `build` | Construire d'abord le `.war` : `mvn -f jee-app/pom.xml clean package` (ou `spring-app/pom.xml` avec `APP=spring-app`). |
+| `Access denied for user` ou `Schema-validation` dans `docker compose logs tomcat` | La base ne correspond pas au `.env` ou à `schema.sql` : `docker compose down -v` puis `docker compose up -d --build`. |
+
+## Installer Docker
+
+**Windows / macOS** : installer [Docker Desktop](https://www.docker.com/products/docker-desktop/), qui contient Docker Compose.
+
+**Ubuntu / Linux Mint** :
 ```bash
 sudo apt update
 sudo apt install ca-certificates curl
@@ -64,128 +182,14 @@ https://download.docker.com/linux/ubuntu $(. /etc/os-release && echo "$UBUNTU_CO
 sudo apt update
 sudo apt install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-# Utiliser Docker sans sudo
+# Utiliser Docker sans sudo, puis se déconnecter et se reconnecter
 sudo usermod -aG docker $USER
 ```
-Se **déconnecter de sa session puis se reconnecter** (ou redémarrer) pour que le groupe `docker` soit pris en compte.
+Sous Linux Mint, il faut bien `UBUNTU_CODENAME` (et non `VERSION_CODENAME`, qui donne le nom de version de Mint).
 
-> Sous Linux Mint, il faut bien `UBUNTU_CODENAME` (et non `VERSION_CODENAME`, qui donne le nom de version de Mint).
-
-### Windows / macOS
-Installer [Docker Desktop](https://www.docker.com/products/docker-desktop/), qui contient déjà Docker Compose.
-
-### Vérifier
+**Vérifier** :
 ```bash
 docker --version
 docker compose version
 docker run --rm hello-world      # doit afficher « Hello from Docker! »
 ```
-
-## Configurer l'accès (une seule fois)
-```bash
-cp .env.example .env
-```
-Puis renseigner dans `.env` :
-```
-DB_USER=assurance_user
-DB_PASSWORD=un_mot_de_passe
-AI_API_KEY=votre_cle_gemini
-```
-Ces valeurs servent à créer l'utilisateur MySQL du conteneur et à connecter l'application. `DB_USER` ne doit **pas** être `root`.
-
-`AI_API_KEY` est la clé de l'API Google Gemini, utilisée par l'assistant IA. Pour la récupérer, se connecter avec un compte Google sur **https://aistudio.google.com/api-keys** et créer une clé. Sans clé, l'application fonctionne mais l'assistant affiche qu'il n'est pas configuré.
-Le fichier `.env` n'est pas versionné : il contient les mots de passe et la clé de l'API d'IA (`AI_API_KEY`).
-
-## Lancer l'application
-Depuis la racine du dépôt :
-```bash
-mvn -f jee-app/pom.xml clean package # construit jee-app/target/assurance.war
-docker compose up -d --build         # construit l'image Tomcat, lance MySQL puis Tomcat
-```
-Au premier lancement, MySQL crée automatiquement les tables (`database/schema.sql`) et insère les données de test (`database/dump.sql`).
-
-L'application est accessible sur **http://localhost:8080/**
-
-Comptes de test :
-
-| Rôle | Identifiant | Mot de passe |
-|---|---|---|
-| Administrateur | `admin` | `admin123` |
-| Agent | `agent` | `agent123` |
-| Client | `client` | `client123` |
-
-> Toujours utiliser `clean package` : sans `clean`, une classe supprimée ou renommée peut rester dans le `.war` et provoquer des erreurs incompréhensibles.
-
-## Tuto Docker rapide
-
-| Commande | Effet |
-|---|---|
-| `docker compose up -d --build` | lance (ou relance) MySQL et Tomcat en arrière-plan |
-| `docker compose ps` | état des conteneurs |
-| `docker compose logs -f tomcat` | journaux de Tomcat en direct (`Ctrl+C` pour quitter) |
-| `docker compose down` | arrête les conteneurs, **les données sont conservées** |
-| `docker compose down -v` | arrête et **supprime la base et les pièces justificatives** (repart de `schema.sql` + `dump.sql` au prochain lancement) |
-
-**Après une modification du code Java ou des JSP :**
-```bash
-mvn -f jee-app/pom.xml clean package
-docker compose up -d --build tomcat
-```
-
-**Après une modification de `schema.sql` ou `dump.sql`** (ou après un `git pull` qui les modifie) : les scripts ne sont exécutés qu'à la création de la base, il faut donc la recréer.
-```bash
-docker compose down -v
-docker compose up -d --build
-```
-
-## Pièces justificatives
-Les fichiers envoyés avec un sinistre (PDF, JPG ou PNG, 5 Mo maximum chacun) sont enregistrés dans le volume Docker `pieces_data`, monté sur `/data/pieces` dans le conteneur Tomcat (variable `DOSSIER_PIECES`), et non dans le `.war`, qui est écrasé à chaque déploiement. La base ne garde que leur nom d'origine et leur nom sur le disque (un identifiant aléatoire).
-
-Ils ne sont jamais servis directement : `/client/sinistres/piece?id=...` et `/agent/sinistres/piece?id=...` vérifient que l'utilisateur a le droit de les voir.
-
-## Contrôle d'accès
-Chaque rôle a son espace. Les URL qui commencent par ces préfixes sont protégées automatiquement par le filtre `RoleFiltre` :
-
-| Préfixe d'URL | Rôles autorisés | Page d'accueil |
-|---|---|---|
-| `/client/...` | CLIENT | `/client/accueil` |
-| `/agent/...` | AGENT, ADMIN | `/agent/accueil` |
-| `/admin/...` | ADMIN | `/admin/accueil` |
-| `/compte/...` | tout utilisateur connecté | `/compte` |
-
-- Non connecté : redirection vers `/connexion`. Mauvais rôle : page « Accès refusé » (erreur 403).
-- Après la connexion, chacun est redirigé vers la page d'accueil de son rôle.
-
-**Règle pour toute nouvelle page** : son URL doit commencer par le préfixe du rôle concerné, par exemple `@WebServlet("/client/contrats")`. Elle est alors protégée sans aucun code de sécurité dans la servlet. Une page sans préfixe est accessible à tout le monde.
-
-## Base de données
-
-### Se connecter à la base
-Console MySQL dans le conteneur (le mot de passe est `DB_PASSWORD`) :
-```bash
-docker exec -it mysql_db mysql -u assurance_user -p assurance
-```
-Depuis une interface graphique (DBeaver, MySQL Workbench...) : hôte `127.0.0.1`, port **3307**, base `assurance`, identifiants du `.env`.
-
-> Le port 3307 évite le conflit avec un MySQL éventuellement installé sur la machine (3306). Utiliser `127.0.0.1` et non `localhost`.
-
-### Générer les données de test (`dump.sql`)
-Deux façons de produire `dump.sql` :
-
-**a. À la main** : écrire directement les `INSERT` dans `database/dump.sql`, en respectant l'ordre des clés étrangères (d'abord les utilisateurs et les types d'assurance, puis les contrats, puis les sinistres et les paiements).
-
-**b. Export depuis la base du conteneur** : remplir la base (via l'application ou un outil graphique), puis exporter uniquement les données :
-```bash
-docker exec mysql_db sh -c 'mysqldump -u"$MYSQL_USER" -p"$MYSQL_PASSWORD" --no-create-info --skip-triggers --complete-insert --no-tablespaces assurance' > database/dump.sql
-```
-- `--no-create-info` : n'exporte que les données ; la structure reste dans `schema.sql`
-- `--complete-insert` : écrit le nom des colonnes dans chaque `INSERT`, plus lisible et plus robuste si une colonne est ajoutée
-- `--no-tablespaces` : évite une erreur de droits avec MySQL 8
-
-> Si vous modifiez une table, mettez à jour `schema.sql` **et** vérifiez que `dump.sql` se charge toujours dessus (`docker compose down -v` puis `up`) avant de pousser.
-
-## En cas de problème
-- `permission denied while trying to connect to the docker API` : la session n'a pas encore le groupe `docker`. Se déconnecter puis se reconnecter.
-- `port is already allocated` : un autre programme utilise le port 8080 ou 3307 (par exemple un Tomcat installé localement). Le trouver avec `ss -ltnp | grep 8080`.
-- `assurance.war: not found` pendant le `build` : lancer d'abord `mvn -f jee-app/pom.xml clean package`.
-- `Access denied for user` ou `Schema-validation` dans `docker compose logs tomcat` : la base ne correspond pas au `.env` ou à `schema.sql`. La recréer avec `docker compose down -v` puis `docker compose up -d --build`.

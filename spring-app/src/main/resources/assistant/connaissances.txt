@@ -1,0 +1,73 @@
+# Connaissances générales de l'assistant, communes à tous les clients.
+# Ce fichier est envoyé tel quel au modèle d'IA (les lignes commençant par # sont retirées).
+# Il peut être modifié sans toucher au code Java : il suffit de reconstruire l'application.
+
+## Déclarer un sinistre
+
+1. Se connecter à son espace client et ouvrir la rubrique « Mes sinistres ».
+2. Choisir le contrat concerné : il doit être actif à la date du sinistre.
+3. Indiquer la date du sinistre, son type (accident, vol, incendie, dégâts des eaux, maladie, autre),
+   une description précise des circonstances et, si possible, une estimation du montant des dommages.
+4. Joindre les pièces justificatives (voir la liste ci-dessous selon le type de sinistre).
+5. Valider : le sinistre passe au statut « déclaré ». Un agent l'analyse ensuite et peut ajouter des commentaires.
+
+Délais pour déclarer (à compter du moment où l'assuré a connaissance du sinistre) :
+- cas général : 5 jours ouvrés ;
+- vol : 2 jours ouvrés ;
+- catastrophe naturelle : 30 jours après la publication de l'arrêté au Journal officiel.
+
+En cas d'urgence (personne blessée, danger immédiat), appeler d'abord les secours (15, 17, 18 ou 112).
+
+## Documents à fournir selon le type de sinistre
+
+Pour tous les sinistres : une description des faits, des photos des dommages si possible,
+les factures ou devis de réparation, et tout justificatif de la valeur des biens endommagés.
+
+- Accident (automobile) : le constat amiable signé par les deux conducteurs, le permis de conduire,
+  la carte grise du véhicule, les coordonnées des témoins, le procès-verbal de police ou de gendarmerie s'il y en a un.
+- Vol : le récépissé du dépôt de plainte (obligatoire), les factures ou photos des objets volés ;
+  pour un véhicule, la carte grise et tous les jeux de clés.
+- Incendie : le rapport des pompiers s'il y en a un, les photos des dégâts, les factures des biens détruits.
+- Dégâts des eaux : le constat amiable de dégât des eaux (rempli avec le voisin ou le propriétaire si un tiers est concerné),
+  les photos, la facture du plombier ou le rapport de recherche de fuite.
+- Maladie : les ordonnances, les feuilles de soins, les comptes rendus médicaux et le décompte de la Sécurité sociale.
+- Autre : tout document qui prouve les circonstances et le montant des dommages.
+
+## Suivi d'un sinistre : signification des statuts
+
+- Déclaré : la déclaration a été reçue, elle attend d'être prise en charge par un agent.
+- En analyse : un agent étudie le dossier ; il peut demander des pièces complémentaires.
+- Accepté : le sinistre est couvert par le contrat, l'indemnisation va être calculée et versée.
+- Refusé : le sinistre n'est pas couvert (garantie non souscrite, exclusion, contrat inactif à la date du sinistre...).
+- Indemnisé : le montant de l'indemnisation a été versé au client.
+
+## Statuts d'un contrat
+
+- En attente : le contrat est créé mais ne couvre pas encore (prime non payée ou date de début non atteinte).
+- Actif : le contrat couvre le client.
+- Suspendu : la couverture est interrompue. Soit la prime n'a pas été payée à temps (le contrat redevient actif
+  dès le paiement), soit un agent l'a suspendu, avec un motif (seul un agent peut lever cette suspension).
+  Un sinistre survenu pendant une suspension n'est pas couvert.
+- Expiré : la date de fin est dépassée.
+- Résilié : le contrat a été arrêté avant sa date de fin par le client ou par l'agent.
+
+Un contrat dure 12 mois. Sa prime est payée en une fois, depuis la fiche du contrat dans l'espace client,
+avant la date de début. Le client peut résilier un contrat depuis cette même fiche.
+
+Résiliation : si la prime a été payée, la part qui correspond à la période qui ne sera plus couverte
+est remboursée (au prorata des jours restants ; toute la prime si le contrat n'avait pas commencé).
+Si la prime n'était pas payée, le paiement est simplement annulé.
+
+Renouvellement : un contrat actif ou expiré, payé, peut être renouvelé une fois, par le client depuis
+la fiche du contrat ou par un agent. Le nouveau contrat dure 12 mois, garde les mêmes garanties
+(celles encore proposées) et commence à la fin de l'ancien (ou le jour même si l'ancien est expiré).
+Sa prime est à payer avant sa date de début.
+
+## Notions utiles
+
+- Plafond : montant maximal remboursé par une garantie pour un sinistre.
+- Franchise : somme qui reste à la charge du client sur chaque sinistre ; elle est déduite de l'indemnisation.
+  Exemple : dommages de 1 000 €, franchise de 150 € : le client reçoit 850 € (dans la limite du plafond).
+- Prime : prix annuel du contrat.
+- Garantie : risque couvert par le contrat (responsabilité civile, vol, incendie, bris de glace...).
+  Un sinistre n'est indemnisé que si le contrat comprend une garantie qui couvre ce type de sinistre.

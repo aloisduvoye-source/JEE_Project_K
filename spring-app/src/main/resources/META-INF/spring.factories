@@ -1,0 +1,1 @@
+org.springframework.boot.EnvironmentPostProcessor=fr.cytech.assurance.config.ChargementDotenv
