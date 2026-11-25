@@ -1,0 +1,53 @@
+<%@ page pageEncoding="UTF-8" %>
+<%--
+  Informations d'un sinistre, communes à la fiche du client et à celle de l'agent :
+  étapes du traitement (avec leur date), contrat, déclaration et indemnisation (sans formulaire).
+  Attend les attributs "sinistre" (avec contrat, client, type et agent chargés)
+  et "indemnisation" (le Versement, vide tant que le sinistre n'est pas indemnisé).
+  À inclure avec : <%@ include file="/WEB-INF/views/common/sinistre-infos.jspf" %>
+--%>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<p>Statut : <strong><c:out value="${sinistre.statut}"/></strong></p>
+
+<h2>Suivi du dossier</h2>
+<%-- Étapes dans l'ordre : une étape non atteinte n'a pas encore de date --%>
+<ol>
+  <li>Déclaré le <c:out value="${sinistre.dateDeclaration.toLocalDate()}"/></li>
+  <li>Pris en charge par un agent :
+    <c:out value="${empty sinistre.datePriseEnCharge ? 'en attente' : sinistre.datePriseEnCharge.toLocalDate()}"/></li>
+  <li>
+    <c:choose>
+      <c:when test="${sinistre.statut == 'REFUSE'}">Refusé le <c:out value="${sinistre.dateDecision.toLocalDate()}"/>
+        (le motif est indiqué dans la discussion)</c:when>
+      <c:when test="${not empty sinistre.dateDecision}">Accepté le <c:out value="${sinistre.dateDecision.toLocalDate()}"/></c:when>
+      <c:otherwise>Décision : en attente</c:otherwise>
+    </c:choose>
+  </li>
+  <c:if test="${sinistre.statut != 'REFUSE'}">
+    <li>
+      <c:choose>
+        <c:when test="${not empty indemnisation}">Indemnisé de <c:out value="${indemnisation.montant}"/> €
+          le <c:out value="${indemnisation.dateVersement}"/>
+          <%-- Détail du calcul, avec la franchise et le plafond en vigueur au moment du versement --%>
+          <br>Garantie <c:out value="${indemnisation.garantie.nom}"/> :
+          dommage retenu <c:out value="${indemnisation.montantDommage}"/> €
+          − franchise <c:out value="${indemnisation.franchiseAppliquee}"/> €<c:if test="${indemnisation.plafonne}">, limité au plafond de <c:out value="${indemnisation.plafondApplique}"/> €</c:if>
+          <c:if test="${not empty sinistre.montantEstime and indemnisation.montantDommage.compareTo(sinistre.montantEstime) != 0}">
+            (montant estimé à la déclaration : <c:out value="${sinistre.montantEstime}"/> €)</c:if>
+        </c:when>
+        <c:otherwise>Indemnisation : en attente</c:otherwise>
+      </c:choose>
+    </li>
+  </c:if>
+</ol>
+
+<h2>Déclaration</h2>
+<p>Contrat n° <c:out value="${sinistre.contrat.id}"/> : <c:out value="${sinistre.contrat.typeAssurance.nom}"/>
+  (<c:out value="${sinistre.contrat.client.utilisateur.prenom} ${sinistre.contrat.client.utilisateur.nom}"/>)</p>
+<p>Type : <c:out value="${sinistre.typeSinistre}"/></p>
+<p>Date du sinistre : <c:out value="${sinistre.dateSinistre}"/></p>
+<p>Montant estimé :
+  <c:out value="${empty sinistre.montantEstime ? 'non précisé' : sinistre.montantEstime.toPlainString().concat(' €')}"/></p>
+<p>Agent : <c:out value="${empty sinistre.agent ? 'pas encore attribué' : sinistre.agent.prenom.concat(' ').concat(sinistre.agent.nom)}"/></p>
+<%-- white-space: pre-wrap garde les retours à la ligne de la description ; c:out empêche toute injection de HTML --%>
+<p style="white-space: pre-wrap"><c:out value="${sinistre.description}"/></p>
