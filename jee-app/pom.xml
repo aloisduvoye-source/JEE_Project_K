@@ -10,6 +10,8 @@
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <!-- Interface mise dans le .war : frontend (refonte, par défaut) ou frontend-epure (-Dfront=frontend-epure) -->
+    <front>frontend</front>
   </properties>
 
   <dependencies>
@@ -86,10 +88,10 @@
         <artifactId>maven-war-plugin</artifactId>
         <version>3.4.0</version>
         <configuration>
-          <!-- Vues, tags et assets partagés avec spring-app (dossier frontend/ à la racine du dépôt) -->
+          <!-- Vues, tags et assets partagés avec spring-app (dossier choisi par la propriété front) -->
           <webResources>
             <resource>
-              <directory>${project.basedir}/../frontend</directory>
+              <directory>${project.basedir}/../${front}</directory>
             </resource>
           </webResources>
         </configuration>
