@@ -29,6 +29,10 @@ jobs:
         with:
           distribution: temurin
           java-version: '17'
+          # Dépendances Maven gardées d'un run à l'autre (renouvelées quand un pom.xml change) :
+          # sans cache, les 4 jobs téléchargent tout en même temps et Maven Central répond 429 Too Many Requests
+          cache: maven
+          cache-dependency-path: '*/pom.xml'
 
       - name: Compiler (mvn clean package)
         run: mvn -f ${{ matrix.app }}/pom.xml clean package -Dfront=${{ matrix.front }}
